@@ -27,12 +27,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ecom.model.Category;
-import com.ecom.model.Product;
+import com.ecom.model.RoomType;
+import com.ecom.model.Room;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
-import com.ecom.service.CategoryService;
-import com.ecom.service.ProductService;
+import com.ecom.service.RoomTypeService;
+import com.ecom.service.RoomService;
 import com.ecom.service.UserService;
 import com.ecom.util.CommonUtil;
 
@@ -45,10 +45,10 @@ import jakarta.servlet.http.HttpSession;
 public class HomeController {
 
 	@Autowired
-	private CategoryService categoryService;
+	private RoomTypeService roomTypeService;
 
 	@Autowired
-	private ProductService productService;
+	private RoomService roomService;
 
 	@Autowired
 	private UserService userService;
@@ -72,19 +72,19 @@ public class HomeController {
 			m.addAttribute("countCart", countCart);
 		}
 
-		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
-		m.addAttribute("categorys", allActiveCategory);
+		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
+		m.addAttribute("roomTypes", allActiveRoomType);
 	}
 
 	@GetMapping("/")
 	public String index(Model m) {
 
-		List<Category> allActiveCategory = categoryService.getAllActiveCategory().stream()
+		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType().stream()
 				.sorted((c1, c2) -> c2.getId().compareTo(c1.getId())).limit(6).toList();
-		List<Product> allActiveProducts = productService.getAllActiveProducts("").stream()
+		List<Room> allActiveRooms = roomService.getAllActiveRooms("").stream()
 				.sorted((p1, p2) -> p2.getId().compareTo(p1.getId())).limit(8).toList();
-		m.addAttribute("category", allActiveCategory);
-		m.addAttribute("products", allActiveProducts);
+		m.addAttribute("roomTypes", allActiveRoomType);
+		m.addAttribute("rooms", allActiveRooms);
 		return "index";
 	}
 
@@ -98,28 +98,31 @@ public class HomeController {
 		return "register";
 	}
 
-	@GetMapping("/products")
-	public String products(Model m, @RequestParam(value = "category", defaultValue = "") String category,
+	@GetMapping("/rooms")
+	public String rooms(Model m, @RequestParam(value = "roomType", defaultValue = "") String roomType,
 			@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "12") Integer pageSize,
 			@RequestParam(defaultValue = "") String ch) {
 
-		List<Category> categories = categoryService.getAllActiveCategory();
-		m.addAttribute("paramValue", category);
-		m.addAttribute("categories", categories);
+		// Get unique room types and remove duplicates
+		List<RoomType> allRoomTypes = roomTypeService.getAllActiveRoomType();
+		List<RoomType> uniqueRoomTypes = allRoomTypes.stream()
+				.distinct()
+				.collect(java.util.stream.Collectors.toList());
 
-//		List<Product> products = productService.getAllActiveProducts(category);
-//		m.addAttribute("products", products);
-		Page<Product> page = null;
+		m.addAttribute("paramValue", roomType);
+		m.addAttribute("roomTypes", uniqueRoomTypes);
+
+		Page<Room> page = null;
 		if (StringUtils.isEmpty(ch)) {
-			page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
+			page = roomService.getAllActiveRoomPagination(pageNo, pageSize, roomType);
 		} else {
-			page = productService.searchActiveProductPagination(pageNo, pageSize, category, ch);
+			page = roomService.searchActiveRoomPagination(pageNo, pageSize, roomType, ch);
 		}
 
-		List<Product> products = page.getContent();
-		m.addAttribute("products", products);
-		m.addAttribute("productsSize", products.size());
+		List<Room> rooms = page.getContent();
+		m.addAttribute("rooms", rooms);
+		m.addAttribute("roomsSize", rooms.size());
 
 		m.addAttribute("pageNo", page.getNumber());
 		m.addAttribute("pageSize", pageSize);
@@ -131,10 +134,10 @@ public class HomeController {
 		return "product";
 	}
 
-	@GetMapping("/product/{id}")
-	public String product(@PathVariable int id, Model m) {
-		Product productById = productService.getProductById(id);
-		m.addAttribute("product", productById);
+	@GetMapping("/room/{id}")
+	public String room(@PathVariable int id, Model m) {
+		Room roomById = roomService.getRoomById(id);
+		m.addAttribute("room", roomById);
 		return "view_product";
 	}
 
@@ -158,7 +161,6 @@ public class HomeController {
 					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
 							+ file.getOriginalFilename());
 
-//					System.out.println(path);
 					Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 				}
 				session.setAttribute("succMsg", "Register successfully");
@@ -169,8 +171,6 @@ public class HomeController {
 
 		return "redirect:/register";
 	}
-
-//	Forgot Password Code 
 
 	@GetMapping("/forgot-password")
 	public String showForgotPassword() {
@@ -189,9 +189,6 @@ public class HomeController {
 
 			String resetToken = UUID.randomUUID().toString();
 			userService.updateUserResetToken(email, resetToken);
-
-			// Generate URL :
-			// http://localhost:8080/reset-password?token=sfgdbgfswegfbdgfewgvsrg
 
 			String url = CommonUtil.generateUrl(request) + "/reset-password?token=" + resetToken;
 
@@ -232,7 +229,6 @@ public class HomeController {
 			userByToken.setPassword(passwordEncoder.encode(password));
 			userByToken.setResetToken(null);
 			userService.updateUser(userByToken);
-			// session.setAttribute("succMsg", "Password change successfully");
 			m.addAttribute("msg", "Password change successfully");
 
 			return "message";
@@ -241,11 +237,11 @@ public class HomeController {
 	}
 
 	@GetMapping("/search")
-	public String searchProduct(@RequestParam String ch, Model m) {
-		List<Product> searchProducts = productService.searchProduct(ch);
-		m.addAttribute("products", searchProducts);
-		List<Category> categories = categoryService.getAllActiveCategory();
-		m.addAttribute("categories", categories);
+	public String searchRoom(@RequestParam String ch, Model m) {
+		List<Room> searchRooms = roomService.searchRoom(ch);
+		m.addAttribute("rooms", searchRooms);
+		List<RoomType> roomTypes = roomTypeService.getAllActiveRoomType();
+		m.addAttribute("roomTypes", roomTypes);
 		return "product";
 
 	}

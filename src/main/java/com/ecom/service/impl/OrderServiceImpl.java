@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 import com.ecom.model.Cart;
 import com.ecom.model.OrderAddress;
 import com.ecom.model.OrderRequest;
-import com.ecom.model.ProductOrder;
+import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
 import com.ecom.repository.CartRepository;
-import com.ecom.repository.ProductOrderRepository;
+import com.ecom.repository.RoomOrderRepository;
 import com.ecom.service.OrderService;
 import com.ecom.util.CommonUtil;
 import com.ecom.util.OrderStatus;
@@ -27,7 +27,7 @@ import com.ecom.util.OrderStatus;
 public class OrderServiceImpl implements OrderService {
 
 	@Autowired
-	private ProductOrderRepository orderRepository;
+	private RoomOrderRepository orderRepository;
 
 	@Autowired
 	private CartRepository cartRepository;
@@ -42,13 +42,13 @@ public class OrderServiceImpl implements OrderService {
 
 		for (Cart cart : carts) {
 
-			ProductOrder order = new ProductOrder();
+			RoomOrder order = new RoomOrder();
 
 			order.setOrderId(UUID.randomUUID().toString());
 			order.setOrderDate(LocalDate.now());
 
-			order.setProduct(cart.getProduct());
-			order.setPrice(cart.getProduct().getDiscountPrice());
+			order.setRoom(cart.getRoom());
+			order.setPrice(cart.getRoom().getMonthlyRent());
 
 			order.setQuantity(cart.getQuantity());
 			order.setUser(cart.getUser());
@@ -68,46 +68,57 @@ public class OrderServiceImpl implements OrderService {
 
 			order.setOrderAddress(address);
 
-			ProductOrder saveOrder = orderRepository.save(order);
+			RoomOrder saveOrder = orderRepository.save(order);
+
+			// Clear cart after saving order
 			resetCart(cart.getUser());
-			commonUtil.sendMailForProductOrder(saveOrder, "success");
+
+			// Try to send email but don't fail if email service is down
+			try {
+				commonUtil.sendMailForRoomOrder(saveOrder, "success");
+			} catch (Exception e) {
+				// Log the error but don't let it break the order process
+				System.out.println("Warning: Could not send email notification: " + e.getMessage());
+			}
 		}
 	}
+
 	private void resetCart(UserDtls user) {
 		cartRepository.deleteByUser(user);
 	}
+
 	@Override
-	public List<ProductOrder> getOrdersByUser(Integer userId) {
-		List<ProductOrder> orders = orderRepository.findByUserId(userId);
+	public List<RoomOrder> getOrdersByUser(Integer userId) {
+		List<RoomOrder> orders = orderRepository.findByUserId(userId);
 		return orders;
 	}
 
 	@Override
-	public ProductOrder updateOrderStatus(Integer id, String status) {
-		Optional<ProductOrder> findById = orderRepository.findById(id);
+	public RoomOrder updateOrderStatus(Integer id, String status) {
+		Optional<RoomOrder> findById = orderRepository.findById(id);
 		if (findById.isPresent()) {
-			ProductOrder productOrder = findById.get();
-			productOrder.setStatus(status);
-			ProductOrder updateOrder = orderRepository.save(productOrder);
+			RoomOrder roomOrder = findById.get();
+			roomOrder.setStatus(status);
+			RoomOrder updateOrder = orderRepository.save(roomOrder);
 			return updateOrder;
 		}
 		return null;
 	}
 
 	@Override
-	public List<ProductOrder> getAllOrders() {
+	public List<RoomOrder> getAllOrders() {
 		return orderRepository.findAll();
 	}
 
 	@Override
-	public Page<ProductOrder> getAllOrdersPagination(Integer pageNo, Integer pageSize) {
+	public Page<RoomOrder> getAllOrdersPagination(Integer pageNo, Integer pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		return orderRepository.findAll(pageable);
 
 	}
 
 	@Override
-	public ProductOrder getOrdersByOrderId(String orderId) {
+	public RoomOrder getOrdersByOrderId(String orderId) {
 		return orderRepository.findByOrderId(orderId);
 	}
 

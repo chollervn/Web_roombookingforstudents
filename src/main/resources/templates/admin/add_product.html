@@ -2,85 +2,236 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Thêm phòng trọ</title>
 </head>
 <body>
 	<section>
 		<div class="container p-5 mt-3">
 			<div class="row">
-				<div class="col-md-6 offset-md-3">
+				<div class="col-md-8 offset-md-2">
 					<div class="card card-sh">
-						<div class="card-header text-center ">
-							<p class="fs-4">Add Product</p>
+						<div class="card-header text-center">
+							<h4 class="text-primary"><i class="fas fa-plus-circle"></i> Thêm phòng trọ mới</h4>
 
 							<th:block th:if="${session.succMsg}">
-								<p class="text-success fw-bold">[[${session.succMsg}]]</p>
+								<p class="text-success fw-bold alert alert-success">[[${session.succMsg}]]</p>
 								<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
 							</th:block>
 
 							<th:block th:if="${session.errorMsg}">
-								<p class="text-danger fw-bold">[[${session.errorMsg}]]</p>
+								<p class="text-danger fw-bold alert alert-danger">[[${session.errorMsg}]]</p>
 								<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
 							</th:block>
-
 						</div>
+
 						<div class="card-body">
-							<form action="/admin/saveProduct" method="post"
-								enctype="multipart/form-data">
-								<div class="mb-3">
-									<label>Enter Title</label> <input type="text" name="title"
-										class="form-control">
-								</div>
-
-								<div class="mb-3">
-									<label>Enter Description</label>
-									<textarea rows="3" cols="" class="form-control"
-										name="description"></textarea>
-								</div>
-
-								<div class="mb-3">
-									<label>Category</label> <select class="form-control"
-										name="category">
-										<option>--select--</option>
-										<option th:each="c:${categories}">[[${c.name}]]</option>
-									</select>
-								</div>
-
-								<div class="mb-3">
-									<label>Enter Price</label> <input type="number" name="price"
-										class="form-control">
-								</div>
-								<div class="mb-3">
-									<label>Status</label>
-
-									<div class="form-check">
-										<input class="form-check-input" type="radio" checked
-											value="true" name="isActive" id="flexRadioDefault1">
-										<label class="form-check-label" for="flexRadioDefault1">
-											Active </label>
-									</div>
-									<div class="form-check">
-										<input class="form-check-input" type="radio" name="isActive"
-											value="false" id="flexRadioDefault2"> <label
-											class="form-check-label" for="flexRadioDefault2">
-											Inactive </label>
-									</div>
-
-								</div>
+							<form action="/admin/saveRoom" method="post" enctype="multipart/form-data">
 								<div class="row">
+									<!-- Thông tin cơ bản -->
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-home"></i> Tên phòng trọ *</label>
+											<input type="text" name="roomName" class="form-control"
+												placeholder="VD: Phòng trọ gần ĐH Bách Khoa" required>
+										</div>
 
-									<div class="mb-3 col">
-										<label>Enter Stock</label> <input type="text" name="stock"
-											class="form-control">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-list"></i> Loại phòng *</label>
+											<select class="form-control" name="roomType" required>
+												<option value="">--Chọn loại phòng--</option>
+												<option th:each="rt:${roomTypes}" th:value="${rt.name}">[[${rt.name}]]</option>
+											</select>
+										</div>
+
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-money-bill-wave"></i> Giá thuê/tháng (VNĐ) *</label>
+											<input type="number" name="monthlyRent" class="form-control"
+												placeholder="VD: 2500000" min="0" required>
+										</div>
+
+										<div class="row">
+											<div class="col-6">
+												<div class="mb-3">
+													<label class="form-label"><i class="fas fa-expand-arrows-alt"></i> Diện tích (m²) *</label>
+													<input type="number" name="area" class="form-control"
+														placeholder="VD: 25" step="0.1" min="0" required>
+												</div>
+											</div>
+											<div class="col-6">
+												<div class="mb-3">
+													<label class="form-label"><i class="fas fa-users"></i> Số người tối đa *</label>
+													<input type="number" name="maxOccupants" class="form-control"
+														placeholder="VD: 2" min="1" required>
+												</div>
+											</div>
+										</div>
 									</div>
 
-									<div class="mb-3 col">
-										<label>Upload Image</label> <input type="file" name="file"
-											class="form-control">
+									<!-- Địa chỉ -->
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ ngắn *</label>
+											<input type="text" name="address" class="form-control"
+												placeholder="VD: Ngõ 123 Tôn Đức Thắng" required>
+										</div>
+
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-location-arrow"></i> Địa chỉ đầy đủ *</label>
+											<input type="text" name="fullAddress" class="form-control"
+												placeholder="VD: Ngõ 123 Tôn Đức Thắng, Đống Đa, Hà Nội" required>
+										</div>
+
+										<div class="row">
+											<div class="col-6">
+												<div class="mb-3">
+													<label class="form-label"><i class="fas fa-map"></i> Quận/Huyện *</label>
+													<input type="text" name="district" class="form-control"
+														placeholder="VD: Đống Đa" required>
+												</div>
+											</div>
+											<div class="col-6">
+												<div class="mb-3">
+													<label class="form-label"><i class="fas fa-city"></i> Thành phố *</label>
+													<input type="text" name="city" class="form-control"
+														placeholder="VD: Hà Nội" required>
+												</div>
+											</div>
+										</div>
+
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-image"></i> Ảnh phòng trọ</label>
+											<input type="file" name="file" class="form-control" accept="image/*">
+											<small class="text-muted">Chọn ảnh đại diện cho phòng trọ</small>
+										</div>
 									</div>
 								</div>
-								<button class="btn btn-primary col-md-12">Submit</button>
+
+								<!-- Mô tả -->
+								<div class="mb-3">
+									<label class="form-label"><i class="fas fa-align-left"></i> Mô tả chi tiết</label>
+									<textarea rows="4" class="form-control" name="description"
+										placeholder="Mô tả về phòng trọ, vị trí, tiện ích xung quanh..."></textarea>
+								</div>
+
+								<!-- Tiện ích -->
+								<div class="mb-4">
+									<label class="form-label"><i class="fas fa-check-circle"></i> Tiện ích có sẵn:</label>
+									<div class="row">
+										<div class="col-md-3">
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" name="hasWifi" id="wifi">
+												<label class="form-check-label" for="wifi">
+													<i class="fas fa-wifi text-primary"></i> WiFi miễn phí
+												</label>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" name="hasAirConditioner" id="ac">
+												<label class="form-check-label" for="ac">
+													<i class="fas fa-snowflake text-info"></i> Điều hòa
+												</label>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" name="hasParking" id="parking">
+												<label class="form-check-label" for="parking">
+													<i class="fas fa-car text-success"></i> Chỗ đậu xe
+												</label>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" name="hasElevator" id="elevator">
+												<label class="form-check-label" for="elevator">
+													<i class="fas fa-building text-secondary"></i> Thang máy
+												</label>
+											</div>
+										</div>
+									</div>
+									<div class="row mt-2">
+										<div class="col-md-3">
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" name="allowPets" id="pets">
+												<label class="form-check-label" for="pets">
+													<i class="fas fa-paw text-warning"></i> Cho phép thú cưng
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Chi phí & Liên hệ -->
+								<div class="row">
+									<div class="col-md-4">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-hand-holding-usd"></i> Tiền cọc (VNĐ)</label>
+											<input type="number" name="deposit" class="form-control"
+												placeholder="VD: 5000000" min="0">
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-bolt"></i> Giá điện (VNĐ/kWh)</label>
+											<input type="number" name="electricityCost" class="form-control"
+												placeholder="VD: 3500" min="0" step="0.01">
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-tint"></i> Giá nước (VNĐ/tháng)</label>
+											<input type="number" name="waterCost" class="form-control"
+												placeholder="VD: 25000" min="0">
+										</div>
+									</div>
+								</div>
+
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-phone"></i> Số điện thoại liên hệ *</label>
+											<input type="text" name="contactPhone" class="form-control"
+												placeholder="VD: 0987654321" required>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label class="form-label"><i class="fas fa-user"></i> Tên người liên hệ *</label>
+											<input type="text" name="contactName" class="form-control"
+												placeholder="VD: Chị Hoa" required>
+										</div>
+									</div>
+								</div>
+
+								<!-- Trạng thái -->
+								<div class="mb-3">
+									<label class="form-label"><i class="fas fa-toggle-on"></i> Trạng thái:</label>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input" type="radio" checked
+											value="true" name="isActive" id="active">
+										<label class="form-check-label" for="active">
+											<span class="badge bg-success">Hoạt động</span>
+										</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input" type="radio" name="isActive"
+											value="false" id="inactive">
+										<label class="form-check-label" for="inactive">
+											<span class="badge bg-secondary">Tạm ẩn</span>
+										</label>
+									</div>
+								</div>
+
+								<div class="text-center">
+									<button type="submit" class="btn btn-primary btn-lg px-5">
+										<i class="fas fa-save"></i> Thêm phòng trọ
+									</button>
+									<a href="/admin/rooms" class="btn btn-secondary btn-lg px-5 ms-2">
+										<i class="fas fa-arrow-left"></i> Quay lại
+									</a>
+								</div>
 							</form>
 						</div>
 					</div>

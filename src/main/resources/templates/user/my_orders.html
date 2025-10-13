@@ -9,7 +9,7 @@
 	<section>
 		<div class="container mt-5 p-5">
 			<div class="row">
-				<p class="text-center fs-3">My Orders</p>
+				<p class="text-center fs-3">??n Thuê C?a Tôi</p>
 				<th:block th:if="${session.succMsg}">
 					<p class="text-success fw-bold text-center">[[${session.succMsg}]]</p>
 					<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
@@ -22,32 +22,56 @@
 				<div class="col-md-12 ">
 
 					<table class="table table-bordered card-sh">
-						<thead >
-							<tr >
-								<th scope="col">Order Id</th>
-								<th scope="col">Date</th>
-								<th scope="col">Product Details</th>
-								<th scope="col">Price</th>
-								<th scope="col">Status</th>
-								<th scope="col">Action</th>
+						<thead>
+							<tr>
+								<th scope="col">Mã ??n</th>
+								<th scope="col">Ngày ??t</th>
+								<th scope="col">Thông Tin Phòng</th>
+								<th scope="col">Giá Ti?n</th>
+								<th scope="col">Tr?ng Thái</th>
+								<th scope="col">Hành ??ng</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr th:each="o:${orders}">
+							<tr th:each="o:${orders}" th:if="${orders != null and !orders.isEmpty()}">
 								<th scope="row">[[${o.orderId}]]</th>
 								<td>[[${o.orderDate}]]</td>
-								<td>[[${o.product.title}]]</td>
-								<td>Quantity : [[${o.quantity}]] <br>Price :
-									[[${o.price}]] <br>Total Price :[[${o.quantity *
-									o.price}]]
+								<td>
+									<strong>[[${o.room.roomName}]]</strong><br>
+									Lo?i: [[${o.room.roomType}]]<br>
+									??a ch?: [[${o.room.address}]]
 								</td>
-								<td>[[${o.status}]]</td>
-								<td><th:block th:if="${o.status!='Cancelled'}">
-										<a th:href="@{'/user/update-status?id='+${o.id}+'&st=6' }"
-											class="btn btn-sm btn-danger">Cancel</a>
-									</th:block> <th:block th:unless="${o.status!='Cancelled'}">
-										<a href="#" class="btn btn-sm btn-danger disabled" >Cancel</a>
-									</th:block></td>
+								<td>
+									S? l??ng: [[${o.quantity}]]<br>
+									Giá thuê: [[${#numbers.formatDecimal(o.price, 0, 'COMMA', 0, 'POINT')}]] VN?/tháng<br>
+									<strong>T?ng ti?n: [[${#numbers.formatDecimal(o.quantity * o.price, 0, 'COMMA', 0, 'POINT')}]] VN?</strong>
+								</td>
+								<td>
+									<span th:class="${o.status == 'Delivered' ? 'badge bg-success' :
+										(o.status == 'Cancelled' ? 'badge bg-danger' :
+										(o.status == 'In Progress' ? 'badge bg-warning' : 'badge bg-info'))}">
+										[[${o.status}]]
+									</span>
+								</td>
+								<td>
+									<th:block th:if="${o.status != 'Cancelled' and o.status != 'Delivered'}">
+										<a th:href="@{'/user/update-status?id='+${o.id}+'&st=6'}"
+											class="btn btn-sm btn-danger"
+											onclick="return confirm('B?n có ch?c mu?n h?y ??n thuê này?')">H?y ??n</a>
+									</th:block>
+									<th:block th:unless="${o.status != 'Cancelled' and o.status != 'Delivered'}">
+										<button class="btn btn-sm btn-secondary disabled">?ã X? Lý</button>
+									</th:block>
+								</td>
+							</tr>
+							<tr th:if="${orders == null or orders.isEmpty()}">
+								<td colspan="6" class="text-center py-4">
+									<div class="alert alert-info">
+										<i class="fas fa-info-circle"></i>
+										B?n ch?a có ??n thuê nào.
+										<a th:href="@{/}" class="btn btn-primary btn-sm ms-2">B?t ??u thuê phòng</a>
+									</div>
+								</td>
 							</tr>
 						</tbody>
 					</table>

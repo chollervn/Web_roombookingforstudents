@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ecom.model.Category;
-import com.ecom.model.Product;
-import com.ecom.model.ProductOrder;
+import com.ecom.model.RoomType;
+import com.ecom.model.Room;
+import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
-import com.ecom.service.CategoryService;
+import com.ecom.service.RoomTypeService;
 import com.ecom.service.OrderService;
-import com.ecom.service.ProductService;
+import com.ecom.service.RoomService;
 import com.ecom.service.UserService;
 import com.ecom.util.CommonUtil;
 import com.ecom.util.OrderStatus;
@@ -43,10 +43,10 @@ import jakarta.servlet.http.HttpSession;
 public class AdminController {
 
 	@Autowired
-	private CategoryService categoryService;
+	private RoomTypeService roomTypeService;
 
 	@Autowired
-	private ProductService productService;
+	private RoomService roomService;
 
 	@Autowired
 	private UserService userService;
@@ -73,8 +73,8 @@ public class AdminController {
 			m.addAttribute("countCart", countCart);
 		}
 
-		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
-		m.addAttribute("categorys", allActiveCategory);
+		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
+		m.addAttribute("roomTypes", allActiveRoomType);
 	}
 
 	@GetMapping("/")
@@ -82,20 +82,20 @@ public class AdminController {
 		return "admin/index";
 	}
 
-	@GetMapping("/loadAddProduct")
-	public String loadAddProduct(Model m) {
-		List<Category> categories = categoryService.getAllCategory();
-		m.addAttribute("categories", categories);
+	@GetMapping("/loadAddRoom")
+	public String loadAddRoom(Model m) {
+		List<RoomType> roomTypes = roomTypeService.getAllRoomType();
+		m.addAttribute("roomTypes", roomTypes);
 		return "admin/add_product";
 	}
 
-	@GetMapping("/category")
-	public String category(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+	@GetMapping("/roomtype")
+	public String roomType(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-		// m.addAttribute("categorys", categoryService.getAllCategory());
-		Page<Category> page = categoryService.getAllCategorPagination(pageNo, pageSize);
-		List<Category> categorys = page.getContent();
-		m.addAttribute("categorys", categorys);
+
+		Page<RoomType> page = roomTypeService.getAllRoomTypePagination(pageNo, pageSize);
+		List<RoomType> roomTypes = page.getContent();
+		m.addAttribute("roomTypes", roomTypes);
 
 		m.addAttribute("pageNo", page.getNumber());
 		m.addAttribute("pageSize", pageSize);
@@ -107,22 +107,22 @@ public class AdminController {
 		return "admin/category";
 	}
 
-	@PostMapping("/saveCategory")
-	public String saveCategory(@ModelAttribute Category category, @RequestParam("file") MultipartFile file,
+	@PostMapping("/saveRoomType")
+	public String saveRoomType(@ModelAttribute RoomType roomType, @RequestParam("file") MultipartFile file,
 			HttpSession session) throws IOException {
 
 		String imageName = file != null ? file.getOriginalFilename() : "default.jpg";
-		category.setImageName(imageName);
+		roomType.setImageName(imageName);
 
-		Boolean existCategory = categoryService.existCategory(category.getName());
+		Boolean existRoomType = roomTypeService.existRoomType(roomType.getName());
 
-		if (existCategory) {
-			session.setAttribute("errorMsg", "Category Name already exists");
+		if (existRoomType) {
+			session.setAttribute("errorMsg", "Room Type Name already exists");
 		} else {
 
-			Category saveCategory = categoryService.saveCategory(category);
+			RoomType saveRoomType = roomTypeService.saveRoomType(roomType);
 
-			if (ObjectUtils.isEmpty(saveCategory)) {
+			if (ObjectUtils.isEmpty(saveRoomType)) {
 				session.setAttribute("errorMsg", "Not saved ! internal server error");
 			} else {
 
@@ -131,52 +131,50 @@ public class AdminController {
 				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "category_img" + File.separator
 						+ file.getOriginalFilename());
 
-				// System.out.println(path);
 				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
 				session.setAttribute("succMsg", "Saved successfully");
 			}
 		}
 
-		return "redirect:/admin/category";
+		return "redirect:/admin/roomtype";
 	}
 
-	@GetMapping("/deleteCategory/{id}")
-	public String deleteCategory(@PathVariable int id, HttpSession session) {
-		Boolean deleteCategory = categoryService.deleteCategory(id);
+	@GetMapping("/deleteRoomType/{id}")
+	public String deleteRoomType(@PathVariable int id, HttpSession session) {
+		Boolean deleteRoomType = roomTypeService.deleteRoomType(id);
 
-		if (deleteCategory) {
-			session.setAttribute("succMsg", "category delete success");
+		if (deleteRoomType) {
+			session.setAttribute("succMsg", "room type delete success");
 		} else {
 			session.setAttribute("errorMsg", "something wrong on server");
 		}
 
-		return "redirect:/admin/category";
+		return "redirect:/admin/roomtype";
 	}
 
-	@GetMapping("/loadEditCategory/{id}")
-	public String loadEditCategory(@PathVariable int id, Model m) {
-		m.addAttribute("category", categoryService.getCategoryById(id));
+	@GetMapping("/loadEditRoomType/{id}")
+	public String loadEditRoomType(@PathVariable int id, Model m) {
+		m.addAttribute("roomType", roomTypeService.getRoomTypeById(id));
 		return "admin/edit_category";
 	}
 
-	@PostMapping("/updateCategory")
-	public String updateCategory(@ModelAttribute Category category, @RequestParam("file") MultipartFile file,
+	@PostMapping("/updateRoomType")
+	public String updateRoomType(@ModelAttribute RoomType roomType, @RequestParam("file") MultipartFile file,
 			HttpSession session) throws IOException {
 
-		Category oldCategory = categoryService.getCategoryById(category.getId());
-		String imageName = file.isEmpty() ? oldCategory.getImageName() : file.getOriginalFilename();
+		RoomType oldRoomType = roomTypeService.getRoomTypeById(roomType.getId());
+		String imageName = file.isEmpty() ? oldRoomType.getImageName() : file.getOriginalFilename();
 
-		if (!ObjectUtils.isEmpty(category)) {
-
-			oldCategory.setName(category.getName());
-			oldCategory.setIsActive(category.getIsActive());
-			oldCategory.setImageName(imageName);
+		if (!ObjectUtils.isEmpty(roomType)) {
+			oldRoomType.setName(roomType.getName());
+			oldRoomType.setIsActive(roomType.getIsActive());
+			oldRoomType.setImageName(imageName);
 		}
 
-		Category updateCategory = categoryService.saveCategory(oldCategory);
+		RoomType updateRoomType = roomTypeService.saveRoomType(oldRoomType);
 
-		if (!ObjectUtils.isEmpty(updateCategory)) {
+		if (!ObjectUtils.isEmpty(updateRoomType)) {
 
 			if (!file.isEmpty()) {
 				File saveFile = new ClassPathResource("static/img").getFile();
@@ -184,67 +182,57 @@ public class AdminController {
 				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "category_img" + File.separator
 						+ file.getOriginalFilename());
 
-				// System.out.println(path);
 				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 			}
 
-			session.setAttribute("succMsg", "Category update success");
+			session.setAttribute("succMsg", "Room Type update success");
 		} else {
 			session.setAttribute("errorMsg", "something wrong on server");
 		}
 
-		return "redirect:/admin/loadEditCategory/" + category.getId();
+		return "redirect:/admin/loadEditRoomType/" + roomType.getId();
 	}
 
-	@PostMapping("/saveProduct")
-	public String saveProduct(@ModelAttribute Product product, @RequestParam("file") MultipartFile image,
+	@PostMapping("/saveRoom")
+	public String saveRoom(@ModelAttribute Room room, @RequestParam("file") MultipartFile image,
 			HttpSession session) throws IOException {
 
 		String imageName = image.isEmpty() ? "default.jpg" : image.getOriginalFilename();
 
-		product.setImage(imageName);
-		product.setDiscount(0);
-		product.setDiscountPrice(product.getPrice());
-		Product saveProduct = productService.saveProduct(product);
+		room.setImage(imageName);
+		room.setIsAvailable(true);
+		room.setIsActive(true);
+		Room saveRoom = roomService.saveRoom(room);
 
-		if (!ObjectUtils.isEmpty(saveProduct)) {
+		if (!ObjectUtils.isEmpty(saveRoom)) {
 
 			File saveFile = new ClassPathResource("static/img").getFile();
 
-			Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator
+			Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "room_img" + File.separator
 					+ image.getOriginalFilename());
 
-			// System.out.println(path);
 			Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
-			session.setAttribute("succMsg", "Product Saved Success");
+			session.setAttribute("succMsg", "Room Saved Success");
 		} else {
 			session.setAttribute("errorMsg", "something wrong on server");
 		}
 
-		return "redirect:/admin/loadAddProduct";
+		return "redirect:/admin/loadAddRoom";
 	}
 
-	@GetMapping("/products")
-	public String loadViewProduct(Model m, @RequestParam(defaultValue = "") String ch,
+	@GetMapping("/rooms")
+	public String loadViewRoom(Model m, @RequestParam(defaultValue = "") String ch,
 			@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
-//		List<Product> products = null;
-//		if (ch != null && ch.length() > 0) {
-//			products = productService.searchProduct(ch);
-//		} else {
-//			products = productService.getAllProducts();
-//		}
-//		m.addAttribute("products", products);
-
-		Page<Product> page = null;
+		Page<Room> page = null;
 		if (ch != null && ch.length() > 0) {
-			page = productService.searchProductPagination(pageNo, pageSize, ch);
+			page = roomService.searchRoomPagination(pageNo, pageSize, ch);
 		} else {
-			page = productService.getAllProductsPagination(pageNo, pageSize);
+			page = roomService.getAllRoomsPagination(pageNo, pageSize);
 		}
-		m.addAttribute("products", page.getContent());
+		m.addAttribute("rooms", page.getContent());
 
 		m.addAttribute("pageNo", page.getNumber());
 		m.addAttribute("pageSize", pageSize);
@@ -256,39 +244,35 @@ public class AdminController {
 		return "admin/products";
 	}
 
-	@GetMapping("/deleteProduct/{id}")
-	public String deleteProduct(@PathVariable int id, HttpSession session) {
-		Boolean deleteProduct = productService.deleteProduct(id);
-		if (deleteProduct) {
-			session.setAttribute("succMsg", "Product delete success");
+	@GetMapping("/deleteRoom/{id}")
+	public String deleteRoom(@PathVariable int id, HttpSession session) {
+		Boolean deleteRoom = roomService.deleteRoom(id);
+		if (deleteRoom) {
+			session.setAttribute("succMsg", "Room delete success");
 		} else {
 			session.setAttribute("errorMsg", "Something wrong on server");
 		}
-		return "redirect:/admin/products";
+		return "redirect:/admin/rooms";
 	}
 
-	@GetMapping("/editProduct/{id}")
-	public String editProduct(@PathVariable int id, Model m) {
-		m.addAttribute("product", productService.getProductById(id));
-		m.addAttribute("categories", categoryService.getAllCategory());
+	@GetMapping("/editRoom/{id}")
+	public String editRoom(@PathVariable int id, Model m) {
+		m.addAttribute("room", roomService.getRoomById(id));
+		m.addAttribute("roomTypes", roomTypeService.getAllRoomType());
 		return "admin/edit_product";
 	}
 
-	@PostMapping("/updateProduct")
-	public String updateProduct(@ModelAttribute Product product, @RequestParam("file") MultipartFile image,
+	@PostMapping("/updateRoom")
+	public String updateRoom(@ModelAttribute Room room, @RequestParam("file") MultipartFile image,
 			HttpSession session, Model m) {
 
-		if (product.getDiscount() < 0 || product.getDiscount() > 100) {
-			session.setAttribute("errorMsg", "invalid Discount");
+		Room updateRoom = roomService.updateRoom(room, image);
+		if (!ObjectUtils.isEmpty(updateRoom)) {
+			session.setAttribute("succMsg", "Room update success");
 		} else {
-			Product updateProduct = productService.updateProduct(product, image);
-			if (!ObjectUtils.isEmpty(updateProduct)) {
-				session.setAttribute("succMsg", "Product update success");
-			} else {
-				session.setAttribute("errorMsg", "Something wrong on server");
-			}
+			session.setAttribute("errorMsg", "Something wrong on server");
 		}
-		return "redirect:/admin/editProduct/" + product.getId();
+		return "redirect:/admin/editRoom/" + room.getId();
 	}
 
 	@GetMapping("/users")
@@ -318,11 +302,8 @@ public class AdminController {
 	@GetMapping("/orders")
 	public String getAllOrders(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-//		List<ProductOrder> allOrders = orderService.getAllOrders();
-//		m.addAttribute("orders", allOrders);
-//		m.addAttribute("srch", false);
 
-		Page<ProductOrder> page = orderService.getAllOrdersPagination(pageNo, pageSize);
+		Page<RoomOrder> page = orderService.getAllOrdersPagination(pageNo, pageSize);
 		m.addAttribute("orders", page.getContent());
 		m.addAttribute("srch", false);
 
@@ -348,10 +329,10 @@ public class AdminController {
 			}
 		}
 
-		ProductOrder updateOrder = orderService.updateOrderStatus(id, status);
+		RoomOrder updateOrder = orderService.updateOrderStatus(id, status);
 
 		try {
-			commonUtil.sendMailForProductOrder(updateOrder, status);
+			commonUtil.sendMailForRoomOrder(updateOrder, status);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -365,13 +346,13 @@ public class AdminController {
 	}
 
 	@GetMapping("/search-order")
-	public String searchProduct(@RequestParam String orderId, Model m, HttpSession session,
+	public String searchOrder(@RequestParam String orderId, Model m, HttpSession session,
 			@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
 		if (orderId != null && orderId.length() > 0) {
 
-			ProductOrder order = orderService.getOrdersByOrderId(orderId.trim());
+			RoomOrder order = orderService.getOrdersByOrderId(orderId.trim());
 
 			if (ObjectUtils.isEmpty(order)) {
 				session.setAttribute("errorMsg", "Incorrect orderId");
@@ -382,11 +363,8 @@ public class AdminController {
 
 			m.addAttribute("srch", true);
 		} else {
-//			List<ProductOrder> allOrders = orderService.getAllOrders();
-//			m.addAttribute("orders", allOrders);
-//			m.addAttribute("srch", false);
 
-			Page<ProductOrder> page = orderService.getAllOrdersPagination(pageNo, pageSize);
+			Page<RoomOrder> page = orderService.getAllOrdersPagination(pageNo, pageSize);
 			m.addAttribute("orders", page);
 			m.addAttribute("srch", false);
 

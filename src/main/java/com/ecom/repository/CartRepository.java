@@ -12,7 +12,7 @@ import jakarta.transaction.Transactional;
 
 public interface CartRepository extends JpaRepository<Cart, Integer> {
 
-	public Cart findByProductIdAndUserId(Integer productId, Integer userId);
+	public Cart findByRoomIdAndUserId(Integer roomId, Integer userId);
 
 	public Integer countByUserId(Integer userId);
 

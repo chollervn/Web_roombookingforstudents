@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.Cart;
-import com.ecom.model.Category;
+import com.ecom.model.RoomType;
 import com.ecom.model.OrderRequest;
-import com.ecom.model.ProductOrder;
+import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
 import com.ecom.repository.UserRepository;
 import com.ecom.service.CartService;
-import com.ecom.service.CategoryService;
+import com.ecom.service.RoomTypeService;
 import com.ecom.service.OrderService;
 import com.ecom.service.UserService;
 import com.ecom.util.CommonUtil;
@@ -36,7 +36,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	@Autowired
-	private CategoryService categoryService;
+	private RoomTypeService roomTypeService;
 
 	@Autowired
 	private CartService cartService;
@@ -66,20 +66,20 @@ public class UserController {
 			m.addAttribute("countCart", countCart);
 		}
 
-		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
-		m.addAttribute("categorys", allActiveCategory);
+		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
+		m.addAttribute("roomTypes", allActiveRoomType);
 	}
 
 	@GetMapping("/addCart")
-	public String addToCart(@RequestParam Integer pid, @RequestParam Integer uid, HttpSession session) {
-		Cart saveCart = cartService.saveCart(pid, uid);
+	public String addToCart(@RequestParam Integer rid, @RequestParam Integer uid, HttpSession session) {
+		Cart saveCart = cartService.saveCart(rid, uid);
 
 		if (ObjectUtils.isEmpty(saveCart)) {
-			session.setAttribute("errorMsg", "Product add to cart failed");
+			session.setAttribute("errorMsg", "Room add to cart failed");
 		} else {
-			session.setAttribute("succMsg", "Product added to cart");
+			session.setAttribute("succMsg", "Room added to cart");
 		}
-		return "redirect:/product/" + pid;
+		return "redirect:/room/" + rid;
 	}
 
 	@GetMapping("/cart")
@@ -122,23 +122,29 @@ public class UserController {
 	}
 
 	@PostMapping("/save-order")
-	public String saveOrder(@ModelAttribute OrderRequest request, Principal p) throws Exception {
-		// System.out.println(request);
-		UserDtls user = getLoggedInUserDetails(p);
-		orderService.saveOrder(user.getId(), request);
-
-		return "redirect:/user/success";
+	public String saveOrder(@ModelAttribute OrderRequest request, Principal p, HttpSession session) {
+		try {
+			UserDtls user = getLoggedInUserDetails(p);
+			orderService.saveOrder(user.getId(), request);
+			session.setAttribute("succMsg", "Đặt phòng thành công!");
+			return "redirect:/user/success";
+		} catch (Exception e) {
+			e.printStackTrace();
+			session.setAttribute("errorMsg", "Có lỗi xảy ra khi đặt phòng: " + e.getMessage());
+			return "redirect:/user/cart";
+		}
 	}
 
 	@GetMapping("/success")
-	public String loadSuccess() {
+	public String loadSuccess(Model model, HttpSession session) {
+		// Add any additional data if needed
 		return "/user/success";
 	}
 
 	@GetMapping("/user-orders")
 	public String myOrder(Model m, Principal p) {
 		UserDtls loginUser = getLoggedInUserDetails(p);
-		List<ProductOrder> orders = orderService.getOrdersByUser(loginUser.getId());
+		List<RoomOrder> orders = orderService.getOrdersByUser(loginUser.getId());
 		m.addAttribute("orders", orders);
 		return "/user/my_orders";
 	}
@@ -155,10 +161,10 @@ public class UserController {
 			}
 		}
 
-		ProductOrder updateOrder = orderService.updateOrderStatus(id, status);
-		
+		RoomOrder updateOrder = orderService.updateOrderStatus(id, status);
+
 		try {
-			commonUtil.sendMailForProductOrder(updateOrder, status);
+			commonUtil.sendMailForRoomOrder(updateOrder, status);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

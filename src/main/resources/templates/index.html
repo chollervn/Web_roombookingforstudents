@@ -2,25 +2,24 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Hệ thống cho thuê phòng trọ sinh viên</title>
 </head>
 <body>
-	<section>
+	<section style="padding-top: 80px;">
 		<!-- Start Slider  -->
-
-		<div id="carouselExample" class="carousel slide">
+		<div id="carouselExample" class="carousel slide mt-3">
 			<div class="carousel-inner">
-				<div class="carousel-item active">
-					<img src="img/ecom1.png" class="d-block w-100" alt="..."
+				<div class="carousel-item active d-flex justify-content-center bg-light py-4">
+					<img src="img/messi.png" class="img-fluid" alt="Lionel Messi - Argentina"
+						style="max-width: 70%; height: 400px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+				</div>
+				<div class="carousel-item">
+					<img src="img/ecom3.jpg" class="d-block w-100" alt="Nhà trọ cao cấp"
 						height="350px">
 				</div>
 				<div class="carousel-item">
-					<img src="img/ecom3.jpg" class="d-block w-100" alt="..."
-						height="350px">
-				</div>
-				<div class="carousel-item">
-					<img src="img/ecom2.jpg" class="d-block w-100" alt="..."
+					<img src="img/ecom2.jpg" class="d-block w-100" alt="Căn hộ mini"
 						height="350px">
 				</div>
 			</div>
@@ -35,134 +34,60 @@
 				<span class="visually-hidden">Next</span>
 			</button>
 		</div>
-
 		<!-- End Slider  -->
 
-		<!--< Start Category Module -->
+		<!-- Start Room Type Module -->
 		<div class="container">
 			<div class="row">
-				<p class="text-center fs-4">Category</p>
-				<div class="col-md-2" th:each="c:${category}">
-					<div
-						class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded ">
+				<p class="text-center fs-4 mt-4">Loại phòng trọ</p>
+				<div class="col-md-2" th:each="rt:${roomTypes}">
+					<div class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded">
 						<div class="card-body text-center">
-							<img th:src="@{'img/category_img/'+${c.imageName}}" width="65%" height="140px"><br>
-							<a th:href="@{'/products?category='+${c.name}}" class="text-decoration-none">[[${c.name}]]</a>
+							<img th:src="@{'img/category_img/'+${rt.imageName}}" width="65%" height="140px" alt="Loại phòng"><br>
+							<a th:href="@{'/rooms?roomType='+${rt.name}}" class="text-decoration-none">[[${rt.name}]]</a>
 						</div>
 					</div>
 				</div>
-
-				<!-- <div class="col-md-2">
-					<div
-						class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded ">
-						<div class="card-body text-center">
-							<img src="img/category_img/beuty.png" width="65%" height="140px">
-							<p>Beauty</p>
-						</div>
-					</div>
-				</div> -->
-
-
-				<!-- <div class="col-md-2">
-					<div
-						class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded ">
-						<div class="card-body text-center">
-							<img src="img/category_img/pant.png" width="65%" height="140px">
-							<p>Clothes</p>
-						</div>
-					</div>
-				</div>
- -->
-				<!-- <div class="col-md-2">
-					<div
-						class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded ">
-						<div class="card-body text-center">
-							<img src="img/category_img/laptop.jpg" width="65%" height="140px">
-							<p>Laptop</p>
-						</div>
-					</div>
-				</div> -->
-
-
-			<!-- 	<div class="col-md-2">
-					<div
-						class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded ">
-						<div class="card-body text-center">
-							<img src="img/category_img/mobile.png" width="65%" height="140px">
-							<p>Mobile</p>
-						</div>
-					</div>
-				</div> -->
-
-				<!-- <div class="col-md-2">
-					<div
-						class="card rounded-circle shadow-sm p-3 mb-5 bg-body-tertiary rounded ">
-						<div class="card-body text-center">
-							<img src="img/category_img/groccery.jpg" width="65%"
-								height="140px">
-							<p>Grocery</p>
-						</div>
-					</div>
-				</div> -->
-
-
 			</div>
 		</div>
-		<!-- End Category Module -->
+		<!-- End Room Type Module -->
 
-
-		<!-- Start Latest Product Module -->
-
+		<!-- Start Latest Room Module -->
 		<div class="container-fluid bg-light p-3">
 			<div class="row">
-				<p class="text-center fs-4">Latest Product</p>
+				<p class="text-center fs-4">Phòng trọ mới nhất</p>
 
-				<div class="col-md-3" th:each="p:${products}">
+				<div class="col-md-3" th:each="room:${rooms}">
 					<div class="card shadow-sm p-3 mb-5 bg-body-tertiary rounded">
-						<div class="card-body text-center">
-							<img alt="" th:src="@{'img/product_img/'+${p.image}}" class="" width="65%"
-								height="140px">
-							<p class="text-center"><a th:href="@{'/product/'+${p.id}}" class="text-decoration-none">[[${p.title}]]</a></p>
+						<div class="card-body">
+							<img alt="Ảnh phòng trọ" th:src="@{'img/room_img/'+${room.image}}" class="card-img-top" width="100%" height="200px" style="object-fit: cover;">
+
+							<h5 class="card-title mt-3">
+								<a th:href="@{'/room/'+${room.id}}" class="text-decoration-none text-dark">[[${room.roomName}]]</a>
+							</h5>
+
+							<p class="card-text">
+								<i class="fas fa-map-marker-alt text-danger"></i> [[${room.district}]], [[${room.city}]]
+							</p>
+
+							<div class="d-flex justify-content-between align-items-center">
+								<span class="text-success fw-bold fs-5">
+									[[${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] VNĐ/tháng
+								</span>
+								<small class="text-muted">[[${room.area}]] m²</small>
+							</div>
+
+							<div class="mt-2">
+								<span class="badge bg-primary" th:if="${room.hasWifi}">WiFi</span>
+								<span class="badge bg-info" th:if="${room.hasAirConditioner}">Điều hòa</span>
+								<span class="badge bg-success" th:if="${room.hasParking}">Parking</span>
+							</div>
 						</div>
 					</div>
 				</div>
-
-
-			<!-- 	<div class="col-md-3">
-					<div class="card shadow-sm p-3 mb-5 bg-body-tertiary rounded">
-						<div class="card-body text-center">
-							<img alt="" src="img/product_img/laptop.jpg" class="" width="65%"
-								height="140px">
-							<p class="text-center">HP Laptop</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="col-md-3">
-					<div class="card shadow-sm p-3 mb-5 bg-body-tertiary rounded">
-						<div class="card-body text-center">
-							<img alt="" src="img/product_img/laptop.jpg" class="" width="65%"
-								height="140px">
-							<p class="text-center">HP Laptop</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="col-md-3">
-					<div class="card shadow-sm p-3 mb-5 bg-body-tertiary rounded">
-						<div class="card-body text-center">
-							<img alt="" src="img/product_img/laptop.jpg" class="" width="65%"
-								height="140px">
-							<p class="text-center">HP Laptop</p>
-						</div>
-					</div>
-				</div> -->
-
 			</div>
 		</div>
-
-
-		<!-- End Latest Product Module -->
+		<!-- End Latest Room Module -->
 	</section>
 </body>
 </html>

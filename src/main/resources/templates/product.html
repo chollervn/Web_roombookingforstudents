@@ -2,116 +2,137 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Danh sách phòng trọ</title>
 </head>
 <body>
 	<section>
-	
-		<div class="container-fluid bg-primary p-4 mt-5 ">
+		<!-- Search Bar -->
+		<div class="container-fluid bg-primary p-4 mt-5">
 			<div class="row">
 				<div class="col-md-8 offset-md-2">
-					<form action="/products" method="get">
+					<form action="/rooms" method="get">
 						<div class="input-group">
-							<input type="text" class="form-control" name="ch">
+							<input type="text" class="form-control" name="ch" placeholder="Tìm kiếm phòng trọ theo tên, địa chỉ...">
 							<button class="btn btn-light text-dark ms-3 col-md-2">
-								<i class="fa-solid fa-magnifying-glass"></i> Search
+								<i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
 							</button>
 						</div>
 					</form>
 				</div>
 			</div>
-
 		</div>
 
-
+		<!-- Main Content -->
 		<div class="container-fluid mt-1">
 			<div class="row">
-
+				<!-- Sidebar - Room Types Filter -->
 				<div class="col-md-2 p-0">
-
 					<div class="card shadow-sm p-0 mb-5 bg-body-tertiary rounded">
 						<div class="card-body">
 							<div class="list-group">
-								<p class="fs-5">Category</p>
-								<a href="/products"
+								<p class="fs-5">Loại phòng trọ</p>
+								<a href="/rooms"
 									th:classappend="${paramValue==''} ? 'active':''"
 									class="list-group-item list-group-item-action"
-									aria-current="true"> All </a> <a th:each="c:${categories}"
-									th:href="@{'/products?category='+${c.name}}"
-									th:classappend="${paramValue == c.name} ? 'active':''"
-									class="list-group-item list-group-item-action">[[${c.name}]]</a>
+									aria-current="true">Tất cả</a>
+								<a th:each="rt:${roomTypes}"
+									th:href="@{'/rooms?roomType='+${rt.name}}"
+									th:classappend="${paramValue == rt.name} ? 'active':''"
+									class="list-group-item list-group-item-action">[[${rt.name}]]</a>
 							</div>
 						</div>
 					</div>
 				</div>
+
+				<!-- Room List -->
 				<div class="col-md-10">
 					<div class="card">
 						<div class="card-body">
-							<p class="fs-3 text-center">Products</p>
+							<p class="fs-3 text-center">Phòng trọ cho thuê</p>
 							<div class="row">
+								<th:block th:if="${roomsSize >0}">
+									<div class="col-md-4 mt-3" th:each="room:${rooms}">
+										<div class="card card-sh h-100">
+											<img alt="Ảnh phòng trọ" th:src="@{'/img/room_img/'+${room.image}}"
+												class="card-img-top" height="200px" style="object-fit: cover;">
+											<div class="card-body d-flex flex-column">
+												<h5 class="card-title">[[${room.roomName}]]</h5>
+												<p class="card-text text-muted">
+													<i class="fas fa-map-marker-alt text-danger"></i>
+													[[${room.address}]], [[${room.district}]], [[${room.city}]]
+												</p>
 
-								<th:block th:if="${productsSize >0}">
-									<div class="col-md-3 mt-2" th:each="p:${products}">
-										<div class="card card-sh">
-											<div class="card-body text-center">
-												<img alt="" th:src="@{'/img/product_img/'+${p.image}}"
-													width="150px" height="150px">
-												<p class="fs-5 text-center">[[${p.title}]]</p>
-												<div class="row text-center">
-													<p class="fs-6 fw-bold ">
-														<span><th:block th:utext="${@commnServiceImpl.rupeeSign()}"></th:block> [[${p.discountPrice}]]</span> <br> <span
-															class="text-decoration-line-through text-secondary"><th:block th:utext="${@commnServiceImpl.rupeeSign()}"></th:block>
-															[[${p.price}]]</span> <span class="fs-6 text-success">[[${p.discount}]]%
-															off </span>
-													</p>
-													<a th:href="@{'/product/'+${p.id}}"
-														class="btn btn-primary col-md-6 offset-md-3">View
-														Details</a>
+												<div class="mb-2">
+													<small class="text-muted">[[${room.roomType}]] • [[${room.area}]] m² • Tối đa [[${room.maxOccupants}]] người</small>
+												</div>
+
+												<div class="mb-2">
+													<span class="badge bg-primary me-1" th:if="${room.hasWifi}">WiFi</span>
+													<span class="badge bg-info me-1" th:if="${room.hasAirConditioner}">Điều hòa</span>
+													<span class="badge bg-success me-1" th:if="${room.hasParking}">Parking</span>
+													<span class="badge bg-warning" th:if="${room.allowPets}">Cho phép pet</span>
+												</div>
+
+												<div class="mt-auto">
+													<div class="d-flex justify-content-between align-items-center mb-2">
+														<span class="text-success fw-bold fs-5">
+															[[${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] VNĐ/tháng
+														</span>
+														<span class="badge bg-secondary" th:if="${room.isAvailable}" th:text="'Còn trống'"></span>
+														<span class="badge bg-danger" th:unless="${room.isAvailable}" th:text="'Đã thuê'"></span>
+													</div>
+													<a th:href="@{'/room/'+${room.id}}" class="btn btn-primary w-100">
+														Xem chi tiết
+													</a>
 												</div>
 											</div>
 										</div>
 									</div>
 								</th:block>
-								<th:block th:unless="${productsSize>0}">
-									<p class="fs-4 text-center mt-4 text-danger">Product not
-										available</p>
+
+								<th:block th:unless="${roomsSize>0}">
+									<div class="col-12">
+										<div class="text-center mt-5">
+											<i class="fas fa-home fa-5x text-muted mb-3"></i>
+											<p class="fs-4 text-danger">Không tìm thấy phòng trọ phù hợp</p>
+											<p class="text-muted">Hãy thử tìm kiếm với từ khóa khác hoặc xem tất cả phòng trọ</p>
+											<a href="/rooms" class="btn btn-primary">Xem tất cả phòng trọ</a>
+										</div>
+									</div>
 								</th:block>
 							</div>
-
 						</div>
 					</div>
-					<!-- Start Pagination -->
-					<div class="row">
-						<div class="col-md-4">Total Products : [[${totalElements}]]</div>
-						<div class="col-md-6">
-							<th:block th:if="${productsSize>0}">
-								<nav aria-label="Page navigation example">
-									<ul class="pagination">
-										<li class="page-item"
-											th:classappend="${isFirst} ? 'disabled':''"><a
-											class="page-link"
-											th:href="@{'/products?pageNo='+${pageNo-1}}"
-											aria-label="Previous"> <span aria-hidden="true">&laquo;</span>
-										</a></li>
 
-										<li th:each="i:${#numbers.sequence(1,totalPages)}"
-											class="page-item" th:classappend="${pageNo+1==i}?'active':''"
-											]]><a class="page-link"
-											th:href="@{'/products?pageNo='+${i-1}}">[[${i}]]</a></li>
-
-										<li class="page-item"
-											th:classappend="${isLast} ? 'disabled':''"><a
-											class="page-link"
-											th:href="@{'/products?pageNo='+${pageNo+1}}"
-											aria-label="Next"> <span aria-hidden="true">&raquo;</span>
-										</a></li>
-									</ul>
-								</nav>
+					<!-- Pagination -->
+					<div class="row mt-3" th:if="${roomsSize>0}">
+						<div class="col-md-4">
+							<p class="text-muted">Tổng số phòng: [[${totalElements}]]</p>
 						</div>
-						</th:block>
-					</div>
+						<div class="col-md-8">
+							<nav aria-label="Phân trang">
+								<ul class="pagination justify-content-center">
+									<li class="page-item" th:classappend="${isFirst} ? 'disabled':''">
+										<a class="page-link" th:href="@{'/rooms?pageNo='+${pageNo-1}}" aria-label="Previous">
+											<span aria-hidden="true">&laquo;</span>
+										</a>
+									</li>
 
+									<li th:each="i:${#numbers.sequence(1,totalPages)}" class="page-item"
+										th:classappend="${pageNo+1==i}?'active':''">
+										<a class="page-link" th:href="@{'/rooms?pageNo='+${i-1}}">[[${i}]]</a>
+									</li>
+
+									<li class="page-item" th:classappend="${isLast} ? 'disabled':''">
+										<a class="page-link" th:href="@{'/rooms?pageNo='+${pageNo+1}}" aria-label="Next">
+											<span aria-hidden="true">&raquo;</span>
+										</a>
+									</li>
+								</ul>
+							</nav>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

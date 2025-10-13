@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import com.ecom.model.Cart;
-import com.ecom.model.Product;
+import com.ecom.model.Room;
 import com.ecom.model.UserDtls;
 import com.ecom.repository.CartRepository;
-import com.ecom.repository.ProductRepository;
+import com.ecom.repository.RoomRepository;
 import com.ecom.repository.UserRepository;
 import com.ecom.service.CartService;
 
@@ -25,28 +25,28 @@ public class CartServiceImpl implements CartService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private ProductRepository productRepository;
+	private RoomRepository roomRepository;
 
 	@Override
-	public Cart saveCart(Integer productId, Integer userId) {
+	public Cart saveCart(Integer roomId, Integer userId) {
 
 		UserDtls userDtls = userRepository.findById(userId).get();
-		Product product = productRepository.findById(productId).get();
+		Room room = roomRepository.findById(roomId).get();
 
-		Cart cartStatus = cartRepository.findByProductIdAndUserId(productId, userId);
+		Cart cartStatus = cartRepository.findByRoomIdAndUserId(roomId, userId);
 
 		Cart cart = null;
 
 		if (ObjectUtils.isEmpty(cartStatus)) {
 			cart = new Cart();
-			cart.setProduct(product);
+			cart.setRoom(room);
 			cart.setUser(userDtls);
 			cart.setQuantity(1);
-			cart.setTotalPrice(1 * product.getDiscountPrice());
+			cart.setTotalPrice(1 * room.getMonthlyRent());
 		} else {
 			cart = cartStatus;
 			cart.setQuantity(cart.getQuantity() + 1);
-			cart.setTotalPrice(cart.getQuantity() * cart.getProduct().getDiscountPrice());
+			cart.setTotalPrice(cart.getQuantity() * cart.getRoom().getMonthlyRent());
 		}
 		Cart saveCart = cartRepository.save(cart);
 
@@ -60,7 +60,7 @@ public class CartServiceImpl implements CartService {
 		Double totalOrderPrice = 0.0;
 		List<Cart> updateCarts = new ArrayList<>();
 		for (Cart c : carts) {
-			Double totalPrice = (c.getProduct().getDiscountPrice() * c.getQuantity());
+			Double totalPrice = (c.getRoom().getMonthlyRent() * c.getQuantity());
 			c.setTotalPrice(totalPrice);
 			totalOrderPrice = totalOrderPrice + totalPrice;
 			c.setTotalOrderPrice(totalOrderPrice);

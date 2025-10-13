@@ -26,7 +26,7 @@ public class Cart {
 	private UserDtls user;
 
 	@ManyToOne
-	private Product product;
+	private Room room;
 
 	private Integer quantity;
 	
