@@ -1,0 +1,184 @@
+package com.ecom.service.impl;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.ecom.model.Room;
+import com.ecom.repository.RoomRepository;
+import com.ecom.service.RoomService;
+
+@Service
+public class RoomServiceImpl implements RoomService {
+
+	@Autowired
+	private RoomRepository roomRepository;
+
+	@Override
+	public Room saveRoom(Room room) {
+		return roomRepository.save(room);
+	}
+
+	@Override
+	public List<Room> getAllRooms() {
+		return roomRepository.findAll();
+	}
+
+	@Override
+	public Page<Room> getAllRoomsPagination(Integer pageNo, Integer pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		return roomRepository.findAll(pageable);
+	}
+
+	@Override
+	public Boolean deleteRoom(Integer id) {
+		Room room = roomRepository.findById(id).orElse(null);
+
+		if (!ObjectUtils.isEmpty(room)) {
+			roomRepository.delete(room);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public Room getRoomById(Integer id) {
+		Room room = roomRepository.findById(id).orElse(null);
+		return room;
+	}
+
+	@Override
+	public Room updateRoom(Room room, MultipartFile image) {
+
+		Room dbRoom = getRoomById(room.getId());
+
+		String imageName = image.isEmpty() ? dbRoom.getImage() : image.getOriginalFilename();
+
+		dbRoom.setRoomName(room.getRoomName());
+		dbRoom.setDescription(room.getDescription());
+		dbRoom.setRoomType(room.getRoomType());
+		dbRoom.setMonthlyRent(room.getMonthlyRent());
+		dbRoom.setAddress(room.getAddress());
+		dbRoom.setFullAddress(room.getFullAddress());
+		dbRoom.setDistrict(room.getDistrict());
+		dbRoom.setCity(room.getCity());
+		dbRoom.setArea(room.getArea());
+		dbRoom.setMaxOccupants(room.getMaxOccupants());
+		dbRoom.setImage(imageName);
+		dbRoom.setHasWifi(room.getHasWifi());
+		dbRoom.setHasAirConditioner(room.getHasAirConditioner());
+		dbRoom.setHasParking(room.getHasParking());
+		dbRoom.setHasElevator(room.getHasElevator());
+		dbRoom.setAllowPets(room.getAllowPets());
+		dbRoom.setDeposit(room.getDeposit());
+		dbRoom.setElectricityCost(room.getElectricityCost());
+		dbRoom.setWaterCost(room.getWaterCost());
+		dbRoom.setContactPhone(room.getContactPhone());
+		dbRoom.setContactName(room.getContactName());
+		dbRoom.setIsAvailable(room.getIsAvailable());
+		dbRoom.setIsActive(room.getIsActive());
+
+		Room updateRoom = roomRepository.save(dbRoom);
+
+		if (!ObjectUtils.isEmpty(updateRoom)) {
+
+			if (!image.isEmpty()) {
+
+				try {
+					File saveFile = new ClassPathResource("static/img").getFile();
+
+					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "room_img" + File.separator
+							+ image.getOriginalFilename());
+					Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return room;
+		}
+		return null;
+	}
+
+	@Override
+	public List<Room> getAllActiveRooms(String roomType) {
+		List<Room> rooms = null;
+		if (ObjectUtils.isEmpty(roomType)) {
+			rooms = roomRepository.findByIsActiveTrue();
+		} else {
+			rooms = roomRepository.findByRoomType(roomType);
+		}
+
+		return rooms;
+	}
+
+	@Override
+	public List<Room> searchRoom(String ch) {
+		return roomRepository.findByRoomNameContainingIgnoreCaseOrRoomTypeContainingIgnoreCase(ch, ch);
+	}
+
+	@Override
+	public Page<Room> searchRoomPagination(Integer pageNo, Integer pageSize, String ch) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		return roomRepository.findByRoomNameContainingIgnoreCaseOrRoomTypeContainingIgnoreCase(ch, ch, pageable);
+	}
+
+	@Override
+	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType) {
+
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Page<Room> pageRoom = null;
+
+		if (ObjectUtils.isEmpty(roomType)) {
+			pageRoom = roomRepository.findByIsActiveTrue(pageable);
+		} else {
+			pageRoom = roomRepository.findByRoomType(pageable, roomType);
+		}
+		return pageRoom;
+	}
+
+	@Override
+	public Page<Room> searchActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String ch) {
+
+		Page<Room> pageRoom = null;
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+		pageRoom = roomRepository.findByisActiveTrueAndRoomNameContainingIgnoreCaseOrRoomTypeContainingIgnoreCase(ch,
+				ch, pageable);
+
+		return pageRoom;
+	}
+
+	@Override
+	public List<Room> getAvailableRooms() {
+		return roomRepository.findByIsActiveTrueAndIsAvailableTrue();
+	}
+
+	@Override
+	public List<Room> getRoomsByCity(String city) {
+		return roomRepository.findByCity(city);
+	}
+
+	@Override
+	public List<Room> getRoomsByPriceRange(Double minRent, Double maxRent) {
+		return roomRepository.findByMonthlyRentBetween(minRent, maxRent);
+	}
+
+	@Override
+	public List<Room> getRoomsByCityAndType(String city, String roomType) {
+		return roomRepository.findByCityAndRoomType(city, roomType);
+	}
+
+}
