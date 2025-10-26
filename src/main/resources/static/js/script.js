@@ -8,8 +8,8 @@ $(function(){
 		
 		rules:{
 			name:{
-				required:true,
-				lettersonly:true
+				required:true
+				// Loại bỏ lettersonly để cho phép tên có dấu và khoảng cách
 			}
 			,
 			email: {

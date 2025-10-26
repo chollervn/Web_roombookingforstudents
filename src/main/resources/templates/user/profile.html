@@ -2,8 +2,8 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Thông tin cá nhân</title>
 </head>
 <body>
 	<section>
@@ -11,7 +11,7 @@
 			<div class="row">
 				<div class="col-md-10 offset-md-1 ">
 
-					<p class="fs-3 text-center">My Profile</p>
+					<p class="fs-3 text-center">Thông tin cá nhân</p>
 					<th:block th:if="${session.succMsg}">
 						<p class="text-success fw-bold  text-center">[[${session.succMsg}]]</p>
 						<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
@@ -33,72 +33,42 @@
 							<tbody>
 								<form action="/user/update-profile" method="post"
 									enctype="multipart/form-data">
+									<input type="hidden" name="id" th:value="${user.id}">
 								<tr>
-									<th scope="row">Name</th>
+									<th scope="row">Họ và tên</th>
 									<td>:</td>
 									<td><input type="text" name="name" class="form-control"
-										th:value="${user.name}"></td>
+										th:value="${user.name}" placeholder="Nhập họ và tên"></td>
 								</tr>
 								<tr>
-									<th scope="row">Mobile Number</th>
+									<th scope="row">Số điện thoại</th>
 									<td>:</td>
 									<td><input type="text" name="mobileNumber"
-										class="form-control" th:value="${user.mobileNumber}"></td>
+										class="form-control" th:value="${user.mobileNumber}" placeholder="Nhập số điện thoại"></td>
 								</tr>
 								<tr>
 									<th scope="row">Email</th>
 									<td>:</td>
-									<td><input type="text" name="" class="form-control"
-										readonly th:value="${user.email}"></td>
+									<td><input type="email" name="email" class="form-control"
+										th:value="${user.email}" readonly placeholder="Nhập email"></td>
 								</tr>
 								<tr>
-									<th scope="row">Address</th>
+									<th scope="row">Địa chỉ</th>
 									<td>:</td>
 									<td><input type="text" name="address" class="form-control"
-										th:value="${user.address}"></td>
+										th:value="${user.address}" placeholder="Nhập địa chỉ"></td>
 								</tr>
 								<tr>
-									<th scope="row">City</th>
+									<th scope="row">Trường học</th>
 									<td>:</td>
-									<td><input type="text" name="city" class="form-control"
-										th:value="${user.city}"></td>
-								</tr>
-								<tr>
-									<th scope="row">State</th>
-									<td>:</td>
-									<td><input type="text" name="state" class="form-control"
-										th:value="${user.state}"></td>
-								</tr>
-								<tr>
-									<th scope="row">Pincode</th>
-									<td>:</td>
-									<td><input type="text" name="pincode" class="form-control"
-										th:value="${user.pincode}"></td>
-								</tr>
-								<tr>
-									<th scope="row">Image</th>
-									<td>:</td>
-									<td><input type="file" name="img" class="form-control"
-										value=""></td>
-								</tr>
-								<tr>
-									<th scope="row">Role</th>
-									<td>:</td>
-									<td><input type="text" name="" class="form-control"
-										readonly th:value="${user.role}"></td>
-								</tr>
-								<tr>
-									<th scope="row">Account Status</th>
-									<td>:</td>
-									<td><input type="text" name="" class="form-control"
-										readonly th:value="${user.isEnable}"> <input
-										type="hidden" th:value="${user.id}" name="id"></td>
+									<td><input type="text" name="school" class="form-control"
+										th:value="${user.school}" placeholder="Nhập trường học"></td>
 								</tr>
 
 								<tr>
 									<td></td>
 									<td class="text-center">
-										<button class="btn btn-sm bg-primary text-light">Update</button>
+										<button class="btn btn-sm bg-primary text-light">Cập nhật</button>
 									</td>
 								</tr>
 								</form>
@@ -111,33 +81,33 @@
 				<hr>
 				<div class="col-md-10 offset-md-1 mt-1">
 					<div class="row">
-						<p class="text-center fs-3">Change Password</p>
+						<p class="text-center fs-3">Đổi mật khẩu</p>
 						<div class="col-md-6 offset-md-3">
 							<table class="table table-borderless">
 
 								<tbody>
 									<form action="/user/change-password" method="post">
 										<tr>
-											<th scope="row">Current Password</th>
+											<th scope="row">Mật khẩu hiện tại</th>
 
 											<td><input type="text" name="currentPassword" class="form-control"></td>
 										</tr>
 
 										<tr>
-											<th scope="row">New Password</th>
+											<th scope="row">Mật khẩu mới</th>
 
 											<td><input type="text" name="newPassword" class="form-control"></td>
 										</tr>
 
 										<tr>
-											<th scope="row">Confirm Password</th>
+											<th scope="row">Nhập lại mật khẩu</th>
 
 											<td><input type="text" name="confirmPassword" class="form-control"></td>
 										</tr>
 										<tr>
 											<td></td>
 											<td class="text-center">
-												<button class="btn btn-sm bg-primary text-light col-md-4">Update</button>
+												<button class="btn btn-sm bg-primary text-light col-md-4">Đổi mật khẩu</button>
 											</td>
 
 										</tr>

@@ -54,4 +54,7 @@ public class UserDtls {
 	
 	private String resetToken;
 
+	private String school;
+	private String accountType; // 'renter' hoặc 'owner'
+
 }

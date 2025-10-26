@@ -142,34 +142,29 @@ public class HomeController {
 	}
 
 	@PostMapping("/saveUser")
-	public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
+	public String saveUser(@ModelAttribute UserDtls user, @RequestParam(value = "img", required = false) MultipartFile file, Model model, HttpSession session)
 			throws IOException {
-
 		Boolean existsEmail = userService.existsEmail(user.getEmail());
-
 		if (existsEmail) {
-			session.setAttribute("errorMsg", "Email already exist");
+			model.addAttribute("errorMsg", "Email đã tồn tại!");
+			return "register";
 		} else {
-			String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+			String imageName = (file == null || file.isEmpty()) ? "default.jpg" : file.getOriginalFilename();
 			user.setProfileImage(imageName);
 			UserDtls saveUser = userService.saveUser(user);
-
 			if (!ObjectUtils.isEmpty(saveUser)) {
-				if (!file.isEmpty()) {
+				if (file != null && !file.isEmpty()) {
 					File saveFile = new ClassPathResource("static/img").getFile();
-
 					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
 							+ file.getOriginalFilename());
-
 					Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 				}
-				session.setAttribute("succMsg", "Register successfully");
+				model.addAttribute("succMsg", "Đăng ký thành công! Bạn có thể đăng nhập.");
 			} else {
-				session.setAttribute("errorMsg", "something wrong on server");
+				model.addAttribute("errorMsg", "Có lỗi xảy ra, vui lòng thử lại.");
 			}
+			return "register";
 		}
-
-		return "redirect:/register";
 	}
 
 	@GetMapping("/forgot-password")

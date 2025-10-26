@@ -2,14 +2,14 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Đơn thuê của tôi</title>
 </head>
 <body>
 	<section>
 		<div class="container mt-5 p-5">
 			<div class="row">
-				<p class="text-center fs-3">??n Thu� C?a T�i</p>
+				<p class="text-center fs-3">Đơn thuê của tôi</p>
 				<th:block th:if="${session.succMsg}">
 					<p class="text-success fw-bold text-center">[[${session.succMsg}]]</p>
 					<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
@@ -24,12 +24,12 @@
 					<table class="table table-bordered card-sh">
 						<thead>
 							<tr>
-								<th scope="col">M� ??n</th>
-								<th scope="col">Ng�y ??t</th>
-								<th scope="col">Th�ng Tin Ph�ng</th>
-								<th scope="col">Gi� Ti?n</th>
-								<th scope="col">Tr?ng Th�i</th>
-								<th scope="col">H�nh ??ng</th>
+								<th scope="col">Mã đơn</th>
+								<th scope="col">Ngày đặt</th>
+								<th scope="col">Thông tin phòng</th>
+								<th scope="col">Giá tiền</th>
+								<th scope="col">Trạng thái</th>
+								<th scope="col">Hành động</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -38,13 +38,13 @@
 								<td>[[${o.orderDate}]]</td>
 								<td>
 									<strong>[[${o.room.roomName}]]</strong><br>
-									Lo?i: [[${o.room.roomType}]]<br>
-									??a ch?: [[${o.room.address}]]
+									Loại: [[${o.room.roomType}]]<br>
+									Địa chỉ: [[${o.room.address}]]
 								</td>
 								<td>
-									S? l??ng: [[${o.quantity}]]<br>
-									Gi� thu�: [[${#numbers.formatDecimal(o.price, 0, 'COMMA', 0, 'POINT')}]] VN?/th�ng<br>
-									<strong>T?ng ti?n: [[${#numbers.formatDecimal(o.quantity * o.price, 0, 'COMMA', 0, 'POINT')}]] VN?</strong>
+									Số lượng: [[${o.quantity}]]<br>
+									Giá thuê: [[${#numbers.formatDecimal(o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ/tháng<br>
+									<strong>Tổng tiền: [[${#numbers.formatDecimal(o.quantity * o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong>
 								</td>
 								<td>
 									<span th:class="${o.status == 'Delivered' ? 'badge bg-success' :
@@ -57,10 +57,10 @@
 									<th:block th:if="${o.status != 'Cancelled' and o.status != 'Delivered'}">
 										<a th:href="@{'/user/update-status?id='+${o.id}+'&st=6'}"
 											class="btn btn-sm btn-danger"
-											onclick="return confirm('B?n c� ch?c mu?n h?y ??n thu� n�y?')">H?y ??n</a>
+											onclick="return confirm('Bạn có chắc muốn hủy đơn thuê này?')">Hủy đơn</a>
 									</th:block>
 									<th:block th:unless="${o.status != 'Cancelled' and o.status != 'Delivered'}">
-										<button class="btn btn-sm btn-secondary disabled">?� X? L�</button>
+										<button class="btn btn-sm btn-secondary disabled">Đã xử lý</button>
 									</th:block>
 								</td>
 							</tr>
@@ -68,8 +68,8 @@
 								<td colspan="6" class="text-center py-4">
 									<div class="alert alert-info">
 										<i class="fas fa-info-circle"></i>
-										B?n ch?a c� ??n thu� n�o.
-										<a th:href="@{/}" class="btn btn-primary btn-sm ms-2">B?t ??u thu� ph�ng</a>
+										Bạn chưa có đơn thuê nào.
+										<a th:href="@{/}" class="btn btn-primary btn-sm ms-2">Bắt đầu thuê phòng</a>
 									</div>
 								</td>
 							</tr>

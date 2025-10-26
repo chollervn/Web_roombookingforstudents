@@ -2,8 +2,8 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Đăng ký tài khoản</title>
 </head>
 <body>
 	<section>
@@ -15,12 +15,18 @@
 				<div class="col-md-7 p-2">
 					<div class="card shadow p-3 mb-5 bg-body-tertiary rounded">
 						<div class="card-header text-center">
-							<p class="fs-4 text-center">Register</p>
+							<p class="fs-4 text-center">Đăng ký</p>
+							<th:block th:if="${succMsg}">
+								<p class="text-success fw-bold">[[${succMsg}]]</p>
+							</th:block>
 							<th:block th:if="${session.succMsg}">
 								<p class="text-success fw-bold">[[${session.succMsg}]]</p>
 								<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
 							</th:block>
 
+							<th:block th:if="${errorMsg}">
+								<p class="text-danger fw-bold">[[${errorMsg}]]</p>
+							</th:block>
 							<th:block th:if="${session.errorMsg}">
 								<p class="text-danger fw-bold">[[${session.errorMsg}]]</p>
 								<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
@@ -31,85 +37,71 @@
 								method="post">
 								<div class="row">
 									<div class="col">
-										<label class="form-label">Full Name</label> <input required
-											class="form-control" name="name" type="text">
+										<label class="form-label">Họ và tên</label>
+										<input required class="form-control" name="name" type="text"
+											placeholder="Nhập họ và tên">
 									</div>
 
 									<div class="col">
-										<label class="form-label">Mobile Number</label> <input
-											required class="form-control" name="mobileNumber"
-											type="number">
+										<label class="form-label">Số điện thoại</label>
+										<input required class="form-control" name="mobileNumber" type="number"
+											placeholder="Nhập số điện thoại">
 									</div>
 
 								</div>
 
 								<div class="mb-3">
-									<label class="form-label">Email</label> <input required
-										class="form-control" name="email" type="email">
+									<label class="form-label">Email</label>
+									<input required class="form-control" name="email" type="email"
+										placeholder="Nhập email">
 								</div>
-
-
-								<div class="row">
-									<div class="col">
-										<label class="form-label">Address</label> <input required
-											class="form-control" name="address" type="text">
-									</div>
-
-									<div class="col">
-										<label class="form-label">City</label> <input required
-											class="form-control" name="city" type="text">
-									</div>
-
+								<div class="mb-3">
+									<label class="form-label">Trường học</label>
+									<input required class="form-control" name="school" type="text"
+										placeholder="Nhập trường học">
 								</div>
-
-								<div class="row">
-									<div class="col">
-										<label class="form-label">State</label> <input required
-											class="form-control" name="state" type="text">
-									</div>
-
-									<div class="col">
-										<label class="form-label">Pincode</label> <input required
-											class="form-control" name="pincode" type="number">
-									</div>
-
+								<div class="mb-3">
+									<label class="form-label">Địa chỉ</label>
+									<input required class="form-control" name="address" type="text"
+										placeholder="Nhập địa chỉ">
 								</div>
-
-
-								<div class="row">
-									<div class="col">
-										<label class="form-label">Password</label> <input required
-											class="form-control" name="password" type="password" id="pass">
-									</div>
-
-									<div class="col">
-										<label class="form-label">Confirm Password</label> <input
-											required class="form-control" name="confirmpassword"
-											type="password">
-									</div>
-
-								</div>
-
-
 
 								<div class="mb-3">
-									<label class="form-label">Profile Image</label> <input
-										class="form-control" name="img" type="file">
+									<label class="form-label">Loại tài khoản</label>
+									<select required class="form-control" name="accountType">
+										<option value="renter">Người đi thuê trọ</option>
+										<option value="owner">Người cho thuê trọ</option>
+									</select>
 								</div>
 
+								<div class="row">
+									<div class="col">
+										<label class="form-label">Mật khẩu</label>
+										<input required class="form-control" name="password" type="password" id="pass"
+											placeholder="Nhập mật khẩu">
+									</div>
 
+									<div class="col">
+										<label class="form-label">Nhập lại mật khẩu</label>
+										<input required class="form-control" name="confirmpassword" type="password"
+											placeholder="Nhập lại mật khẩu">
+									</div>
 
+								</div>
 
-
+								<div class="mb-3">
+									<label class="form-label">Ảnh đại diện (tùy chọn)</label>
+									<input class="form-control" name="img" type="file" accept="image/*">
+								</div>
 
 								<button type="submit"
-									class="btn bg-primary text-white col-md-12">Register</button>
+									class="btn bg-primary text-white col-md-12">Đăng ký</button>
 							</form>
 						</div>
 
 						<div class="card-footer text-center">
 
-							have an account ? <a href="/login" class="text-decoration-none">Login
+							have an account ? <a href="/login" class="text-decoration-none">Đăng nhập
 							</a>
 						</div>
 					</div>
