@@ -43,4 +43,6 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 	List<Room> findByCityAndRoomType(String city, String roomType);
 
 	List<Room> findByCityAndMonthlyRentBetween(String city, Double minRent, Double maxRent);
+
+	List<Room> findByOwnerId(Integer ownerId);
 }

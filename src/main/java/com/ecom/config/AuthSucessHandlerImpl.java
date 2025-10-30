@@ -28,6 +28,10 @@ public class AuthSucessHandlerImpl implements AuthenticationSuccessHandler {
 		if(roles.contains("ROLE_ADMIN"))
 		{
 			response.sendRedirect("/admin/");
+		}else if(roles.contains("ROLE_OWNER"))
+		{
+			// Owner cũng dùng giao diện admin
+			response.sendRedirect("/admin/");
 		}else {
 			response.sendRedirect("/");
 		}

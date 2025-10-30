@@ -16,14 +16,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.Cart;
+import com.ecom.model.Room;
 import com.ecom.model.RoomType;
 import com.ecom.model.OrderRequest;
 import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
-import com.ecom.repository.UserRepository;
 import com.ecom.service.CartService;
-import com.ecom.service.RoomTypeService;
 import com.ecom.service.OrderService;
+import com.ecom.service.RoomService;
+import com.ecom.service.RoomTypeService;
 import com.ecom.service.UserService;
 import com.ecom.util.CommonUtil;
 import com.ecom.util.OrderStatus;
@@ -49,6 +50,9 @@ public class UserController {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private RoomService roomService;
 
 
 	@GetMapping("/")
@@ -214,6 +218,35 @@ public class UserController {
 		}
 
 		return "redirect:/user/profile";
+	}
+
+	// New: Chat page for a room (simple view)
+	@GetMapping("/chat")
+	public String chatWithOwner(@RequestParam Integer rid, Model m, Principal p) {
+		Room room = roomService.getRoomById(rid);
+		m.addAttribute("room", room);
+		return "/user/chat";
+	}
+
+	// New: Deposit page for a room (simple flow)
+	@GetMapping("/deposit")
+	public String depositPage(@RequestParam Integer rid, Model m, Principal p) {
+		Room room = roomService.getRoomById(rid);
+		m.addAttribute("room", room);
+		// default deposit amount: if null use 20% of monthly rent
+		double suggested = (room.getDeposit() != null) ? room.getDeposit() : ((room.getMonthlyRent() != null) ? room.getMonthlyRent() * 0.2 : 0.0);
+		m.addAttribute("suggestedDeposit", suggested);
+		return "/user/deposit";
+	}
+
+	@PostMapping("/save-deposit")
+	public String saveDeposit(@RequestParam Integer rid, @RequestParam(required = false) Double amount, Principal p, HttpSession session) {
+		// Minimal placeholder behavior: mark deposit as made and show success message
+		if (amount == null) {
+			amount = 0.0;
+		}
+		session.setAttribute("succMsg", "Đặt cọc " + String.format("%,.0f", amount) + " VNĐ cho phòng id: " + rid + " thành công.");
+		return "redirect:/user/cart";
 	}
 
 }

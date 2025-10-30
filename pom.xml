@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ecom</groupId>
-	<artifactId>Shopping_Cart</artifactId>
+	<artifactId>NhaTroSV</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Shopping_Cart</name>
 	<description>Online Shopping Cart Spring boot mvc Project</description>

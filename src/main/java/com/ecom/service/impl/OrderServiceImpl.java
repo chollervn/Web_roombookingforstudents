@@ -122,4 +122,13 @@ public class OrderServiceImpl implements OrderService {
 		return orderRepository.findByOrderId(orderId);
 	}
 
+	@Override
+	public List<RoomOrder> getOrdersByOwnerId(Integer ownerId) {
+		// Lấy tất cả các đơn thuê có room thuộc về owner này
+		return orderRepository.findAll().stream()
+			.filter(order -> order.getRoom() != null && order.getRoom().getOwnerId() != null
+				&& order.getRoom().getOwnerId().equals(ownerId))
+			.toList();
+	}
+
 }

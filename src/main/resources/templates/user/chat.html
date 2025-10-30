@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{base::layout(~{::section})}">
+<head>
+<meta charset="UTF-8">
+<title>Chat với Chủ trọ</title>
+</head>
+<body>
+<section style="padding-top: 90px; min-height: 70vh;">
+	<div class="container mt-3 p-3">
+		<div class="card">
+			<div class="card-header">
+				<h4>Chat với Chủ trọ - <span th:text="${room.roomName}"></span></h4>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-4 text-center">
+						<img th:src="@{'/img/room_img/'+${room.image}}" alt="Ảnh phòng" class="img-fluid img-thumbnail" style="max-height:200px; object-fit:cover;"/>
+						<p class="mt-2"><strong>Chủ trọ:</strong> <span th:text="${room.contactName}">Chủ trọ</span></p>
+						<p><strong>Liên hệ:</strong> <span th:text="${room.contactPhone}">0900...</span></p>
+					</div>
+					<div class="col-md-8">
+						<div id="chatBox" style="height:320px;border:1px solid #e0e0e0;padding:10px;overflow:auto;background:#fafafa;">
+							<!-- Placeholder messages -->
+							<div class="mb-2"><strong>Chủ trọ:</strong> Xin chào, bạn cần xem phòng lúc mấy giờ?</div>
+							<div class="mb-2 text-end"><strong>Bạn:</strong> Tôi muốn xem vào chiều mai.</div>
+						</div>
+						<div class="input-group mt-3">
+							<input id="msgInput" type="text" class="form-control" placeholder="Gửi tin nhắn tới chủ trọ...">
+							<button id="sendBtn" class="btn btn-primary">Gửi</button>
+						</div>
+						<small class="text-muted">Lưu ý: đây là giao diện chat mẫu; chức năng gửi tin nhắn cần backend/real-time để hoạt động.</small>
+					</div>
+				</div>
+			</div>
+			<div class="card-footer text-end">
+				<a href="/user/cart" class="btn btn-secondary">Quay lại Trọ đã xem</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+// Local-only chat simulation (no server interaction)
+document.getElementById('sendBtn').addEventListener('click', function(){
+    const input = document.getElementById('msgInput');
+    const txt = input.value.trim();
+    if(!txt) return;
+    const chatBox = document.getElementById('chatBox');
+    const div = document.createElement('div');
+    div.className = 'mb-2 text-end';
+    div.innerHTML = '<strong>Bạn:</strong> ' + txt;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = '';
+});
+</script>
+</body>
+</html>
+

@@ -32,7 +32,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDtls saveUser(UserDtls user) {
-		user.setRole("ROLE_USER");
+		// Kiểm tra accountType để gán role phù hợp
+		if ("owner".equals(user.getAccountType())) {
+			user.setRole("ROLE_OWNER");
+		} else {
+			user.setRole("ROLE_USER");
+		}
 		user.setIsEnable(true);
 		user.setAccountNonLocked(true);
 		user.setFailedAttempt(0);

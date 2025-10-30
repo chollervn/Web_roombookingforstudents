@@ -20,4 +20,6 @@ public interface OrderService {
 	public RoomOrder getOrdersByOrderId(String orderId);
 
 	public Page<RoomOrder> getAllOrdersPagination(Integer pageNo,Integer pageSize);
+
+	public List<RoomOrder> getOrdersByOwnerId(Integer ownerId);
 }

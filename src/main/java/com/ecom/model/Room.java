@@ -69,4 +69,6 @@ public class Room {
 
 	private Boolean isActive;
 	
+	private Integer ownerId; // ID của chủ trọ
+
 }

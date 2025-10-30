@@ -3,14 +3,14 @@
 	th:replace="~{base::layout(~{::section})}">
 <head>
 <meta charset="UTF-8">
-<title>Giỏ hàng - Phòng trọ</title>
+<title>Trọ đã xem - Phòng trọ</title>
 </head>
 <body>
 	<section style="padding-top: 90px; min-height: 100vh;">
 		<div class="container mt-3 p-3">
 			<div class="card border">
 				<div class="card-header bg-light text-center">
-					<h4 class="mb-2">Giỏ Hàng Phòng Trọ</h4>
+					<h4 class="mb-2">Trọ đã xem</h4>
 					<th:block th:if="${session.succMsg}">
 						<div class="alert alert-success">[[${session.succMsg}]]</div>
 						<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
@@ -28,18 +28,14 @@
 								<tr>
 									<th width="5%">STT</th>
 									<th width="12%">Hình</th>
-									<th width="25%">Thông Tin Phòng</th>
+									<th width="35%">Thông Tin Phòng</th>
 									<th width="15%">Giá Thuê</th>
-									<th width="15%">Số Tháng</th>
-									<th width="15%">Tổng Tiền</th>
-									<th width="13%">Thao Tác</th>
+									<th width="18%">Thao Tác</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr th:each="cart,c:${carts}">
-									<td class="text-center align-middle">
-										[[${c.count}]]
-									</td>
+									<td class="text-center align-middle">[[${c.count}]]</td>
 									<td class="align-middle text-center">
 										<div style="width: 80px; height: 60px; margin: 0 auto; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border-radius: 5px; overflow: hidden;">
 											<img th:src="@{'/img/room_img/'+${cart.room.image}}"
@@ -63,46 +59,24 @@
 										<strong>[[${#numbers.formatDecimal(cart.room.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong><br>
 										<small class="text-muted">/tháng</small>
 									</td>
-									<td class="text-center">
-										<div class="d-flex justify-content-center align-items-center">
-											<a th:href="@{'/user/cartQuantityUpdate?sy=de&cid='+${cart.id}}"
-											   class="btn btn-sm btn-danger me-1">-</a>
-											<span class="mx-2 fw-bold">[[${cart.quantity}]]</span>
-											<a th:href="@{'/user/cartQuantityUpdate?sy=in&cid='+${cart.id}}"
-											   class="btn btn-sm btn-success ms-1">+</a>
-										</div>
+									<td class="text-center align-middle">
+										<!-- Chat with owner -->
+										<a th:href="@{'/user/chat?rid='+${cart.room.id}}" class="btn btn-primary btn-sm me-2">Chat với Chủ trọ</a>
+										<!-- Deposit -->
+										<a th:href="@{'/user/deposit?rid='+${cart.room.id}}" class="btn btn-warning btn-sm">Đặt cọc</a>
 									</td>
-									<td class="text-end">
-										<strong class="text-success">
-											[[${#numbers.formatDecimal(cart.totalPrice, 0, 'COMMA', 0, 'POINT')}]] VNĐ
-										</strong>
-									</td>
-									<td class="text-center">
-										<a th:href="@{'/user/cartQuantityUpdate?sy=de&cid='+${cart.id}}"
-										   class="btn btn-danger btn-sm"
-										   onclick="return confirm('Xóa phòng này?')">Xóa</a>
-									</td>
-								</tr>
-								<tr class="bg-warning">
-									<td colspan="5" class="text-end fw-bold">Tổng Cộng:</td>
-									<td class="text-end fw-bold">
-										<th:block th:utext="${@commnServiceImpl.rupeeSign()}"></th:block>
-										[[${#numbers.formatDecimal(totalOrderPrice, 0, 'COMMA', 0, 'POINT')}]]
-									</td>
-									<td></td>
 								</tr>
 							</tbody>
 						</table>
 						<div class="text-center mt-4">
-							<a href="/" class="btn btn-secondary me-3">Tiếp Tục Thuê</a>
-							<a href="/user/orders" class="btn btn-warning btn-lg">THANH TOÁN</a>
+							<a href="/" class="btn btn-secondary">Tiếp tục xem phòng</a>
 						</div>
 					</div>
 
 					<div th:if="${carts == null or carts.isEmpty()}" class="text-center py-5">
-						<h4>Giỏ hàng trống</h4>
-						<p>Chưa có phòng nào trong giỏ hàng</p>
-						<a href="/" class="btn btn-primary">Thuê Phòng Ngay</a>
+						<h4>Chưa có Trọ đã xem</h4>
+						<p>Chưa có phòng nào trong danh sách Trọ đã xem</p>
+						<a href="/" class="btn btn-primary">Xem phòng ngay</a>
 					</div>
 				</div>
 			</div>

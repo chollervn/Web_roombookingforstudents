@@ -1,201 +1,226 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{base::layout(~{::section})}">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>Quản lý đơn thuê trọ</title>
 </head>
 <body>
 	<section>
-		<div class="container-fluid mt-5 p-1">
+		<div class="container-fluid mt-5 p-3">
 			<div class="row">
-				<p class="text-center fs-3 mt-2">All Orders</p>
+				<p class="text-center fs-3 mt-2">Quản lý đơn thuê trọ</p>
 				<hr>
 				<a href="/admin/" class="text-decoration-none"><i
-					class="fa-solid fa-arrow-left"></i> Back</a>
+					class="fa-solid fa-arrow-left"></i> Quay lại</a>
+
 				<th:block th:if="${session.succMsg}">
-					<p class="text-success fw-bold text-center">[[${session.succMsg}]]</p>
-					<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+					<p class="text-success fw-bold text-center alert alert-success">[[${session.succMsg}]]</p>
+					<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 				</th:block>
 
 				<th:block th:if="${session.errorMsg}">
-					<p class="text-danger fw-bold text-center">[[${session.errorMsg}]]</p>
-					<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+					<p class="text-danger fw-bold text-center alert alert-danger">[[${session.errorMsg}]]</p>
+					<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 				</th:block>
-				<div class="col-md-4 p-4">
 
+				<!-- Tìm kiếm -->
+				<div class="col-md-4 p-4">
 					<form action="/admin/search-order" method="get">
 						<div class="row">
 							<div class="col">
-								<input type="text" class="form-control " name="orderId"
-									placeholder="Enter order id">
+								<input type="text" class="form-control" name="orderId"
+									placeholder="Tìm theo mã đơn thuê...">
 							</div>
 							<div class="col">
-								<button class="btn btn-primary col">Search</button>
+								<button class="btn btn-primary col">Tìm kiếm</button>
 							</div>
 						</div>
 					</form>
-
 				</div>
+
+				<!-- Bảng danh sách đơn thuê -->
 				<div class="col-md-12 ps-4 pe-4">
-
-					<table class="table table-bordered card-sh">
-						<thead class="table-light">
-							<tr>
-								<th scope="col">Order Id</th>
-								<th scope="col">Deliver Details</th>
-								<th scope="col">Date</th>
-								<th scope="col">Product Details</th>
-								<th scope="col">Price</th>
-								<th scope="col">Status</th>
-								<th scope="col">Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<th:block th:if="${srch}">
-								<th:block th:if="${orderDtls!=null}">
-									<tr>
-										<th scope="row">[[${orderDtls.orderId}]]</th>
-
-										<td>Name : [[${orderDtls.orderAddress.firstName+'
-											'+orderDtls.orderAddress.lastName}]]<br> Email :
-											[[${orderDtls.orderAddress.email}]] <br> Mobno:
-											[[${orderDtls.orderAddress.mobileNo}]] <br> Address :
-											[[${orderDtls.orderAddress.address}]] <br> City :
-											[[${orderDtls.orderAddress.city}]] <br> State :
-											[[${orderDtls.orderAddress.state}]],
-											[[${orderDtls.orderAddress.pincode}]]
-
-
-
-										</td>
-										<td>[[${orderDtls.orderDate}]]</td>
-										<td>[[${orderDtls.product.title}]]</td>
-										<td>Quantity : [[${orderDtls.quantity}]] <br>Price :
-											[[${orderDtls.price}]] <br>Total Price
-											:[[${orderDtls.quantity * orderDtls.price}]]
-										</td>
-										<td>[[${orderDtls.status}]]</td>
-										<td>
-											<form action="/admin/update-order-status" method="post">
-												<div class="row">
-													<div class="col">
-														<select class="form-control" name="st">
-															<option>--select--</option>
-															<option value="1">In Progress</option>
-															<option value="2">Order Received</option>
-															<option value="3">Product Packed</option>
-															<option value="4">Out for Delivery</option>
-															<option value="5">Delivered</option>
-															<option value="6">Cancelled</option>
-														</select>
-													</div>
-													<input th:value="${orderDtls.id}" name="id" type="hidden">
-													<div class="col">
-														<th:block
-															th:if="${orderDtls.status=='Cancelled' || orderDtls.status=='Delivered'}">
-															<button class="btn btn-primary btn-sm col disabled">Update</button>
-														</th:block>
-														<th:block
-															th:unless="${orderDtls.status=='Cancelled' || orderDtls.status=='Delivered'}">
-															<button class="btn btn-sm btn-primary ">Update</button>
-														</th:block>
-
-
-													</div>
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover card-sh">
+							<thead class="table-primary">
+								<tr>
+									<th scope="col">Mã đơn</th>
+									<th scope="col">Phòng trọ</th>
+									<th scope="col">Thông tin người thuê</th>
+									<th scope="col">Ngày thuê</th>
+									<th scope="col">Giá thuê</th>
+									<th scope="col">Số tháng</th>
+									<th scope="col">Tổng tiền</th>
+									<th scope="col">Trạng thái</th>
+									<th scope="col">Hành động</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Hiển thị kết quả tìm kiếm -->
+								<th:block th:if="${srch}">
+									<th:block th:if="${orderDtls!=null}">
+										<tr>
+											<th scope="row">[[${orderDtls.orderId}]]</th>
+											<td>
+												<strong>[[${orderDtls.room.roomName}]]</strong><br>
+												<small class="text-muted">[[${orderDtls.room.address}]]</small>
+											</td>
+											<td>
+												<div class="mb-2">
+													<i class="fas fa-user text-primary"></i>
+													<strong>[[${orderDtls.orderAddress.firstName}]] [[${orderDtls.orderAddress.lastName}]]</strong>
 												</div>
-											</form>
+												<div class="mb-1">
+													<i class="fas fa-envelope text-info"></i> [[${orderDtls.orderAddress.email}]]
+												</div>
+												<div class="mb-1">
+													<i class="fas fa-phone text-success"></i> [[${orderDtls.orderAddress.mobileNo}]]
+												</div>
+												<div class="mb-1">
+													<i class="fas fa-map-marker-alt text-danger"></i>
+													[[${orderDtls.orderAddress.address}]], [[${orderDtls.orderAddress.city}]]
+												</div>
+											</td>
+											<td>[[${#temporals.format(orderDtls.orderDate, 'dd/MM/yyyy')}]]</td>
+											<td>[[${#numbers.formatDecimal(orderDtls.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</td>
+											<td>[[${orderDtls.quantity}]] tháng</td>
+											<td><strong>[[${#numbers.formatDecimal(orderDtls.quantity * orderDtls.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong></td>
+											<td>
+												<span th:if="${orderDtls.status=='Đang xử lý'}" class="badge bg-warning">[[${orderDtls.status}]]</span>
+												<span th:if="${orderDtls.status=='Đã hoàn thành'}" class="badge bg-success">[[${orderDtls.status}]]</span>
+												<span th:if="${orderDtls.status=='Đã hủy'}" class="badge bg-danger">[[${orderDtls.status}]]</span>
+											</td>
+											<td>
+												<a th:href="@{'/admin/chat?orderId=' + ${orderDtls.orderId}}"
+													class="btn btn-sm btn-primary mb-1">
+													<i class="fas fa-comment"></i> Chat
+												</a>
+												<button type="button" class="btn btn-sm btn-info mb-1"
+													data-bs-toggle="modal" th:data-bs-target="'#updateModal' + ${orderDtls.id}">
+													<i class="fas fa-edit"></i> Cập nhật
+												</button>
+											</td>
+										</tr>
+									</th:block>
+									<th:block th:if="${orderDtls==null}">
+										<tr>
+											<td colspan="9" class="text-center text-danger">Không tìm thấy đơn thuê!</td>
+										</tr>
+									</th:block>
+								</th:block>
+
+								<!-- Hiển thị tất cả đơn thuê -->
+								<th:block th:unless="${srch}">
+									<tr th:each="order : ${orders}">
+										<th scope="row">[[${order.orderId}]]</th>
+										<td>
+											<strong>[[${order.room.roomName}]]</strong><br>
+											<small class="text-muted">[[${order.room.address}]]</small>
+										</td>
+										<td>
+											<div class="mb-2">
+												<i class="fas fa-user text-primary"></i>
+												<strong>[[${order.orderAddress.firstName}]] [[${order.orderAddress.lastName}]]</strong>
+											</div>
+											<div class="mb-1">
+												<i class="fas fa-envelope text-info"></i> [[${order.orderAddress.email}]]
+											</div>
+											<div class="mb-1">
+												<i class="fas fa-phone text-success"></i> [[${order.orderAddress.mobileNo}]]
+											</div>
+											<div class="mb-1">
+												<i class="fas fa-map-marker-alt text-danger"></i>
+												[[${order.orderAddress.address}]], [[${order.orderAddress.city}]]
+											</div>
+										</td>
+										<td>[[${#temporals.format(order.orderDate, 'dd/MM/yyyy')}]]</td>
+										<td>[[${#numbers.formatDecimal(order.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</td>
+										<td>[[${order.quantity}]] tháng</td>
+										<td><strong>[[${#numbers.formatDecimal(order.quantity * order.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong></td>
+										<td>
+											<span th:if="${order.status=='Đang xử lý'}" class="badge bg-warning">[[${order.status}]]</span>
+											<span th:if="${order.status=='Đã hoàn thành'}" class="badge bg-success">[[${order.status}]]</span>
+											<span th:if="${order.status=='Đã hủy'}" class="badge bg-danger">[[${order.status}]]</span>
+										</td>
+										<td>
+											<a th:href="@{'/admin/chat?orderId=' + ${order.orderId}}"
+												class="btn btn-sm btn-primary mb-1">
+												<i class="fas fa-comment"></i> Chat
+											</a>
+											<button type="button" class="btn btn-sm btn-info mb-1"
+												data-bs-toggle="modal" th:data-bs-target="'#updateModal' + ${order.id}">
+												<i class="fas fa-edit"></i> Cập nhật
+											</button>
 										</td>
 									</tr>
-								</th:block>
-								<th:block th:unless="${orderDtls!=null}">
-									<p class="fs-3 text-center text-danger">[[${errorMsg}]]</p>
-								</th:block>
-							</th:block>
 
-							<th:block th:unless="${srch}">
-								<tr th:each="o:${orders}">
-									<th scope="row">[[${o.orderId}]]</th>
-
-									<td>Name : [[${o.orderAddress.firstName+'
-										'+o.orderAddress.lastName}]]<br> Email :
-										[[${o.orderAddress.email}]] <br> Mobno:
-										[[${o.orderAddress.mobileNo}]] <br> Address :
-										[[${o.orderAddress.address}]] <br> City :
-										[[${o.orderAddress.city}]] <br> State :
-										[[${o.orderAddress.state}]], [[${o.orderAddress.pincode}]]
-
-
-
-									</td>
-									<td>[[${o.orderDate}]]</td>
-									<td>[[${o.product.title}]]</td>
-									<td>Quantity : [[${o.quantity}]] <br>Price :
-										[[${o.price}]] <br>Total Price :[[${o.quantity *
-										o.price}]]
-									</td>
-									<td>[[${o.status}]]</td>
-									<td>
-										<form action="/admin/update-order-status" method="post">
-											<div class="row">
-												<div class="col">
-													<select class="form-control" name="st">
-														<option>--select--</option>
-														<option value="1">In Progress</option>
-														<option value="2">Order Received</option>
-														<option value="3">Product Packed</option>
-														<option value="4">Out for Delivery</option>
-														<option value="5">Delivered</option>
-														<option value="6">Cancelled</option>
-													</select>
+									<!-- Modal cập nhật trạng thái cho mỗi đơn -->
+									<div th:each="order : ${orders}" class="modal fade" th:id="'updateModal' + ${order.id}"
+										tabindex="-1" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<div class="modal-header">
+													<h5 class="modal-title">Cập nhật trạng thái đơn thuê</h5>
+													<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 												</div>
-												<input th:value="${o.id}" name="id" type="hidden">
-												<div class="col">
-													<th:block
-														th:if="${o.status=='Cancelled' || o.status=='Delivered'}">
-														<button class="btn btn-primary btn-sm col disabled">Update</button>
-													</th:block>
-													<th:block
-														th:unless="${o.status=='Cancelled' || o.status=='Delivered'}">
-														<button class="btn btn-sm btn-primary ">Update</button>
-													</th:block>
-												</div>
+												<form action="/admin/update-order-status" method="post">
+													<div class="modal-body">
+														<input type="hidden" name="id" th:value="${order.id}">
+														<label class="form-label">Trạng thái hiện tại: <strong>[[${order.status}]]</strong></label>
+														<select class="form-control" name="st" required>
+															<option value="">--Chọn trạng thái--</option>
+															<option value="1">Đang xử lý</option>
+															<option value="2">Đã xác nhận</option>
+															<option value="3">Đang ký hợp đồng</option>
+															<option value="4">Đã hoàn thành</option>
+															<option value="5">Đã hủy</option>
+														</select>
+													</div>
+													<div class="modal-footer">
+														<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+														<button type="submit" class="btn btn-primary"
+															th:disabled="${order.status=='Đã hủy' || order.status=='Đã hoàn thành'}">
+															Cập nhật
+														</button>
+													</div>
+												</form>
 											</div>
-										</form>
-									</td>
-								</tr>
-							</th:block>
-						</tbody>
-					</table>
-					<th:block th:if="${!srch}">
-						<div class="row">
-							<div class="col-md-4">Total Orders : [[${totalElements}]]</div>
+										</div>
+									</div>
+
+									<tr th:if="${#lists.isEmpty(orders)}">
+										<td colspan="9" class="text-center">Chưa có đơn thuê nào</td>
+									</tr>
+								</th:block>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Phân trang -->
+					<th:block th:unless="${srch}">
+						<div class="row mt-3">
+							<div class="col-md-4">Tổng số đơn: [[${totalElements}]]</div>
 							<div class="col-md-6">
-
-								<nav aria-label="Page navigation example">
+								<nav aria-label="Page navigation">
 									<ul class="pagination">
-										<li class="page-item"
-											th:classappend="${isFirst} ? 'disabled':''"><a
-											class="page-link"
-											th:href="@{'/admin/orders?pageNo='+${pageNo-1}}"
-											aria-label="Previous"> <span aria-hidden="true">&laquo;</span>
-										</a></li>
-
-										<li th:each="i:${#numbers.sequence(1,totalPages)}"
-											class="page-item" th:classappend="${pageNo+1==i}?'active':''"
-											]]><a class="page-link"
-											th:href="@{'/admin/orders?pageNo='+${i-1}}">[[${i}]]</a></li>
-
-										<li class="page-item"
-											th:classappend="${isLast} ? 'disabled':''"><a
-											class="page-link"
-											th:href="@{'/admin/orders?pageNo='+${pageNo+1}}"
-											aria-label="Next"> <span aria-hidden="true">&raquo;</span>
-										</a></li>
+										<li class="page-item" th:classappend="${isFirst} ? 'disabled':''">
+											<a class="page-link" th:href="@{'/admin/orders?pageNo='+${pageNo-1}}" aria-label="Previous">
+												<span aria-hidden="true">&laquo;</span>
+											</a>
+										</li>
+										<li th:each="i:${#numbers.sequence(1,totalPages)}" class="page-item"
+											th:classappend="${pageNo+1==i}?'active':''">
+											<a class="page-link" th:href="@{'/admin/orders?pageNo='+${i-1}}">[[${i}]]</a>
+										</li>
+										<li class="page-item" th:classappend="${isLast} ? 'disabled':''">
+											<a class="page-link" th:href="@{'/admin/orders?pageNo='+${pageNo+1}}" aria-label="Next">
+												<span aria-hidden="true">&raquo;</span>
+											</a>
+										</li>
 									</ul>
 								</nav>
 							</div>
-
 						</div>
 					</th:block>
 				</div>

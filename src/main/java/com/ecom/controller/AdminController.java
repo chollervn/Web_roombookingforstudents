@@ -450,4 +450,17 @@ public class AdminController {
 		return "redirect:/admin/profile";
 	}
 
+	@GetMapping("/chat")
+	public String chat(@RequestParam(required = false) String orderId, Model m, HttpSession session) {
+		if (orderId != null && !orderId.isEmpty()) {
+			RoomOrder order = orderService.getOrdersByOrderId(orderId.trim());
+			if (ObjectUtils.isEmpty(order)) {
+				session.setAttribute("errorMsg", "Không tìm thấy đơn thuê");
+				return "redirect:/admin/orders";
+			}
+			m.addAttribute("order", order);
+		}
+		return "/admin/chat";
+	}
+
 }

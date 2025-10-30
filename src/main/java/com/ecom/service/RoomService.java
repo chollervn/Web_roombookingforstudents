@@ -39,4 +39,6 @@ public interface RoomService {
 
 	public List<Room> getRoomsByCityAndType(String city, String roomType);
 
+	public List<Room> getRoomsByOwnerId(Integer ownerId);
+
 }

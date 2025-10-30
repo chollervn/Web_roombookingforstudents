@@ -181,4 +181,9 @@ public class RoomServiceImpl implements RoomService {
 		return roomRepository.findByCityAndRoomType(city, roomType);
 	}
 
+	@Override
+	public List<Room> getRoomsByOwnerId(Integer ownerId) {
+		return roomRepository.findByOwnerId(ownerId);
+	}
+
 }
