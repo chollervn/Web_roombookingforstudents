@@ -1,6 +1,7 @@
 package com.ecom.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.Cart;
+import com.ecom.model.Deposit;
 import com.ecom.model.Room;
 import com.ecom.model.RoomType;
 import com.ecom.model.OrderRequest;
 import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
+import com.ecom.service.DepositService;
 import com.ecom.service.OrderService;
 import com.ecom.service.RoomService;
 import com.ecom.service.RoomTypeService;
@@ -53,6 +56,9 @@ public class UserController {
 
 	@Autowired
 	private RoomService roomService;
+
+	@Autowired
+	private DepositService depositService;
 
 
 	@GetMapping("/")
@@ -240,13 +246,85 @@ public class UserController {
 	}
 
 	@PostMapping("/save-deposit")
-	public String saveDeposit(@RequestParam Integer rid, @RequestParam(required = false) Double amount, Principal p, HttpSession session) {
-		// Minimal placeholder behavior: mark deposit as made and show success message
-		if (amount == null) {
-			amount = 0.0;
+	public String saveDeposit(@RequestParam Integer rid,
+							  @RequestParam(required = false) Double amount,
+							  @RequestParam(required = false) String paymentMethod,
+							  @RequestParam(required = false) String note,
+							  Principal p,
+							  HttpSession session) {
+		try {
+			UserDtls user = getLoggedInUserDetails(p);
+			Room room = roomService.getRoomById(rid);
+
+			if (amount == null || amount <= 0) {
+				session.setAttribute("errorMsg", "Số tiền đặt cọc không hợp lệ");
+				return "redirect:/user/deposit?rid=" + rid;
+			}
+
+			// Create deposit record
+			Deposit deposit = new Deposit();
+			deposit.setUser(user);
+			deposit.setRoom(room);
+			deposit.setAmount(amount);
+			deposit.setDepositDate(LocalDate.now());
+			deposit.setStatus("PENDING"); // Trạng thái chờ chủ trọ xác nhận
+			deposit.setPaymentMethod(paymentMethod != null ? paymentMethod : "CASH");
+			deposit.setNote(note);
+
+			Deposit savedDeposit = depositService.saveDeposit(deposit);
+
+			if (savedDeposit != null) {
+				// Remove room from cart if it exists
+				List<Cart> userCarts = cartService.getCartsByUser(user.getId());
+				for (Cart cart : userCarts) {
+					if (cart.getRoom().getId().equals(rid)) {
+						cartService.updateQuantity("de", cart.getId()); // Delete from cart
+						break;
+					}
+				}
+
+				// Add room back to cart temporarily for order creation
+				cartService.saveCart(rid, user.getId());
+
+				// Create order from cart
+				OrderRequest orderRequest = createOrderRequest(user, paymentMethod);
+				orderService.saveOrder(user.getId(), orderRequest);
+
+				session.setAttribute("succMsg", "Đặt cọc thành công! Đơn thuê đã được tạo tự động.");
+				return "redirect:/user/user-orders";
+			} else {
+				session.setAttribute("errorMsg", "Có lỗi xảy ra khi đặt cọc");
+				return "redirect:/user/deposit?rid=" + rid;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			session.setAttribute("errorMsg", "Có lỗi xảy ra: " + e.getMessage());
+			return "redirect:/user/cart";
 		}
-		session.setAttribute("succMsg", "Đặt cọc " + String.format("%,.0f", amount) + " VNĐ cho phòng id: " + rid + " thành công.");
-		return "redirect:/user/cart";
+	}
+
+	private OrderRequest createOrderRequest(UserDtls user, String paymentMethod) {
+		OrderRequest orderRequest = new OrderRequest();
+		orderRequest.setFirstName(user.getName());
+		orderRequest.setLastName("");
+		orderRequest.setEmail(user.getEmail());
+		orderRequest.setMobileNo(user.getMobileNumber());
+		orderRequest.setAddress(user.getAddress() != null ? user.getAddress() : "");
+		orderRequest.setCity(user.getCity() != null ? user.getCity() : "");
+		orderRequest.setState(user.getState() != null ? user.getState() : "");
+		orderRequest.setPincode(user.getPincode() != null ? user.getPincode() : "");
+		orderRequest.setPaymentType(paymentMethod != null ? paymentMethod : "CASH");
+		return orderRequest;
+	}
+
+	@GetMapping("/deposit-success")
+	public String depositSuccess(@RequestParam Integer did, Model m, Principal p) {
+		Deposit deposit = depositService.getDepositById(did);
+		if (deposit == null) {
+			return "redirect:/user/cart";
+		}
+		m.addAttribute("deposit", deposit);
+		return "/user/deposit_success";
 	}
 
 }

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{base::layout(~{::section})}">
+<head>
+<meta charset="UTF-8">
+<title>Đặt cọc thành công</title>
+<style>
+.success-animation {
+	margin: 30px auto;
+	text-align: center;
+}
+.checkmark {
+	width: 100px;
+	height: 100px;
+	border-radius: 50%;
+	display: block;
+	stroke-width: 2;
+	stroke: #4CAF50;
+	stroke-miterlimit: 10;
+	box-shadow: inset 0px 0px 0px #4CAF50;
+	animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+	margin: 0 auto;
+}
+.checkmark__circle {
+	stroke-dasharray: 166;
+	stroke-dashoffset: 166;
+	stroke-width: 2;
+	stroke-miterlimit: 10;
+	stroke: #4CAF50;
+	fill: none;
+	animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.checkmark__check {
+	transform-origin: 50% 50%;
+	stroke-dasharray: 48;
+	stroke-dashoffset: 48;
+	animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+@keyframes stroke {
+	100% { stroke-dashoffset: 0; }
+}
+@keyframes scale {
+	0%, 100% { transform: none; }
+	50% { transform: scale3d(1.1, 1.1, 1); }
+}
+@keyframes fill {
+	100% { box-shadow: inset 0px 0px 0px 30px #4CAF50; }
+}
+</style>
+</head>
+<body>
+<section style="padding-top: 90px; min-height: 70vh;">
+	<div class="container mt-5 p-3">
+		<div class="row justify-content-center">
+			<div class="col-md-8">
+				<div class="card card-sh">
+					<div class="card-body text-center p-5">
+						<div class="success-animation">
+							<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+								<circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+								<path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+							</svg>
+						</div>
+
+						<h2 class="text-success mb-3">
+							<i class="fas fa-check-circle"></i> Đặt cọc thành công!
+						</h2>
+						<p class="lead text-muted mb-4">Đơn đặt cọc của bạn đã được ghi nhận</p>
+
+						<div class="card mb-4">
+							<div class="card-header bg-light">
+								<h5 class="mb-0"><i class="fas fa-file-invoice"></i> Thông tin đặt cọc</h5>
+							</div>
+							<div class="card-body text-start">
+								<div class="row">
+									<div class="col-md-6 mb-3">
+										<p class="mb-1"><strong><i class="fas fa-home text-primary"></i> Phòng:</strong></p>
+										<p class="ms-4" th:text="${deposit.room.roomName}">Tên phòng</p>
+									</div>
+									<div class="col-md-6 mb-3">
+										<p class="mb-1"><strong><i class="fas fa-map-marker-alt text-danger"></i> Địa chỉ:</strong></p>
+										<p class="ms-4" th:text="${deposit.room.fullAddress}">Địa chỉ</p>
+									</div>
+									<div class="col-md-6 mb-3">
+										<p class="mb-1"><strong><i class="fas fa-money-bill-wave text-success"></i> Số tiền đặt cọc:</strong></p>
+										<p class="ms-4 text-success fs-5 fw-bold">
+											<span th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+										</p>
+									</div>
+									<div class="col-md-6 mb-3">
+										<p class="mb-1"><strong><i class="fas fa-credit-card text-info"></i> Phương thức:</strong></p>
+										<p class="ms-4">
+											<span th:if="${deposit.paymentMethod == 'CASH'}">Tiền mặt</span>
+											<span th:if="${deposit.paymentMethod == 'BANK_TRANSFER'}">Chuyển khoản ngân hàng</span>
+											<span th:if="${deposit.paymentMethod == 'E_WALLET'}">Ví điện tử</span>
+										</p>
+									</div>
+									<div class="col-md-6 mb-3">
+										<p class="mb-1"><strong><i class="fas fa-calendar text-warning"></i> Ngày đặt cọc:</strong></p>
+										<p class="ms-4" th:text="${#temporals.format(deposit.depositDate, 'dd/MM/yyyy')}">--/--/----</p>
+									</div>
+									<div class="col-md-6 mb-3">
+										<p class="mb-1"><strong><i class="fas fa-info-circle text-secondary"></i> Trạng thái:</strong></p>
+										<p class="ms-4">
+											<span class="badge bg-warning text-dark" th:if="${deposit.status == 'PENDING'}">
+												<i class="fas fa-clock"></i> Chờ xác nhận
+											</span>
+										</p>
+									</div>
+								</div>
+
+								<div th:if="${deposit.note != null and !deposit.note.isEmpty()}" class="alert alert-light mt-3">
+									<strong><i class="fas fa-comment"></i> Ghi chú của bạn:</strong>
+									<p class="mb-0 mt-2" th:text="${deposit.note}">Ghi chú</p>
+								</div>
+							</div>
+						</div>
+
+						<div class="alert alert-info text-start">
+							<h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Bước tiếp theo:</h6>
+							<ol class="mb-0">
+								<li>Chủ trọ sẽ xem xét và xác nhận đơn đặt cọc của bạn</li>
+								<li>Bạn có thể liên hệ trực tiếp với chủ trọ qua số điện thoại:
+									<strong th:text="${deposit.room.contactPhone}">0900...</strong>
+								</li>
+								<li>Theo dõi trạng thái đặt cọc trong mục "Đơn đặt cọc của tôi"</li>
+								<li>Sau khi được xác nhận, hãy chuẩn bị thủ tục và chuyển đến phòng trọ</li>
+							</ol>
+						</div>
+
+						<div class="d-grid gap-2 col-md-6 mx-auto mt-4">
+							<a href="/user/user-orders" class="btn btn-primary btn-lg">
+								<i class="fas fa-list"></i> Xem đơn thuê của tôi
+							</a>
+							<a href="/user/cart" class="btn btn-outline-secondary">
+								<i class="fas fa-eye"></i> Xem thêm phòng trọ
+							</a>
+							<a href="/user/" class="btn btn-outline-secondary">
+								<i class="fas fa-home"></i> Về trang chủ
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+</body>
+</html>

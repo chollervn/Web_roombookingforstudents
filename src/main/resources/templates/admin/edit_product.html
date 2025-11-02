@@ -40,10 +40,9 @@
 
 										<div class="mb-3">
 											<label class="form-label"><i class="fas fa-list"></i> Loại phòng *</label>
-											<select class="form-control" name="roomType" required>
-												<option th:value="${room.roomType}">[[${room.roomType}]]</option>
-												<option th:each="rt:${roomTypes}" th:value="${rt.name}">[[${rt.name}]]</option>
-											</select>
+											<input type="text" name="roomType" th:value="${room.roomType}"
+												class="form-control" placeholder="VD: Phòng trọ đơn, Căn hộ mini..." required>
+											<small class="text-muted">Nhập loại phòng của bạn (VD: Phòng trọ đơn, Phòng trọ đôi, Căn hộ mini...)</small>
 										</div>
 
 										<div class="mb-3">

@@ -22,4 +22,6 @@ public interface OrderService {
 	public Page<RoomOrder> getAllOrdersPagination(Integer pageNo,Integer pageSize);
 
 	public List<RoomOrder> getOrdersByOwnerId(Integer ownerId);
+
+	public RoomOrder saveRoomOrder(RoomOrder roomOrder);
 }

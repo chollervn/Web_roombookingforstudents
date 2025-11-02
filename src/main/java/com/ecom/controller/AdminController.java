@@ -29,6 +29,7 @@ import com.ecom.model.Room;
 import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
+import com.ecom.service.DepositService;
 import com.ecom.service.RoomTypeService;
 import com.ecom.service.OrderService;
 import com.ecom.service.RoomService;
@@ -63,6 +64,9 @@ public class AdminController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@Autowired
+	private DepositService depositService;
+
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
 		if (p != null) {
@@ -92,116 +96,53 @@ public class AdminController {
 	@GetMapping("/roomtype")
 	public String roomType(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-
-		Page<RoomType> page = roomTypeService.getAllRoomTypePagination(pageNo, pageSize);
-		List<RoomType> roomTypes = page.getContent();
-		m.addAttribute("roomTypes", roomTypes);
-
-		m.addAttribute("pageNo", page.getNumber());
-		m.addAttribute("pageSize", pageSize);
-		m.addAttribute("totalElements", page.getTotalElements());
-		m.addAttribute("totalPages", page.getTotalPages());
-		m.addAttribute("isFirst", page.isFirst());
-		m.addAttribute("isLast", page.isLast());
-
-		return "admin/category";
+		// Disabled: Room type management is no longer needed
+		return "redirect:/admin/";
 	}
 
 	@PostMapping("/saveRoomType")
 	public String saveRoomType(@ModelAttribute RoomType roomType, @RequestParam("file") MultipartFile file,
 			HttpSession session) throws IOException {
-
-		String imageName = file != null ? file.getOriginalFilename() : "default.jpg";
-		roomType.setImageName(imageName);
-
-		Boolean existRoomType = roomTypeService.existRoomType(roomType.getName());
-
-		if (existRoomType) {
-			session.setAttribute("errorMsg", "Room Type Name already exists");
-		} else {
-
-			RoomType saveRoomType = roomTypeService.saveRoomType(roomType);
-
-			if (ObjectUtils.isEmpty(saveRoomType)) {
-				session.setAttribute("errorMsg", "Not saved ! internal server error");
-			} else {
-
-				File saveFile = new ClassPathResource("static/img").getFile();
-
-				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "category_img" + File.separator
-						+ file.getOriginalFilename());
-
-				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-				session.setAttribute("succMsg", "Saved successfully");
-			}
-		}
-
-		return "redirect:/admin/roomtype";
+		// Disabled: Room type management is no longer needed
+		session.setAttribute("errorMsg", "Chức năng này đã bị vô hiệu hóa");
+		return "redirect:/admin/";
 	}
 
 	@GetMapping("/deleteRoomType/{id}")
 	public String deleteRoomType(@PathVariable int id, HttpSession session) {
-		Boolean deleteRoomType = roomTypeService.deleteRoomType(id);
-
-		if (deleteRoomType) {
-			session.setAttribute("succMsg", "room type delete success");
-		} else {
-			session.setAttribute("errorMsg", "something wrong on server");
-		}
-
-		return "redirect:/admin/roomtype";
+		// Disabled: Room type management is no longer needed
+		session.setAttribute("errorMsg", "Chức năng này đã bị vô hiệu hóa");
+		return "redirect:/admin/";
 	}
 
 	@GetMapping("/loadEditRoomType/{id}")
 	public String loadEditRoomType(@PathVariable int id, Model m) {
-		m.addAttribute("roomType", roomTypeService.getRoomTypeById(id));
-		return "admin/edit_category";
+		// Disabled: Room type management is no longer needed
+		return "redirect:/admin/";
 	}
 
 	@PostMapping("/updateRoomType")
 	public String updateRoomType(@ModelAttribute RoomType roomType, @RequestParam("file") MultipartFile file,
 			HttpSession session) throws IOException {
-
-		RoomType oldRoomType = roomTypeService.getRoomTypeById(roomType.getId());
-		String imageName = file.isEmpty() ? oldRoomType.getImageName() : file.getOriginalFilename();
-
-		if (!ObjectUtils.isEmpty(roomType)) {
-			oldRoomType.setName(roomType.getName());
-			oldRoomType.setIsActive(roomType.getIsActive());
-			oldRoomType.setImageName(imageName);
-		}
-
-		RoomType updateRoomType = roomTypeService.saveRoomType(oldRoomType);
-
-		if (!ObjectUtils.isEmpty(updateRoomType)) {
-
-			if (!file.isEmpty()) {
-				File saveFile = new ClassPathResource("static/img").getFile();
-
-				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "category_img" + File.separator
-						+ file.getOriginalFilename());
-
-				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-			}
-
-			session.setAttribute("succMsg", "Room Type update success");
-		} else {
-			session.setAttribute("errorMsg", "something wrong on server");
-		}
-
-		return "redirect:/admin/loadEditRoomType/" + roomType.getId();
+		// Disabled: Room type management is no longer needed
+		session.setAttribute("errorMsg", "Chức năng này đã bị vô hiệu hóa");
+		return "redirect:/admin/";
 	}
 
 	@PostMapping("/saveRoom")
 	public String saveRoom(@ModelAttribute Room room, @RequestParam("file") MultipartFile image,
-			HttpSession session) throws IOException {
+			HttpSession session, Principal p) throws IOException {
 
 		String imageName = image.isEmpty() ? "default.jpg" : image.getOriginalFilename();
 
 		room.setImage(imageName);
 		room.setIsAvailable(true);
 		room.setIsActive(true);
+
+		// Set owner ID to current logged-in user
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+		room.setOwnerId(loggedInUser.getId());
+
 		Room saveRoom = roomService.saveRoom(room);
 
 		if (!ObjectUtils.isEmpty(saveRoom)) {
@@ -224,22 +165,30 @@ public class AdminController {
 	@GetMapping("/rooms")
 	public String loadViewRoom(Model m, @RequestParam(defaultValue = "") String ch,
 			@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+			Principal p) {
 
-		Page<Room> page = null;
+		// Get current logged-in owner
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Only get rooms belonging to this owner
+		List<Room> ownerRooms = roomService.getRoomsByOwnerId(loggedInUser.getId());
+
+		// Apply search filter if needed
 		if (ch != null && ch.length() > 0) {
-			page = roomService.searchRoomPagination(pageNo, pageSize, ch);
-		} else {
-			page = roomService.getAllRoomsPagination(pageNo, pageSize);
+			ownerRooms = ownerRooms.stream()
+				.filter(room -> room.getRoomName().toLowerCase().contains(ch.toLowerCase())
+					|| room.getRoomType().toLowerCase().contains(ch.toLowerCase()))
+				.toList();
 		}
-		m.addAttribute("rooms", page.getContent());
 
-		m.addAttribute("pageNo", page.getNumber());
-		m.addAttribute("pageSize", pageSize);
-		m.addAttribute("totalElements", page.getTotalElements());
-		m.addAttribute("totalPages", page.getTotalPages());
-		m.addAttribute("isFirst", page.isFirst());
-		m.addAttribute("isLast", page.isLast());
+		m.addAttribute("rooms", ownerRooms);
+		m.addAttribute("pageNo", 0);
+		m.addAttribute("pageSize", ownerRooms.size());
+		m.addAttribute("totalElements", ownerRooms.size());
+		m.addAttribute("totalPages", 1);
+		m.addAttribute("isFirst", true);
+		m.addAttribute("isLast", true);
 
 		return "admin/products";
 	}
@@ -276,14 +225,25 @@ public class AdminController {
 	}
 
 	@GetMapping("/users")
-	public String getAllUsers(Model m, @RequestParam Integer type) {
+	public String getAllUsers(Model m, @RequestParam Integer type, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
 		List<UserDtls> users = null;
 		if (type == 1) {
-			users = userService.getUsers("ROLE_USER");
+			// Get all orders for this owner's rooms
+			List<RoomOrder> ownerOrders = orderService.getOrdersByOwnerId(loggedInUser.getId());
+
+			// Extract unique users (renters) from these orders
+			users = ownerOrders.stream()
+				.map(RoomOrder::getUser)
+				.distinct()
+				.filter(user -> user != null && "ROLE_USER".equals(user.getRole()))
+				.toList();
 		} else {
-			users = userService.getUsers("ROLE_ADMIN");
+			// For admin type, just return the current logged-in admin
+			users = List.of(loggedInUser);
 		}
-		m.addAttribute("userType",type);
+		m.addAttribute("userType", type);
 		m.addAttribute("users", users);
 		return "/admin/users";
 	}
@@ -301,18 +261,24 @@ public class AdminController {
 
 	@GetMapping("/orders")
 	public String getAllOrders(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+			Principal p) {
 
-		Page<RoomOrder> page = orderService.getAllOrdersPagination(pageNo, pageSize);
-		m.addAttribute("orders", page.getContent());
+		// Get current logged-in owner
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Only get orders for rooms belonging to this owner
+		List<RoomOrder> ownerOrders = orderService.getOrdersByOwnerId(loggedInUser.getId());
+
+		m.addAttribute("orders", ownerOrders);
 		m.addAttribute("srch", false);
 
-		m.addAttribute("pageNo", page.getNumber());
-		m.addAttribute("pageSize", pageSize);
-		m.addAttribute("totalElements", page.getTotalElements());
-		m.addAttribute("totalPages", page.getTotalPages());
-		m.addAttribute("isFirst", page.isFirst());
-		m.addAttribute("isLast", page.isLast());
+		m.addAttribute("pageNo", 0);
+		m.addAttribute("pageSize", ownerOrders.size());
+		m.addAttribute("totalElements", ownerOrders.size());
+		m.addAttribute("totalPages", 1);
+		m.addAttribute("isFirst", true);
+		m.addAttribute("isLast", true);
 
 		return "/admin/orders";
 	}
@@ -461,6 +427,58 @@ public class AdminController {
 			m.addAttribute("order", order);
 		}
 		return "/admin/chat";
+	}
+
+	@GetMapping("/deposits")
+	public String getDeposits(Model m, Principal p) {
+		// Get current logged-in owner
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Get all deposits for rooms belonging to this owner
+		List<com.ecom.model.Deposit> deposits = depositService.getDepositsByOwner(loggedInUser.getId());
+
+		m.addAttribute("deposits", deposits);
+		return "/admin/deposits";
+	}
+
+	@PostMapping("/update-deposit-status")
+	public String updateDepositStatus(@RequestParam Integer id,
+									  @RequestParam String status,
+									  @RequestParam(required = false) String adminNote,
+									  HttpSession session) {
+		com.ecom.model.Deposit updatedDeposit = depositService.updateDepositStatus(id, status, adminNote);
+
+		if (!ObjectUtils.isEmpty(updatedDeposit)) {
+			// Nếu admin duyệt đặt cọc, tạo RoomOrder cho user
+			if ("APPROVED".equalsIgnoreCase(status)) {
+				RoomOrder roomOrder = new RoomOrder();
+				roomOrder.setUser(updatedDeposit.getUser());
+				roomOrder.setRoom(updatedDeposit.getRoom());
+				roomOrder.setOrderDate(java.time.LocalDate.now());
+				roomOrder.setPrice(updatedDeposit.getAmount());
+				roomOrder.setQuantity(1); // Mặc định 1 tháng, có thể sửa nếu cần
+				roomOrder.setStatus("ACTIVE");
+				roomOrder.setPaymentType(updatedDeposit.getPaymentMethod());
+				// Có thể bổ sung orderId tự sinh
+				roomOrder.setOrderId("ORD-" + System.currentTimeMillis());
+				orderService.saveRoomOrder(roomOrder);
+			}
+			session.setAttribute("succMsg", "Cập nhật trạng thái đặt cọc thành công");
+		} else {
+			session.setAttribute("errorMsg", "Không thể cập nhật trạng thái");
+		}
+		return "redirect:/admin/deposits";
+	}
+
+	@GetMapping("/delete-deposit/{id}")
+	public String deleteDeposit(@PathVariable Integer id, HttpSession session) {
+		Boolean deleted = depositService.deleteDeposit(id);
+		if (deleted) {
+			session.setAttribute("succMsg", "Xóa đơn đặt cọc thành công");
+		} else {
+			session.setAttribute("errorMsg", "Không thể xóa đơn đặt cọc");
+		}
+		return "redirect:/admin/deposits";
 	}
 
 }
