@@ -85,9 +85,9 @@ public class UserController {
 		Cart saveCart = cartService.saveCart(rid, uid);
 
 		if (ObjectUtils.isEmpty(saveCart)) {
-			session.setAttribute("errorMsg", "Room add to cart failed");
+			session.setAttribute("errorMsg", "Thất bại");
 		} else {
-			session.setAttribute("succMsg", "Room added to cart");
+			session.setAttribute("succMsg", "Đã thêm vào danh sách đặt phòng");
 		}
 		return "redirect:/room/" + rid;
 	}
@@ -154,8 +154,12 @@ public class UserController {
 	@GetMapping("/user-orders")
 	public String myOrder(Model m, Principal p) {
 		UserDtls loginUser = getLoggedInUserDetails(p);
-		List<RoomOrder> orders = orderService.getOrdersByUser(loginUser.getId());
-		m.addAttribute("orders", orders);
+		List<RoomOrder> allOrders = orderService.getOrdersByUser(loginUser.getId());
+		List<RoomOrder> rentedOrders = allOrders.stream()
+			.filter(o -> "RENTED".equalsIgnoreCase(o.getStatus()))
+			.toList();
+		m.addAttribute("orders", allOrders);
+		m.addAttribute("rentedOrders", rentedOrders);
 		return "/user/my_orders";
 	}
 
@@ -256,6 +260,28 @@ public class UserController {
 			UserDtls user = getLoggedInUserDetails(p);
 			Room room = roomService.getRoomById(rid);
 
+			// Kiểm tra phòng có tồn tại không
+			if (room == null) {
+				session.setAttribute("errorMsg", "Phòng trọ không tồn tại!");
+				return "redirect:/rooms";
+			}
+
+			// Kiểm tra phòng còn khả dụng không - nếu không thì quay lại trang chi tiết phòng với thông báo
+			if (!room.getIsAvailable()) {
+				session.setAttribute("errorMsg", "Phòng trọ này đã có người thuê! Vui lòng chọn phòng khác.");
+				return "redirect:/room/" + rid; // Quay lại trang chi tiết phòng
+			}
+
+			// Kiểm tra user đã có yêu cầu đặt cọc pending cho phòng này chưa
+			List<Deposit> existingDeposits = depositService.getDepositsByRoom(rid);
+			boolean hasPendingDeposit = existingDeposits.stream()
+				.anyMatch(d -> "PENDING".equals(d.getStatus()) || "APPROVED".equals(d.getStatus()));
+
+			if (hasPendingDeposit) {
+				session.setAttribute("errorMsg", "Phòng này đã có yêu cầu đặt cọc đang chờ xử lý hoặc đã được chấp nhận!");
+				return "redirect:/room/" + rid; // Quay lại trang chi tiết phòng
+			}
+
 			if (amount == null || amount <= 0) {
 				session.setAttribute("errorMsg", "Số tiền đặt cọc không hợp lệ");
 				return "redirect:/user/deposit?rid=" + rid;
@@ -274,47 +300,16 @@ public class UserController {
 			Deposit savedDeposit = depositService.saveDeposit(deposit);
 
 			if (savedDeposit != null) {
-				// Remove room from cart if it exists
-				List<Cart> userCarts = cartService.getCartsByUser(user.getId());
-				for (Cart cart : userCarts) {
-					if (cart.getRoom().getId().equals(rid)) {
-						cartService.updateQuantity("de", cart.getId()); // Delete from cart
-						break;
-					}
-				}
-
-				// Add room back to cart temporarily for order creation
-				cartService.saveCart(rid, user.getId());
-
-				// Create order from cart
-				OrderRequest orderRequest = createOrderRequest(user, paymentMethod);
-				orderService.saveOrder(user.getId(), orderRequest);
-
-				session.setAttribute("succMsg", "Đặt cọc thành công! Đơn thuê đã được tạo tự động.");
-				return "redirect:/user/user-orders";
+				session.setAttribute("succMsg", "Yêu cầu đặt cọc đã được gửi! Vui lòng chờ chủ trọ xác nhận.");
+				return "redirect:/user/my-deposits";
 			} else {
-				session.setAttribute("errorMsg", "Có lỗi xảy ra khi đặt cọc");
+				session.setAttribute("errorMsg", "Có lỗi xảy ra khi gửi yêu cầu đặt cọc!");
 				return "redirect:/user/deposit?rid=" + rid;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			session.setAttribute("errorMsg", "Có lỗi xảy ra: " + e.getMessage());
-			return "redirect:/user/cart";
+			return "redirect:/room/" + rid; // Quay lại trang chi tiết phòng khi có lỗi
 		}
-	}
-
-	private OrderRequest createOrderRequest(UserDtls user, String paymentMethod) {
-		OrderRequest orderRequest = new OrderRequest();
-		orderRequest.setFirstName(user.getName());
-		orderRequest.setLastName("");
-		orderRequest.setEmail(user.getEmail());
-		orderRequest.setMobileNo(user.getMobileNumber());
-		orderRequest.setAddress(user.getAddress() != null ? user.getAddress() : "");
-		orderRequest.setCity(user.getCity() != null ? user.getCity() : "");
-		orderRequest.setState(user.getState() != null ? user.getState() : "");
-		orderRequest.setPincode(user.getPincode() != null ? user.getPincode() : "");
-		orderRequest.setPaymentType(paymentMethod != null ? paymentMethod : "CASH");
-		return orderRequest;
 	}
 
 	@GetMapping("/deposit-success")

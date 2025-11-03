@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ecom.model.Deposit;
+import com.ecom.model.Room;
 import com.ecom.repository.DepositRepository;
+import com.ecom.repository.RoomRepository;
 import com.ecom.service.DepositService;
 
 @Service
@@ -17,9 +19,34 @@ public class DepositServiceImpl implements DepositService {
 	@Autowired
 	private DepositRepository depositRepository;
 
+	@Autowired
+	private RoomRepository roomRepository;
+
+	@Autowired
+	private com.ecom.repository.RoomOrderRepository roomOrderRepository;
+
 	@Override
 	public Deposit saveDeposit(Deposit deposit) {
-		return depositRepository.save(deposit);
+		Deposit savedDeposit = depositRepository.save(deposit);
+		Room room = savedDeposit.getRoom();
+		if (room != null) {
+			room.setStatus("PENDING"); // Khi user đặt cọc, phòng chuyển sang PENDING
+			roomRepository.save(room);
+		}
+		// Tối ưu: Tạo RoomOrder nếu chưa có cho user/phòng này
+		com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(deposit.getUser().getId(), room.getId());
+		if (order == null) {
+			order = new com.ecom.model.RoomOrder();
+			order.setUser(deposit.getUser());
+			order.setRoom(room);
+			order.setOrderDate(deposit.getDepositDate());
+			order.setPrice(room.getMonthlyRent());
+			order.setQuantity(1); // Mặc định 1 tháng
+			order.setStatus("PENDING");
+			order.setPaymentType(deposit.getPaymentMethod());
+			roomOrderRepository.save(order);
+		}
+		return savedDeposit;
 	}
 
 	@Override
@@ -50,8 +77,29 @@ public class DepositServiceImpl implements DepositService {
 			Deposit deposit = findById.get();
 			deposit.setStatus(status);
 			deposit.setAdminNote(adminNote);
+			Room room = deposit.getRoom();
+			com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(deposit.getUser().getId(), room.getId());
 			if ("APPROVED".equals(status)) {
 				deposit.setApprovedDate(LocalDate.now());
+				if (room != null) {
+					room.setStatus("RENTED");
+					room.setIsAvailable(false);
+					roomRepository.save(room);
+				}
+				if (order != null) {
+					order.setStatus("RENTED");
+					roomOrderRepository.save(order);
+				}
+			} else if ("REJECTED".equals(status)) {
+				if (room != null) {
+					room.setStatus("ACTIVE");
+					room.setIsAvailable(true);
+					roomRepository.save(room);
+				}
+				if (order != null) {
+					order.setStatus("CANCELLED");
+					roomOrderRepository.save(order);
+				}
 			}
 			return depositRepository.save(deposit);
 		}

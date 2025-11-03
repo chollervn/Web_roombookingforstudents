@@ -17,4 +17,6 @@ public interface RoomOrderRepository extends JpaRepository<RoomOrder, Integer> {
 	@Query("SELECT ro FROM RoomOrder ro WHERE ro.room.ownerId = :ownerId")
 	List<RoomOrder> findByRoomOwnerId(@Param("ownerId") Integer ownerId);
 
+	RoomOrder findByUserIdAndRoomId(Integer userId, Integer roomId);
+
 }

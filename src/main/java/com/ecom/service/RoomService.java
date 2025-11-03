@@ -41,4 +41,6 @@ public interface RoomService {
 
 	public List<Room> getRoomsByOwnerId(Integer ownerId);
 
+	public Room updateRoomStatus(Integer roomId, String status);
+
 }

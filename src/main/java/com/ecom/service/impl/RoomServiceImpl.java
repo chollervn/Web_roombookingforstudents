@@ -186,4 +186,14 @@ public class RoomServiceImpl implements RoomService {
 		return roomRepository.findByOwnerId(ownerId);
 	}
 
+	@Override
+	public Room updateRoomStatus(Integer roomId, String status) {
+		Room room = roomRepository.findById(roomId).orElse(null);
+		if (room != null) {
+			room.setStatus(status);
+			return roomRepository.save(room);
+		}
+		return null;
+	}
+
 }

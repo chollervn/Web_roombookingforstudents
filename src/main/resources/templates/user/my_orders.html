@@ -29,11 +29,12 @@
 								<th scope="col">Thông tin phòng</th>
 								<th scope="col">Giá tiền</th>
 								<th scope="col">Trạng thái</th>
+								<th scope="col">Ngày hết hạn</th>
 								<th scope="col">Hành động</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr th:each="o:${orders}" th:if="${orders != null and !orders.isEmpty()}">
+							<tr th:each="o:${rentedOrders}" th:if="${rentedOrders != null and !rentedOrders.isEmpty()}">
 								<th scope="row">[[${o.orderId}]]</th>
 								<td>[[${o.orderDate}]]</td>
 								<td>
@@ -47,25 +48,17 @@
 									<strong>Tổng tiền: [[${#numbers.formatDecimal(o.quantity * o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong>
 								</td>
 								<td>
-									<span th:class="${o.status == 'Delivered' ? 'badge bg-success' :
-										(o.status == 'Cancelled' ? 'badge bg-danger' :
-										(o.status == 'In Progress' ? 'badge bg-warning' : 'badge bg-info'))}">
-										[[${o.status}]]
-									</span>
+									<span class="badge bg-success">Đang thuê</span>
 								</td>
 								<td>
-									<th:block th:if="${o.status != 'Cancelled' and o.status != 'Delivered'}">
-										<a th:href="@{'/user/update-status?id='+${o.id}+'&st=6'}"
-											class="btn btn-sm btn-danger"
-											onclick="return confirm('Bạn có chắc muốn hủy đơn thuê này?')">Hủy đơn</a>
-									</th:block>
-									<th:block th:unless="${o.status != 'Cancelled' and o.status != 'Delivered'}">
-										<button class="btn btn-sm btn-secondary disabled">Đã xử lý</button>
-									</th:block>
+									<span th:text="${#temporals.format(o.orderDate.plusMonths(o.quantity), 'dd/MM/yyyy')}"></span>
+								</td>
+								<td>
+									<button class="btn btn-sm btn-secondary disabled">Đang thuê</button>
 								</td>
 							</tr>
-							<tr th:if="${orders == null or orders.isEmpty()}">
-								<td colspan="6" class="text-center py-4">
+							<tr th:if="${rentedOrders == null or rentedOrders.isEmpty()}">
+								<td colspan="7" class="text-center py-4">
 									<div class="alert alert-info">
 										<i class="fas fa-info-circle"></i>
 										Bạn chưa có đơn thuê nào.

@@ -1,12 +1,3 @@
--- Spring Boot data initialization file
--- Dữ liệu mẫu cho hệ thống cho thuê phòng trọ sinh viên miền Bắc
-
--- Xóa dữ liệu cũ nếu có để tránh conflict
-DELETE FROM user_dtls WHERE email = 'admin@phongtrosv.com';
-
--- Thêm tài khoản admin mặc định (username: admin@phongtrosv.com, password: admin123)
-INSERT INTO user_dtls (name, email, mobile_number, password, role, is_enable, account_non_locked, failed_attempt, profile_image, account_type) VALUES
-('Admin PhongTroSV', 'admin@phongtrosv.com', '0900000000', '$2a$12$LQv3c1yqBaTVfC5f0So49.L5Bc/87Y0C.v2zKgMXfBNuOrPDMIuam', 'ROLE_ADMIN', true, true, 0, 'default.jpg', 'owner');
 
 -- Thêm các loại phòng trọ (RoomType)
 INSERT INTO room_type (name, image_name, is_active)

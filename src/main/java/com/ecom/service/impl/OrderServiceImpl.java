@@ -95,12 +95,19 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public RoomOrder updateOrderStatus(Integer id, String status) {
-		Optional<RoomOrder> findById = orderRepository.findById(id);
-		if (findById.isPresent()) {
-			RoomOrder roomOrder = findById.get();
-			roomOrder.setStatus(status);
-			RoomOrder updateOrder = orderRepository.save(roomOrder);
-			return updateOrder;
+		Optional<RoomOrder> orderOpt = orderRepository.findById(id);
+		if (orderOpt.isPresent()) {
+			RoomOrder order = orderOpt.get();
+			order.setStatus(status);
+			if ("CANCELLED".equals(status)) {
+				if (order.getRoom() != null) {
+					order.getRoom().setStatus("ACTIVE"); // Khi user hủy thuê, phòng chuyển ACTIVE
+					order.getRoom().setIsAvailable(true);
+					// Lưu lại trạng thái phòng
+					// Nếu có RoomRepository thì lưu, nếu không thì phòng sẽ được cập nhật khi đơn được lưu
+				}
+			}
+			return orderRepository.save(order);
 		}
 		return null;
 	}

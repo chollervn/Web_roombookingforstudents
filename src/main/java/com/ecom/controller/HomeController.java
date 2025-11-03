@@ -27,10 +27,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ecom.model.Deposit;
 import com.ecom.model.RoomType;
 import com.ecom.model.Room;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
+import com.ecom.service.DepositService;
 import com.ecom.service.RoomTypeService;
 import com.ecom.service.RoomService;
 import com.ecom.service.UserService;
@@ -61,6 +63,9 @@ public class HomeController {
 
 	@Autowired
 	private CartService cartService;
+
+	@Autowired
+	private DepositService depositService;
 
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
@@ -138,6 +143,33 @@ public class HomeController {
 	public String room(@PathVariable int id, Model m) {
 		Room roomById = roomService.getRoomById(id);
 		m.addAttribute("room", roomById);
+
+		// Kiểm tra trạng thái đặt cọc của phòng
+		List<Deposit> roomDeposits = depositService.getDepositsByRoom(id);
+
+		// Kiểm tra xem có deposit nào đang PENDING hoặc APPROVED không
+		boolean hasPendingDeposit = roomDeposits.stream()
+			.anyMatch(d -> "PENDING".equals(d.getStatus()));
+		boolean hasApprovedDeposit = roomDeposits.stream()
+			.anyMatch(d -> "APPROVED".equals(d.getStatus()));
+
+		// Tìm deposit PENDING gần nhất (nếu có)
+		Deposit pendingDeposit = roomDeposits.stream()
+			.filter(d -> "PENDING".equals(d.getStatus()))
+			.findFirst()
+			.orElse(null);
+
+		// Tìm deposit APPROVED gần nhất (nếu có)
+		Deposit approvedDeposit = roomDeposits.stream()
+			.filter(d -> "APPROVED".equals(d.getStatus()))
+			.findFirst()
+			.orElse(null);
+
+		m.addAttribute("hasPendingDeposit", hasPendingDeposit);
+		m.addAttribute("hasApprovedDeposit", hasApprovedDeposit);
+		m.addAttribute("pendingDeposit", pendingDeposit);
+		m.addAttribute("approvedDeposit", approvedDeposit);
+
 		return "view_product";
 	}
 
@@ -151,19 +183,33 @@ public class HomeController {
 		} else {
 			String imageName = (file == null || file.isEmpty()) ? "default.jpg" : file.getOriginalFilename();
 			user.setProfileImage(imageName);
+
+			// Ensure accountType is set properly - default to renter if not specified
+			if (user.getAccountType() == null || user.getAccountType().isEmpty()) {
+				user.setAccountType("renter");
+			}
+
 			UserDtls saveUser = userService.saveUser(user);
 			if (!ObjectUtils.isEmpty(saveUser)) {
 				if (file != null && !file.isEmpty()) {
-					File saveFile = new ClassPathResource("static/img").getFile();
-					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-							+ file.getOriginalFilename());
-					Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+					try {
+						File saveFile = new ClassPathResource("static/img").getFile();
+						Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
+								+ file.getOriginalFilename());
+						Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+					} catch (Exception e) {
+						// Log error but don't fail registration
+						System.out.println("Could not save profile image: " + e.getMessage());
+					}
 				}
-				model.addAttribute("succMsg", "Đăng ký thành công! Bạn có thể đăng nhập.");
+
+				// Set success message in session and redirect directly to login page
+				session.setAttribute("succMsg", "Đăng ký thành công! Vui lòng đăng nhập với tài khoản mới.");
+				return "redirect:/signin";
 			} else {
-				model.addAttribute("errorMsg", "Có lỗi xảy ra, vui lòng thử lại.");
+				model.addAttribute("errorMsg", "Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.");
+				return "register";
 			}
-			return "register";
 		}
 	}
 
@@ -239,6 +285,22 @@ public class HomeController {
 		m.addAttribute("roomTypes", roomTypes);
 		return "product";
 
+	}
+
+	@GetMapping("/register-success")
+	public String registerSuccess(@RequestParam(value = "type", defaultValue = "renter") String accountType,
+			Model model, HttpSession session) {
+
+		// Get success message from session
+		String successMsg = (String) session.getAttribute("succMsg");
+		if (successMsg != null) {
+			model.addAttribute("succMsg", successMsg);
+			session.removeAttribute("succMsg");
+		}
+
+		model.addAttribute("accountType", accountType);
+
+		return "register_success";
 	}
 
 }

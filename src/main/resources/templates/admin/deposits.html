@@ -88,9 +88,7 @@
 									<span th:if="${deposit.status == 'REJECTED'}" class="badge bg-danger">
 										<i class="fas fa-times"></i> Đã từ chối
 									</span>
-									<span th:if="${deposit.status == 'REFUNDED'}" class="badge bg-secondary">
-										<i class="fas fa-undo"></i> Đã hoàn cọc
-									</span>
+
 									<div th:if="${deposit.approvedDate != null}" class="mt-1">
 										<small class="text-muted">
 											<i class="fas fa-calendar-check"></i>
@@ -139,10 +137,8 @@
 														<div class="mb-3">
 															<label class="form-label"><i class="fas fa-tasks"></i> Trạng thái *</label>
 															<select name="status" class="form-select" required>
-																<option value="PENDING" th:selected="${deposit.status == 'PENDING'}">Chờ xác nhận</option>
 																<option value="APPROVED" th:selected="${deposit.status == 'APPROVED'}">Xác nhận đặt cọc</option>
 																<option value="REJECTED" th:selected="${deposit.status == 'REJECTED'}">Từ chối</option>
-																<option value="REFUNDED" th:selected="${deposit.status == 'REFUNDED'}">Đã hoàn cọc</option>
 															</select>
 														</div>
 
@@ -182,7 +178,7 @@
 					</div>
 					<div class="col-md-6 text-end">
 						<a href="/admin/" class="btn btn-secondary">
-							<i class="fas fa-arrow-left"></i> Quay lại Dashboard
+							<i class="fas fa-arrow-left"></i> Quay lại
 						</a>
 					</div>
 				</div>

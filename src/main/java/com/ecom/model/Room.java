@@ -58,6 +58,8 @@ public class Room {
 
 	private Double deposit; // Tiền cọc
 
+	private String status; // ACTIVE, PENDING, RENTED
+
 	private Double electricityCost; // Giá điện (VND/kWh)
 	private Double waterCost; // Giá nước (VND/m3)
 

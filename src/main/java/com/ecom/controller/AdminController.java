@@ -446,26 +446,23 @@ public class AdminController {
 									  @RequestParam String status,
 									  @RequestParam(required = false) String adminNote,
 									  HttpSession session) {
+
+		// Đơn giản hóa: chỉ có 2 trạng thái APPROVED hoặc REJECTED
+		if (!"APPROVED".equals(status) && !"REJECTED".equals(status)) {
+			session.setAttribute("errorMsg", "Trạng thái không hợp lệ!");
+			return "redirect:/admin/deposits";
+		}
+
 		com.ecom.model.Deposit updatedDeposit = depositService.updateDepositStatus(id, status, adminNote);
 
 		if (!ObjectUtils.isEmpty(updatedDeposit)) {
-			// Nếu admin duyệt đặt cọc, tạo RoomOrder cho user
-			if ("APPROVED".equalsIgnoreCase(status)) {
-				RoomOrder roomOrder = new RoomOrder();
-				roomOrder.setUser(updatedDeposit.getUser());
-				roomOrder.setRoom(updatedDeposit.getRoom());
-				roomOrder.setOrderDate(java.time.LocalDate.now());
-				roomOrder.setPrice(updatedDeposit.getAmount());
-				roomOrder.setQuantity(1); // Mặc định 1 tháng, có thể sửa nếu cần
-				roomOrder.setStatus("ACTIVE");
-				roomOrder.setPaymentType(updatedDeposit.getPaymentMethod());
-				// Có thể bổ sung orderId tự sinh
-				roomOrder.setOrderId("ORD-" + System.currentTimeMillis());
-				orderService.saveRoomOrder(roomOrder);
+			if ("APPROVED".equals(status)) {
+				session.setAttribute("succMsg", "Đã chấp nhận yêu cầu đặt cọc! Phòng trọ đã được đánh dấu là đã thuê.");
+			} else if ("REJECTED".equals(status)) {
+				session.setAttribute("succMsg", "Đã từ chối yêu cầu đặt cọc!");
 			}
-			session.setAttribute("succMsg", "Cập nhật trạng thái đặt cọc thành công");
 		} else {
-			session.setAttribute("errorMsg", "Không thể cập nhật trạng thái");
+			session.setAttribute("errorMsg", "Không thể cập nhật trạng thái đặt cọc!");
 		}
 		return "redirect:/admin/deposits";
 	}
@@ -479,6 +476,19 @@ public class AdminController {
 			session.setAttribute("errorMsg", "Không thể xóa đơn đặt cọc");
 		}
 		return "redirect:/admin/deposits";
+	}
+
+	@PostMapping("/cancel-rent")
+	public String cancelRent(@RequestParam Integer orderId, HttpSession session) {
+	    RoomOrder order = orderService.updateOrderStatus(orderId, "CANCELLED");
+	    if (order != null && order.getRoom() != null) {
+	        order.getRoom().setStatus("ACTIVE");
+	        order.getRoom().setIsAvailable(true);
+	        // Nếu có RoomService thì lưu lại trạng thái phòng
+	        roomService.updateRoomStatus(order.getRoom().getId(), "ACTIVE");
+	    }
+	    session.setAttribute("succMsg", "Đã hủy cho thuê thành công!");
+	    return "redirect:/admin/orders";
 	}
 
 }
