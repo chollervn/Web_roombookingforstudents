@@ -119,32 +119,60 @@
 							</div>
 						</div>
 
-						<!-- Contact Info -->
-						<div class="mb-3 p-3 bg-light rounded">
-							<h5><i class="fas fa-phone"></i> Thông tin liên hệ:</h5>
-							<p><strong>Người liên hệ:</strong> [[${room.contactName}]]</p>
-							<p><strong>Số điện thoại:</strong>
-								<a th:href="'tel:'+${room.contactPhone}" class="text-primary">[[${room.contactPhone}]]</a>
-							</p>
+						<!-- ============================================ -->
+						<!-- PHẦN HIỂN THỊ TRẠNG THÁI DUY NHẤT (PRIORITIZED) -->
+						<!-- ============================================ -->
+						<div class="mb-4">
+							<!-- Trạng thái phòng - CHỈ HIỂN THỊ 1 ALERT -->
+							<div th:if="${roomStatus != 'AVAILABLE'}"
+								 th:classappend="'alert alert-' + ${statusClass} + ' d-flex align-items-start shadow-sm'"
+								 role="alert">
+								<i th:classappend="'fas ' + ${statusIcon} + ' fa-lg me-3 mt-1'" aria-hidden="true"></i>
+								<div class="flex-grow-1">
+									<h5 class="alert-heading mb-2" th:text="${statusMessage}">Trạng thái</h5>
+									<div class="small">
+										<p class="mb-1" th:if="${contactName}">
+											<strong>Liên hệ:</strong> [[${contactName}]]
+										</p>
+										<p class="mb-0" th:if="${contactPhone}">
+											<strong>Số điện thoại:</strong>
+											<a th:href="'tel:'+${contactPhone}" class="text-decoration-none fw-bold">[[${contactPhone}]]</a>
+										</p>
+									</div>
+									<hr class="my-2" th:if="${roomStatus == 'RENTED'}">
+									<p class="mb-0 small text-muted" th:if="${roomStatus == 'RENTED'}">
+										Phòng này đã có người thuê. Vui lòng chọn phòng khác hoặc liên hệ để biết thêm chi tiết.
+									</p>
+									<p class="mb-0 small text-muted" th:if="${roomStatus == 'APPROVED_DEPOSIT'}">
+										Đã có người đặt cọc được chủ nhà chấp nhận. Phòng tạm thời không khả dụng.
+									</p>
+									<p class="mb-0 small text-muted" th:if="${roomStatus == 'PENDING_DEPOSIT'}">
+										Một đơn đặt cọc đang chờ duyệt — bạn chưa thể đặt cọc ngay lúc này.
+									</p>
+								</div>
+							</div>
 						</div>
 
-						<!-- Action Buttons -->
-						<div class="mb-3">
+						<!-- ============================================ -->
+						<!-- 2 NÚT HÀNH ĐỘNG DUY NHẤT -->
+						<!-- ============================================ -->
+						<div class="d-grid gap-2">
+							<!-- Nút chính: Gọi điện tư vấn -->
+							<a th:href="'tel:'+${contactPhone}"
+							   class="btn btn-primary btn-lg shadow"
+							   role="button">
+								<i class="fas fa-phone me-2"></i> Gọi điện tư vấn
+							</a>
 
-
-
-							<th:block th:unless="${room.isAvailable}">
-								<button class="btn btn-secondary col-md-12 mb-2" disabled>
-									<i class="fas fa-ban"></i> Phòng đã được thuê
-								</button>
-							</th:block>
-
-							<!-- Nút gọi điện -->
-							<a th:href="'tel:'+${room.contactPhone}" class="btn btn-info col-md-12">
-								<i class="fas fa-phone"></i> Gọi điện tư vấn
+							<!-- Nút phụ: Quay lại danh sách -->
+							<a th:href="@{/rooms}"
+							   class="btn btn-outline-secondary btn-lg"
+							   role="button">
+								<i class="fas fa-arrow-left me-2"></i> Quay lại danh sách
 							</a>
 						</div>
 
+					</div>
 				</div>
 			</div>
 		</div>

@@ -147,30 +147,62 @@ public class HomeController {
 		// Kiểm tra trạng thái đặt cọc của phòng
 		List<Deposit> roomDeposits = depositService.getDepositsByRoom(id);
 
-		// Kiểm tra xem có deposit nào đang PENDING hoặc APPROVED không
-		boolean hasPendingDeposit = roomDeposits.stream()
-			.anyMatch(d -> "PENDING".equals(d.getStatus()));
-		boolean hasApprovedDeposit = roomDeposits.stream()
-			.anyMatch(d -> "APPROVED".equals(d.getStatus()));
+		// Thứ tự ưu tiên trạng thái: RENTED > APPROVED > PENDING > AVAILABLE
+		String roomStatus = "AVAILABLE"; // Mặc định
+		String statusMessage = "";
+		String statusIcon = "fa-check-circle";
+		String statusClass = "success";
+		String contactName = roomById.getContactName();
+		String contactPhone = roomById.getContactPhone();
 
-		// Tìm deposit PENDING gần nhất (nếu có)
-		Deposit pendingDeposit = roomDeposits.stream()
-			.filter(d -> "PENDING".equals(d.getStatus()))
-			.findFirst()
-			.orElse(null);
+		if (!roomById.getIsAvailable()) {
+			// Trạng thái 1: Phòng đã được thuê (ưu tiên cao nhất)
+			roomStatus = "RENTED";
+			statusMessage = "Phòng đã được thuê";
+			statusIcon = "fa-ban";
+			statusClass = "danger";
+		} else {
+			// Kiểm tra APPROVED deposit
+			Deposit approvedDeposit = roomDeposits.stream()
+				.filter(d -> "APPROVED".equals(d.getStatus()))
+				.findFirst()
+				.orElse(null);
 
-		// Tìm deposit APPROVED gần nhất (nếu có)
-		Deposit approvedDeposit = roomDeposits.stream()
-			.filter(d -> "APPROVED".equals(d.getStatus()))
-			.findFirst()
-			.orElse(null);
+			if (approvedDeposit != null) {
+				// Trạng thái 2: Đã có người đặt cọc được duyệt
+				roomStatus = "APPROVED_DEPOSIT";
+				statusMessage = "Đã có người đặt cọc được duyệt";
+				statusIcon = "fa-lock";
+				statusClass = "warning";
+				if (approvedDeposit.getUser() != null) {
+					contactName = approvedDeposit.getUser().getName();
+					contactPhone = approvedDeposit.getUser().getMobileNumber();
+				}
+			} else {
+				// Kiểm tra PENDING deposit
+				Deposit pendingDeposit = roomDeposits.stream()
+					.filter(d -> "PENDING".equals(d.getStatus()))
+					.findFirst()
+					.orElse(null);
 
-		m.addAttribute("hasPendingDeposit", hasPendingDeposit);
-		m.addAttribute("hasApprovedDeposit", hasApprovedDeposit);
-		m.addAttribute("pendingDeposit", pendingDeposit);
-		m.addAttribute("approvedDeposit", approvedDeposit);
+				if (pendingDeposit != null) {
+					// Trạng thái 3: Đang chờ duyệt đặt cọc
+					roomStatus = "PENDING_DEPOSIT";
+					statusMessage = "Đang chờ duyệt đặt cọc";
+					statusIcon = "fa-hourglass-half";
+					statusClass = "info";
+				}
+			}
+		}
 
-		return "view_product";
+		m.addAttribute("roomStatus", roomStatus);
+		m.addAttribute("statusMessage", statusMessage);
+		m.addAttribute("statusIcon", statusIcon);
+		m.addAttribute("statusClass", statusClass);
+		m.addAttribute("contactName", contactName);
+		m.addAttribute("contactPhone", contactPhone);
+
+		return "view_room";
 	}
 
 	@PostMapping("/saveUser")
