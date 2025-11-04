@@ -26,8 +26,4 @@ public class OrderAddress {
 
 	private String city;
 
-	private String state;
-
-	private String pincode;
-
 }

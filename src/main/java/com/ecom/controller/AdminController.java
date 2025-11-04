@@ -32,6 +32,7 @@ import com.ecom.service.CartService;
 import com.ecom.service.DepositService;
 import com.ecom.service.RoomTypeService;
 import com.ecom.service.OrderService;
+import com.ecom.service.RoomBookingService;
 import com.ecom.service.RoomService;
 import com.ecom.service.UserService;
 import com.ecom.util.CommonUtil;
@@ -66,6 +67,9 @@ public class AdminController {
 
 	@Autowired
 	private DepositService depositService;
+
+	@Autowired
+	private RoomBookingService roomBookingService;
 
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
@@ -270,7 +274,14 @@ public class AdminController {
 		// Only get orders for rooms belonging to this owner
 		List<RoomOrder> ownerOrders = orderService.getOrdersByOwnerId(loggedInUser.getId());
 
+		// Lấy thông tin booking để hiển thị
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByOwner(loggedInUser.getId());
+		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
+			.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+			.toList();
+
 		m.addAttribute("orders", ownerOrders);
+		m.addAttribute("bookings", activeBookings);
 		m.addAttribute("srch", false);
 
 		m.addAttribute("pageNo", 0);
@@ -484,7 +495,6 @@ public class AdminController {
 	    if (order != null && order.getRoom() != null) {
 	        order.getRoom().setStatus("ACTIVE");
 	        order.getRoom().setIsAvailable(true);
-	        // Nếu có RoomService thì lưu lại trạng thái phòng
 	        roomService.updateRoomStatus(order.getRoom().getId(), "ACTIVE");
 	    }
 	    session.setAttribute("succMsg", "Đã hủy cho thuê thành công!");

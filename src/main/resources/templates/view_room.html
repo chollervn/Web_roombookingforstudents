@@ -54,26 +54,9 @@
 									<p><strong>Số người tối đa:</strong> [[${room.maxOccupants}]] người</p>
 								</div>
 								<div class="col-6">
-									<p><strong>Trạng thái thuê:</strong>
+									<p><strong>Trạng thái:</strong>
 										<span class="badge bg-success" th:if="${room.isAvailable}">Còn trống</span>
 										<span class="badge bg-danger" th:unless="${room.isAvailable}">Đã thuê</span>
-									</p>
-									<p><strong>Trạng thái đặt cọc:</strong>
-										<th:block th:if="${hasApprovedDeposit}">
-											<span class="badge bg-danger">
-												<i class="fas fa-lock"></i> Đã có người đặt cọc được duyệt
-											</span>
-										</th:block>
-										<th:block th:if="${hasPendingDeposit and !hasApprovedDeposit}">
-											<span class="badge bg-warning text-dark">
-												<i class="fas fa-clock"></i> Có yêu cầu đặt cọc đang chờ duyệt
-											</span>
-										</th:block>
-										<th:block th:if="${!hasPendingDeposit and !hasApprovedDeposit}">
-											<span class="badge bg-success">
-												<i class="fas fa-check"></i> Có thể đặt cọc
-											</span>
-										</th:block>
 									</p>
 									<p><strong>Tiền cọc:</strong> [[${#numbers.formatDecimal(room.deposit, 0, 'COMMA', 0, 'POINT')}]] VNĐ</p>
 								</div>
@@ -146,75 +129,22 @@
 						</div>
 
 						<!-- Action Buttons -->
-						<div class="mb-2">
-							<!-- Nút đặt thuê phòng -->
-							<th:block th:if="${room.isAvailable}">
-								<th:block th:if="${user==null}">
-									<a href="/signin" class="btn btn-primary col-md-12 mb-2">
-										<i class="fas fa-calendar-plus"></i> Thêm vào danh sách trọ đang xem
-									</a>
-								</th:block>
+						<div class="mb-3">
 
-								<th:block th:unless="${user==null}">
-									<a th:href="@{'/user/addCart?rid='+${room.id}+'&uid='+${user.id}}"
-										class="btn btn-primary col-md-12 mb-2">
-										<i class="fas fa-calendar-plus"></i> Thêm vào danh sách trọ đang xem
-									</a>
-								</th:block>
-							</th:block>
+
 
 							<th:block th:unless="${room.isAvailable}">
 								<button class="btn btn-secondary col-md-12 mb-2" disabled>
-									<i class="fas fa-times"></i> Phòng đã được thuê
+									<i class="fas fa-ban"></i> Phòng đã được thuê
 								</button>
 							</th:block>
+
+							<!-- Nút gọi điện -->
+							<a th:href="'tel:'+${room.contactPhone}" class="btn btn-info col-md-12">
+								<i class="fas fa-phone"></i> Gọi điện tư vấn
+							</a>
 						</div>
 
-						<div class="mb-2">
-							<!-- Nút đặt cọc -->
-							<th:block th:if="${hasApprovedDeposit}">
-								<!-- Đã có người đặt cọc được duyệt - disable button -->
-								<button class="btn btn-danger col-md-12 mb-2" disabled>
-									<i class="fas fa-lock"></i> Đã có người đặt cọc được duyệt
-								</button>
-							</th:block>
-
-							<th:block th:if="${hasPendingDeposit and !hasApprovedDeposit}">
-								<!-- Có yêu cầu đặt cọc đang chờ - disable button -->
-								<button class="btn btn-warning col-md-12 mb-2" disabled>
-									<i class="fas fa-clock"></i> Có yêu cầu đặt cọc đang chờ duyệt
-								</button>
-							</th:block>
-
-							<th:block th:if="${!hasPendingDeposit and !hasApprovedDeposit and room.isAvailable}">
-								<!-- Có thể đặt cọc - enable button -->
-								<th:block th:if="${user==null}">
-									<a href="/signin" class="btn btn-success col-md-12 mb-2">
-										<i class="fas fa-hand-holding-usd"></i> Đặt cọc phòng trọ
-									</a>
-								</th:block>
-
-								<th:block th:unless="${user==null}">
-									<a th:href="@{'/user/deposit?rid='+${room.id}}"
-										class="btn btn-success col-md-12 mb-2">
-										<i class="fas fa-hand-holding-usd"></i> Đặt cọc phòng trọ
-									</a>
-								</th:block>
-							</th:block>
-
-							<th:block th:if="${!room.isAvailable}">
-								<!-- Phòng đã được thuê - disable button -->
-								<button class="btn btn-secondary col-md-12 mb-2" disabled>
-									<i class="fas fa-ban"></i> Không thể đặt cọc - Phòng đã thuê
-								</button>
-							</th:block>
-						</div>
-
-						<!-- Nút gọi điện -->
-						<a th:href="'tel:'+${room.contactPhone}" class="btn btn-info col-md-12">
-							<i class="fas fa-phone"></i> Gọi điện tư vấn
-						</a>
-					</div>
 				</div>
 			</div>
 		</div>

@@ -54,10 +54,8 @@
 							<div class="mb-3">
 								<label class="form-label"><i class="fas fa-money-bill"></i> Số tiền đặt cọc (VNĐ) *</label>
 								<input type="number" step="0.01" min="0" name="amount" class="form-control form-control-lg"
-									th:value="${suggestedDeposit}" required />
-								<small class="text-muted">
-									Số tiền đề xuất: <strong th:text="${#numbers.formatDecimal(suggestedDeposit, 0, 'COMMA', 0, 'POINT')}">0</strong> VNĐ
-								</small>
+									th:value="${suggestedDeposit}" readonly required />
+
 							</div>
 
 							<div class="mb-3">

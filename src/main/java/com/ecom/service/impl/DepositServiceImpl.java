@@ -3,13 +3,16 @@ package com.ecom.service.impl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ecom.model.Deposit;
 import com.ecom.model.Room;
+import com.ecom.model.RoomBooking;
 import com.ecom.repository.DepositRepository;
+import com.ecom.repository.RoomBookingRepository;
 import com.ecom.repository.RoomRepository;
 import com.ecom.service.DepositService;
 
@@ -24,6 +27,9 @@ public class DepositServiceImpl implements DepositService {
 
 	@Autowired
 	private com.ecom.repository.RoomOrderRepository roomOrderRepository;
+
+	@Autowired
+	private RoomBookingRepository roomBookingRepository;
 
 	@Override
 	public Deposit saveDeposit(Deposit deposit) {
@@ -78,27 +84,74 @@ public class DepositServiceImpl implements DepositService {
 			deposit.setStatus(status);
 			deposit.setAdminNote(adminNote);
 			Room room = deposit.getRoom();
-			com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(deposit.getUser().getId(), room.getId());
+
 			if ("APPROVED".equals(status)) {
 				deposit.setApprovedDate(LocalDate.now());
+
+				// Cập nhật trạng thái phòng
 				if (room != null) {
 					room.setStatus("RENTED");
 					room.setIsAvailable(false);
 					roomRepository.save(room);
 				}
-				if (order != null) {
-					order.setStatus("RENTED");
-					roomOrderRepository.save(order);
+
+				// Tạo hoặc cập nhật RoomOrder
+				com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(
+					deposit.getUser().getId(), room.getId());
+
+				if (order == null) {
+					order = new com.ecom.model.RoomOrder();
+					order.setOrderId(UUID.randomUUID().toString());
+					order.setUser(deposit.getUser());
+					order.setRoom(room);
+					order.setOrderDate(LocalDate.now());
+					order.setPrice(room.getMonthlyRent());
+					order.setQuantity(1); // Mặc định 1 tháng
+					order.setPaymentType(deposit.getPaymentMethod());
 				}
+				order.setStatus("RENTED");
+				roomOrderRepository.save(order);
+
+				// Tạo hoặc cập nhật RoomBooking
+				RoomBooking booking = roomBookingRepository.findByUserIdAndRoomId(
+					deposit.getUser().getId(), room.getId());
+
+				if (booking == null) {
+					booking = new RoomBooking();
+					booking.setUser(deposit.getUser());
+					booking.setRoom(room);
+					booking.setStartDate(LocalDate.now());
+					booking.setDurationMonths(1); // Mặc định 1 tháng
+					booking.setEndDate(LocalDate.now().plusMonths(1));
+					booking.setMonthlyRent(room.getMonthlyRent());
+					booking.setPaymentMethod(deposit.getPaymentMethod());
+					booking.setDepositAmount(deposit.getAmount());
+				}
+				booking.setStatus("ACTIVE");
+				roomBookingRepository.save(booking);
+
 			} else if ("REJECTED".equals(status)) {
+				// Reset trạng thái phòng về ACTIVE
 				if (room != null) {
 					room.setStatus("ACTIVE");
 					room.setIsAvailable(true);
 					roomRepository.save(room);
 				}
+
+				// Hủy RoomOrder nếu có
+				com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(
+					deposit.getUser().getId(), room.getId());
 				if (order != null) {
 					order.setStatus("CANCELLED");
 					roomOrderRepository.save(order);
+				}
+
+				// Hủy RoomBooking nếu có
+				RoomBooking booking = roomBookingRepository.findByUserIdAndRoomId(
+					deposit.getUser().getId(), room.getId());
+				if (booking != null) {
+					booking.setStatus("CANCELLED");
+					roomBookingRepository.save(booking);
 				}
 			}
 			return depositRepository.save(deposit);

@@ -26,6 +26,7 @@ import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
 import com.ecom.service.DepositService;
 import com.ecom.service.OrderService;
+import com.ecom.service.RoomBookingService;
 import com.ecom.service.RoomService;
 import com.ecom.service.RoomTypeService;
 import com.ecom.service.UserService;
@@ -59,6 +60,9 @@ public class UserController {
 
 	@Autowired
 	private DepositService depositService;
+
+	@Autowired
+	private RoomBookingService roomBookingService;
 
 
 	@GetMapping("/")
@@ -158,8 +162,16 @@ public class UserController {
 		List<RoomOrder> rentedOrders = allOrders.stream()
 			.filter(o -> "RENTED".equalsIgnoreCase(o.getStatus()))
 			.toList();
+
+		// Lấy thông tin booking
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByUser(loginUser.getId());
+		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
+			.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+			.toList();
+
 		m.addAttribute("orders", allOrders);
 		m.addAttribute("rentedOrders", rentedOrders);
+		m.addAttribute("bookings", activeBookings);
 		return "/user/my_orders";
 	}
 

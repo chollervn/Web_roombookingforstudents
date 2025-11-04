@@ -15,10 +15,13 @@ import org.springframework.stereotype.Service;
 import com.ecom.model.Cart;
 import com.ecom.model.OrderAddress;
 import com.ecom.model.OrderRequest;
+import com.ecom.model.RoomBooking;
 import com.ecom.model.RoomOrder;
 import com.ecom.model.UserDtls;
 import com.ecom.repository.CartRepository;
+import com.ecom.repository.RoomBookingRepository;
 import com.ecom.repository.RoomOrderRepository;
+import com.ecom.repository.RoomRepository;
 import com.ecom.service.OrderService;
 import com.ecom.util.CommonUtil;
 import com.ecom.util.OrderStatus;
@@ -34,6 +37,12 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	private CommonUtil commonUtil;
+
+	@Autowired
+	private RoomRepository roomRepository;
+
+	@Autowired
+	private RoomBookingRepository roomBookingRepository;
 
 	@Override
 	public void saveOrder(Integer userid, OrderRequest orderRequest) throws Exception {
@@ -99,12 +108,21 @@ public class OrderServiceImpl implements OrderService {
 		if (orderOpt.isPresent()) {
 			RoomOrder order = orderOpt.get();
 			order.setStatus(status);
+
 			if ("CANCELLED".equals(status)) {
+				// Khi user hủy thuê, phòng chuyển ACTIVE
 				if (order.getRoom() != null) {
-					order.getRoom().setStatus("ACTIVE"); // Khi user hủy thuê, phòng chuyển ACTIVE
+					order.getRoom().setStatus("ACTIVE");
 					order.getRoom().setIsAvailable(true);
-					// Lưu lại trạng thái phòng
-					// Nếu có RoomRepository thì lưu, nếu không thì phòng sẽ được cập nhật khi đơn được lưu
+					roomRepository.save(order.getRoom());
+				}
+
+				// Đồng bộ với RoomBooking
+				RoomBooking booking = roomBookingRepository.findByUserIdAndRoomId(
+					order.getUser().getId(), order.getRoom().getId());
+				if (booking != null) {
+					booking.setStatus("CANCELLED");
+					roomBookingRepository.save(booking);
 				}
 			}
 			return orderRepository.save(order);

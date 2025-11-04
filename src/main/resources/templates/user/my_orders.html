@@ -9,7 +9,7 @@
 	<section>
 		<div class="container mt-5 p-5">
 			<div class="row">
-				<p class="text-center fs-3">Đơn thuê của tôi</p>
+				<p class="text-center fs-3">Trọ đang thuê</p>
 				<th:block th:if="${session.succMsg}">
 					<p class="text-success fw-bold text-center">[[${session.succMsg}]]</p>
 					<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
@@ -19,50 +19,61 @@
 					<p class="text-danger fw-bold text-center">[[${session.errorMsg}]]</p>
 					<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
 				</th:block>
-				<div class="col-md-12 ">
+				<div class="col-md-12">
 
-					<table class="table table-bordered card-sh">
-						<thead>
+					<table class="table table-bordered table-hover card-sh">
+						<thead class="table-primary">
 							<tr>
 								<th scope="col">Mã đơn</th>
-								<th scope="col">Ngày đặt</th>
 								<th scope="col">Thông tin phòng</th>
-								<th scope="col">Giá tiền</th>
-								<th scope="col">Trạng thái</th>
+								<th scope="col">Ngày bắt đầu</th>
 								<th scope="col">Ngày hết hạn</th>
+								<th scope="col">Giá thuê</th>
+								<th scope="col">Số tháng</th>
+								<th scope="col">Tổng tiền</th>
+								<th scope="col">Trạng thái</th>
 								<th scope="col">Hành động</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr th:each="o:${rentedOrders}" th:if="${rentedOrders != null and !rentedOrders.isEmpty()}">
 								<th scope="row">[[${o.orderId}]]</th>
-								<td>[[${o.orderDate}]]</td>
 								<td>
 									<strong>[[${o.room.roomName}]]</strong><br>
-									Loại: [[${o.room.roomType}]]<br>
-									Địa chỉ: [[${o.room.address}]]
+									<small class="text-muted">Loại: [[${o.room.roomType}]]</small><br>
+									<small class="text-muted">Địa chỉ: [[${o.room.address}]]</small>
+								</td>
+								<td>[[${#temporals.format(o.orderDate, 'dd/MM/yyyy')}]]</td>
+								<td>
+									<span th:text="${#temporals.format(o.orderDate.plusMonths(o.quantity), 'dd/MM/yyyy')}"></span>
 								</td>
 								<td>
-									Số lượng: [[${o.quantity}]]<br>
-									Giá thuê: [[${#numbers.formatDecimal(o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ/tháng<br>
-									<strong>Tổng tiền: [[${#numbers.formatDecimal(o.quantity * o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong>
+									[[${#numbers.formatDecimal(o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ/tháng
+								</td>
+								<td>[[${o.quantity}]] tháng</td>
+								<td>
+									<strong>[[${#numbers.formatDecimal(o.quantity * o.price, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong>
 								</td>
 								<td>
 									<span class="badge bg-success">Đang thuê</span>
 								</td>
 								<td>
-									<span th:text="${#temporals.format(o.orderDate.plusMonths(o.quantity), 'dd/MM/yyyy')}"></span>
-								</td>
-								<td>
-									<button class="btn btn-sm btn-secondary disabled">Đang thuê</button>
+									<form th:action="@{/user/update-status}" method="get" style="display:inline;">
+										<input type="hidden" name="id" th:value="${o.id}">
+										<input type="hidden" name="st" value="6">
+										<button type="submit" class="btn btn-sm btn-danger"
+											onclick="return confirm('Bạn có chắc muốn hủy thuê phòng này?')">
+											<i class="fas fa-times"></i> Hủy thuê
+										</button>
+									</form>
 								</td>
 							</tr>
 							<tr th:if="${rentedOrders == null or rentedOrders.isEmpty()}">
-								<td colspan="7" class="text-center py-4">
+								<td colspan="9" class="text-center py-4">
 									<div class="alert alert-info">
 										<i class="fas fa-info-circle"></i>
 										Bạn chưa có đơn thuê nào.
-										<a th:href="@{/}" class="btn btn-primary btn-sm ms-2">Bắt đầu thuê phòng</a>
+										<a th:href="@{/rooms}" class="btn btn-primary btn-sm ms-2">Bắt đầu thuê phòng</a>
 									</div>
 								</td>
 							</tr>
