@@ -72,8 +72,7 @@ public class OrderServiceImpl implements OrderService {
 			address.setMobileNo(orderRequest.getMobileNo());
 			address.setAddress(orderRequest.getAddress());
 			address.setCity(orderRequest.getCity());
-			address.setState(orderRequest.getState());
-			address.setPincode(orderRequest.getPincode());
+
 
 			order.setOrderAddress(address);
 
