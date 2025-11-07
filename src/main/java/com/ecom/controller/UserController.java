@@ -2,7 +2,9 @@ package com.ecom.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -85,13 +87,19 @@ public class UserController {
 	}
 
 	@GetMapping("/addCart")
-	public String addToCart(@RequestParam Integer rid, @RequestParam Integer uid, HttpSession session) {
-		Cart saveCart = cartService.saveCart(rid, uid);
+	public String addToCart(@RequestParam Integer rid, Principal p, HttpSession session) {
+		if (p == null) {
+			session.setAttribute("errorMsg", "Vui lòng đăng nhập để thêm vào giỏ hàng");
+			return "redirect:/signin";
+		}
+
+		UserDtls user = getLoggedInUserDetails(p);
+		Cart saveCart = cartService.saveCart(rid, user.getId());
 
 		if (ObjectUtils.isEmpty(saveCart)) {
-			session.setAttribute("errorMsg", "Thất bại");
+			session.setAttribute("errorMsg", "Không thể thêm vào giỏ hàng");
 		} else {
-			session.setAttribute("succMsg", "Đã thêm vào danh sách đặt phòng");
+			session.setAttribute("succMsg", "Đã thêm vào danh sách trọ đã xem");
 		}
 		return "redirect:/room/" + rid;
 	}
@@ -99,9 +107,33 @@ public class UserController {
 	@GetMapping("/cart")
 	public String loadCartPage(Principal p, Model m) {
 
+		// If not logged in, redirect to signin (also avoids NPE when Principal is null)
+		if (p == null) {
+			return "redirect:/signin";
+		}
+
 		UserDtls user = getLoggedInUserDetails(p);
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
+
+		// Lấy thông tin đặt cọc của user cho từng phòng
+		List<Deposit> userDeposits = depositService.getDepositsByUser(user.getId());
+		// Build a map roomId -> latest deposit (based on highest ID = most recent)
+		Map<Integer, Deposit> depositMap = new HashMap<>();
+		if (userDeposits != null) {
+			for (Deposit d : userDeposits) {
+				if (d == null || d.getRoom() == null) continue;
+				Integer rid = d.getRoom().getId();
+				Deposit existing = depositMap.get(rid);
+
+				// Always keep the deposit with HIGHER ID (more recent record)
+				if (existing == null || (d.getId() != null && existing.getId() != null && d.getId() > existing.getId())) {
+					depositMap.put(rid, d);
+				}
+			}
+		}
+		m.addAttribute("depositMap", depositMap);
+
 		if (carts.size() > 0) {
 			Double totalOrderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
 			m.addAttribute("totalOrderPrice", totalOrderPrice);
@@ -112,6 +144,52 @@ public class UserController {
 	@GetMapping("/cartQuantityUpdate")
 	public String updateCartQuantity(@RequestParam String sy, @RequestParam Integer cid) {
 		cartService.updateQuantity(sy, cid);
+		return "redirect:/user/cart";
+	}
+
+	@GetMapping("/deleteCart")
+	public String deleteCart(@RequestParam Integer cid, Principal p, HttpSession session) {
+		if (p == null) {
+			return "redirect:/signin";
+		}
+
+		UserDtls user = getLoggedInUserDetails(p);
+
+		// Kiểm tra xem cart này có thuộc về user này không
+		Cart cart = cartService.getCartsByUser(user.getId()).stream()
+			.filter(c -> c.getId().equals(cid))
+			.findFirst()
+			.orElse(null);
+
+		if (cart == null) {
+			session.setAttribute("errorMsg", "Không tìm thấy trọ trong danh sách");
+			return "redirect:/user/cart";
+		}
+
+		// Kiểm tra trạng thái đặt cọc - chỉ cho phép xóa nếu chưa cọc hoặc bị từ chối
+		List<Deposit> deposits = depositService.getDepositsByUser(user.getId());
+		Deposit latestDeposit = null;
+
+		if (deposits != null) {
+			for (Deposit d : deposits) {
+				if (d.getRoom() != null && d.getRoom().getId().equals(cart.getRoom().getId())) {
+					if (latestDeposit == null || (d.getId() != null && latestDeposit.getId() != null && d.getId() > latestDeposit.getId())) {
+						latestDeposit = d;
+					}
+				}
+			}
+		}
+
+		// Nếu có đặt cọc đang pending hoặc approved thì không cho xóa
+		if (latestDeposit != null &&
+			(latestDeposit.getStatus().equals("PENDING") || latestDeposit.getStatus().equals("APPROVED"))) {
+			session.setAttribute("errorMsg", "Không thể xóa trọ đã đặt cọc hoặc đang chờ duyệt");
+			return "redirect:/user/cart";
+		}
+
+		// Cho phép xóa
+		cartService.deleteCart(cid);
+		session.setAttribute("succMsg", "Đã xóa trọ khỏi danh sách");
 		return "redirect:/user/cart";
 	}
 
@@ -189,11 +267,7 @@ public class UserController {
 
 		RoomOrder updateOrder = orderService.updateOrderStatus(id, status);
 
-		try {
-			commonUtil.sendMailForRoomOrder(updateOrder, status);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 
 		if (!ObjectUtils.isEmpty(updateOrder)) {
 			session.setAttribute("succMsg", "Status Updated");
@@ -313,14 +387,14 @@ public class UserController {
 
 			if (savedDeposit != null) {
 				session.setAttribute("succMsg", "Yêu cầu đặt cọc đã được gửi! Vui lòng chờ chủ trọ xác nhận.");
-				return "redirect:/user/my-deposits";
+				return "redirect:/user/cart";
 			} else {
 				session.setAttribute("errorMsg", "Có lỗi xảy ra khi gửi yêu cầu đặt cọc!");
 				return "redirect:/user/deposit?rid=" + rid;
 			}
 		} catch (Exception e) {
 			session.setAttribute("errorMsg", "Có lỗi xảy ra: " + e.getMessage());
-			return "redirect:/room/" + rid; // Quay lại trang chi tiết phòng khi có lỗi
+			return "redirect:/user/cart"; // Quay về cart khi có lỗi
 		}
 	}
 

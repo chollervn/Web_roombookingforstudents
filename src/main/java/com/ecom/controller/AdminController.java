@@ -308,11 +308,7 @@ public class AdminController {
 
 		RoomOrder updateOrder = orderService.updateOrderStatus(id, status);
 
-		try {
-			commonUtil.sendMailForRoomOrder(updateOrder, status);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 
 		if (!ObjectUtils.isEmpty(updateOrder)) {
 			session.setAttribute("succMsg", "Status Updated");
@@ -394,7 +390,7 @@ public class AdminController {
 	}
 
 	@PostMapping("/update-profile")
-	public String updateProfile(@ModelAttribute UserDtls user, @RequestParam MultipartFile img, HttpSession session) {
+	public String updateProfile(@ModelAttribute UserDtls user, @RequestParam(required = false) MultipartFile img, HttpSession session) {
 		UserDtls updateUserProfile = userService.updateUserProfile(user, img);
 		if (ObjectUtils.isEmpty(updateUserProfile)) {
 			session.setAttribute("errorMsg", "Profile not updated");

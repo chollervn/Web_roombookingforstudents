@@ -42,6 +42,11 @@ public class UserServiceImpl implements UserService {
 		user.setAccountNonLocked(true);
 		user.setFailedAttempt(0);
 
+		// Nếu chưa có ảnh đại diện thì dùng ảnh mặc định
+		if (user.getProfileImage() == null || user.getProfileImage().isEmpty()) {
+			user.setProfileImage("default.jpg");
+		}
+
 		String encodePassword = passwordEncoder.encode(user.getPassword());
 		user.setPassword(encodePassword);
 		UserDtls saveUser = userRepository.save(user);

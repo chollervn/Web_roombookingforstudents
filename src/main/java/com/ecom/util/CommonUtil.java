@@ -25,23 +25,7 @@ public class CommonUtil {
 	@Autowired
 	private UserService userService;
 
-	public Boolean sendMail(String url, String reciepentEmail) throws UnsupportedEncodingException, MessagingException {
 
-		MimeMessage message = mailSender.createMimeMessage();
-		MimeMessageHelper helper = new MimeMessageHelper(message);
-
-		helper.setFrom("nguyencongphu3020@gmail.com", "Shopping Cart");
-		helper.setTo(reciepentEmail);
-
-		String content = "<p>Hello,</p>" + "<p>You have requested to reset your password.</p>"
-				+ "<p>Click the link below to change your password:</p>" + "<p><a href=\"" + url
-				+ "\">Change my password</a></p>";
-		helper.setSubject("Password Reset");
-		helper.setText(content, true);
-
-		mailSender.send(message);
-		return true;
-	}
 
 	public static String generateUrl(HttpServletRequest request) {
 
@@ -52,38 +36,7 @@ public class CommonUtil {
 
 	String msg = null;
 
-	public Boolean sendMailForRoomOrder(RoomOrder order, String status) throws Exception {
 
-		msg = "<p>Hello [[name]],</p>"
-				+ "<p>Thank you for booking room with us. Your room booking details are below:</p>"
-				+ "<p><b>Room Details:</b></p>"
-				+ "<p>Room Name: [[roomName]]</p>"
-				+ "<p>Room Type: [[roomType]]</p>"
-				+ "<p>Monthly Rent: [[price]]</p>"
-				+ "<p>Booking Duration: [[quantity]] months</p>"
-				+ "<p>Total Amount: [[totalPrice]]</p>"
-				+ "<p>Booking Status: [[orderStatus]]</p>";
-
-		MimeMessage message = mailSender.createMimeMessage();
-		MimeMessageHelper helper = new MimeMessageHelper(message);
-
-		helper.setFrom("nguyencongphu3020@gmail.com", "Room Rental System");
-		helper.setTo(order.getOrderAddress().getEmail());
-
-		msg = msg.replace("[[name]]", order.getOrderAddress().getFirstName());
-		msg = msg.replace("[[roomName]]", order.getRoom().getRoomName());
-		msg = msg.replace("[[roomType]]", order.getRoom().getRoomType());
-		msg = msg.replace("[[price]]", order.getPrice().toString());
-		msg = msg.replace("[[quantity]]", order.getQuantity().toString());
-		msg = msg.replace("[[totalPrice]]", String.valueOf(order.getQuantity() * order.getPrice()));
-		msg = msg.replace("[[orderStatus]]", status);
-
-		helper.setSubject("Room Booking Status");
-		helper.setText(msg, true);
-
-		mailSender.send(message);
-		return true;
-	}
 
 	public UserDtls getLoggedInUserDetails(Principal p) {
 		String email = p.getName();

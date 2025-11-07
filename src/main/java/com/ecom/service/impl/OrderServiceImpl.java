@@ -81,13 +81,8 @@ public class OrderServiceImpl implements OrderService {
 			// Clear cart after saving order
 			resetCart(cart.getUser());
 
-			// Try to send email but don't fail if email service is down
-			try {
-				commonUtil.sendMailForRoomOrder(saveOrder, "success");
-			} catch (Exception e) {
-				// Log the error but don't let it break the order process
-				System.out.println("Warning: Could not send email notification: " + e.getMessage());
-			}
+
+
 		}
 	}
 

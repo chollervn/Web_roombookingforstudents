@@ -28,8 +28,9 @@
 								<tr>
 									<th width="5%">STT</th>
 									<th width="12%">Hình</th>
-									<th width="35%">Thông Tin Phòng</th>
-									<th width="15%">Giá Thuê</th>
+									<th width="28%">Thông Tin Phòng</th>
+									<th width="12%">Giá Thuê</th>
+									<th width="15%">Trạng Thái Cọc</th>
 									<th width="18%">Thao Tác</th>
 								</tr>
 							</thead>
@@ -55,15 +56,58 @@
 											<small class="text-muted">[[${cart.room.district}]], [[${cart.room.city}]]</small>
 										</div>
 									</td>
-									<td>
+									<td class="align-middle">
 										<strong>[[${#numbers.formatDecimal(cart.room.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong><br>
 										<small class="text-muted">/tháng</small>
 									</td>
+									<td class="align-middle text-center">
+										<!-- Hiển thị trạng thái đặt cọc -->
+										<th:block th:with="deposit=${depositMap[cart.room.id]}">
+											<span th:if="${deposit != null && deposit.status == 'APPROVED'}" class="badge bg-success">
+												<i class="fas fa-check-circle"></i> Đã duyệt
+											</span>
+											<span th:if="${deposit != null && deposit.status == 'PENDING'}" class="badge bg-warning text-dark">
+												<i class="fas fa-clock"></i> Chờ duyệt
+											</span>
+											<span th:if="${deposit != null && deposit.status == 'REJECTED'}" class="badge bg-danger">
+												<i class="fas fa-times-circle"></i> Bị từ chối
+											</span>
+											<span th:if="${deposit == null}" class="badge bg-secondary">
+												<i class="fas fa-info-circle"></i> Chưa đặt cọc
+											</span>
+										</th:block>
+									</td>
 									<td class="text-center align-middle">
-										<!-- Chat with owner -->
-										<a th:href="@{'/user/chat?rid='+${cart.room.id}}" class="btn btn-primary btn-sm me-2">Chat với Chủ trọ</a>
-										<!-- Deposit -->
-										<a th:href="@{'/user/deposit?rid='+${cart.room.id}}" class="btn btn-warning btn-sm">Đặt cọc</a>
+										<!-- Kiểm tra trạng thái cọc để hiển thị nút phù hợp -->
+										<th:block th:with="deposit=${depositMap[cart.room.id]}">
+											<!-- Nếu chưa đặt cọc hoặc bị từ chối => cho phép đặt cọc và xóa -->
+											<div th:if="${deposit == null || deposit.status == 'REJECTED'}">
+												<a th:href="@{'/user/chat?rid='+${cart.room.id}}" class="btn btn-primary btn-sm mb-1">
+													<i class="fas fa-comments"></i> Chat
+												</a>
+												<a th:href="@{'/user/deposit?rid='+${cart.room.id}}" class="btn btn-warning btn-sm mb-1">
+													<i class="fas fa-money-bill-wave"></i> Đặt cọc
+												</a>
+												<a th:href="@{'/user/deleteCart?cid='+${cart.id}}"
+												   class="btn btn-danger btn-sm"
+												   onclick="return confirm('Bạn có chắc muốn xóa trọ này khỏi danh sách?')">
+													<i class="fas fa-trash"></i> Xóa
+												</a>
+											</div>
+
+											<!-- Nếu đã đặt cọc (pending hoặc approved) => chỉ cho chat, không cho xóa -->
+											<div th:if="${deposit != null && (deposit.status == 'PENDING' || deposit.status == 'APPROVED')}">
+												<a th:href="@{'/user/chat?rid='+${cart.room.id}}" class="btn btn-primary btn-sm mb-1">
+													<i class="fas fa-comments"></i> Chat với Chủ trọ
+												</a>
+												<span th:if="${deposit.status == 'PENDING'}" class="text-muted small d-block">
+													Đang chờ xác nhận
+												</span>
+												<span th:if="${deposit.status == 'APPROVED'}" class="text-success small d-block">
+													<i class="fas fa-check"></i> Đã được duyệt
+												</span>
+											</div>
+										</th:block>
 									</td>
 								</tr>
 							</tbody>

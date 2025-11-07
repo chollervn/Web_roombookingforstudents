@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ecom.model.Cart;
 import com.ecom.model.Deposit;
 import com.ecom.model.RoomType;
 import com.ecom.model.Room;
@@ -205,6 +206,26 @@ public class HomeController {
 		return "view_room";
 	}
 
+	// Endpoint thêm vào cart từ trang public
+	@GetMapping("/addCart")
+	public String addToCart(@RequestParam Integer rid, Principal p, HttpSession session) {
+		if (p == null) {
+			session.setAttribute("errorMsg", "Vui lòng đăng nhập để thêm vào giỏ hàng");
+			return "redirect:/signin";
+		}
+
+		String email = p.getName();
+		UserDtls user = userService.getUserByEmail(email);
+		Cart saveCart = cartService.saveCart(rid, user.getId());
+
+		if (ObjectUtils.isEmpty(saveCart)) {
+			session.setAttribute("errorMsg", "Không thể thêm vào giỏ hàng");
+		} else {
+			session.setAttribute("succMsg", "Đã thêm vào danh sách trọ đã xem");
+		}
+		return "redirect:/room/" + rid;
+	}
+
 	@PostMapping("/saveUser")
 	public String saveUser(@ModelAttribute UserDtls user, @RequestParam(value = "img", required = false) MultipartFile file, Model model, HttpSession session)
 			throws IOException {
@@ -265,13 +286,7 @@ public class HomeController {
 
 			String url = CommonUtil.generateUrl(request) + "/reset-password?token=" + resetToken;
 
-			Boolean sendMail = commonUtil.sendMail(url, email);
 
-			if (sendMail) {
-				session.setAttribute("succMsg", "Please check your email..Password Reset link sent");
-			} else {
-				session.setAttribute("errorMsg", "Somethong wrong on server ! Email not send");
-			}
 		}
 
 		return "redirect:/forgot-password";
