@@ -94,7 +94,7 @@ public class AdminController {
 	public String loadAddRoom(Model m) {
 		List<RoomType> roomTypes = roomTypeService.getAllRoomType();
 		m.addAttribute("roomTypes", roomTypes);
-		return "admin/add_product";
+		return "admin/add_room";
 	}
 
 	@GetMapping("/roomtype")
@@ -212,7 +212,7 @@ public class AdminController {
 	public String editRoom(@PathVariable int id, Model m) {
 		m.addAttribute("room", roomService.getRoomById(id));
 		m.addAttribute("roomTypes", roomTypeService.getAllRoomType());
-		return "admin/edit_product";
+		return "admin/edit_room";
 	}
 
 	@PostMapping("/updateRoom")
