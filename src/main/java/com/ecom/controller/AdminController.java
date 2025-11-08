@@ -194,7 +194,7 @@ public class AdminController {
 		m.addAttribute("isFirst", true);
 		m.addAttribute("isLast", true);
 
-		return "admin/products";
+		return "admin/rooms";
 	}
 
 	@GetMapping("/deleteRoom/{id}")

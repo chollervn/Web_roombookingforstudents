@@ -137,7 +137,7 @@ public class HomeController {
 		m.addAttribute("isFirst", page.isFirst());
 		m.addAttribute("isLast", page.isLast());
 
-		return "product";
+		return "room";
 	}
 
 	@GetMapping("/room/{id}")
