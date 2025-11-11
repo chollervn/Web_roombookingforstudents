@@ -73,13 +73,31 @@ public class UserController {
 	}
 
 	@ModelAttribute
-	public void getUserDetails(Principal p, Model m) {
+	public void getUserDetails(Principal p, Model m, HttpSession session) {
 		if (p != null) {
 			String email = p.getName();
 			UserDtls userDtls = userService.getUserByEmail(email);
 			m.addAttribute("user", userDtls);
 			Integer countCart = cartService.getCountCart(userDtls.getId());
 			m.addAttribute("countCart", countCart);
+
+			// Kiểm tra xem user đã xem thông báo chưa (kiểm tra session)
+			Boolean hasViewed = (Boolean) session.getAttribute("depositNotificationsViewed_" + userDtls.getId());
+
+			if (hasViewed == null || !hasViewed) {
+				// Chỉ đếm thông báo nếu chưa xem
+				List<Deposit> userDeposits = depositService.getDepositsByUser(userDtls.getId());
+				LocalDate today = LocalDate.now();
+				long unreadDepositNotifications = userDeposits.stream()
+					.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
+						&& d.getApprovedDate() != null
+						&& d.getApprovedDate().equals(today))
+					.count();
+				m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
+			} else {
+				// Đã xem rồi, không hiển thị badge
+				m.addAttribute("unreadDepositNotifications", 0L);
+			}
 		}
 
 		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
@@ -105,7 +123,7 @@ public class UserController {
 	}
 
 	@GetMapping("/cart")
-	public String loadCartPage(Principal p, Model m) {
+	public String loadCartPage(Principal p, Model m, HttpSession session) {
 
 		// If not logged in, redirect to signin (also avoids NPE when Principal is null)
 		if (p == null) {
@@ -113,6 +131,10 @@ public class UserController {
 		}
 
 		UserDtls user = getLoggedInUserDetails(p);
+
+		// Đánh dấu user đã xem thông báo đặt cọc - lưu vào session
+		session.setAttribute("depositNotificationsViewed_" + user.getId(), true);
+
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
 

@@ -128,8 +128,26 @@
 					<th:block th:if="${user!=null}">
 						<th:block th:if="${user.role=='ROLE_USER'}">
 							<li class="nav-item"><a class="nav-link active"
-								aria-current="page" href="/user/cart"><i
-									class="fa-solid fa-calendar-check"></i> Đã xem [ [[${countCart}]] ]</a></li>
+								aria-current="page" href="/user/cart">
+								<i class="fa-solid fa-calendar-check"></i> Đã xem [ [[${countCart}]] ]
+								<span th:if="${unreadDepositNotifications != null and unreadDepositNotifications > 0}"
+									class="badge bg-danger rounded-pill ms-1"
+									style="font-size: 0.7rem;">
+									[[${unreadDepositNotifications}]]
+								</span>
+							</a></li>
+						</th:block>
+
+						<th:block th:if="${user.role=='ROLE_ADMIN' or user.role=='ROLE_OWNER'}">
+							<li class="nav-item"><a class="nav-link active"
+								aria-current="page" href="/admin/deposits">
+								<i class="fa-solid fa-money-bill-wave"></i> Quản lý đặt cọc
+								<span th:if="${pendingDepositCount != null and pendingDepositCount > 0}"
+									class="badge bg-danger rounded-pill ms-1"
+									style="font-size: 0.7rem;">
+									[[${pendingDepositCount}]]
+								</span>
+							</a></li>
 						</th:block>
 
 						<li class="nav-item dropdown"><a

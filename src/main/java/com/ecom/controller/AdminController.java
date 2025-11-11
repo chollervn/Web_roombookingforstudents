@@ -79,6 +79,13 @@ public class AdminController {
 			m.addAttribute("user", userDtls);
 			Integer countCart = cartService.getCountCart(userDtls.getId());
 			m.addAttribute("countCart", countCart);
+
+			// Đếm số yêu cầu đặt cọc đang chờ xử lý (pending)
+			List<com.ecom.model.Deposit> deposits = depositService.getDepositsByOwner(userDtls.getId());
+			long pendingDepositCount = deposits.stream()
+				.filter(d -> "PENDING".equals(d.getStatus()))
+				.count();
+			m.addAttribute("pendingDepositCount", pendingDepositCount);
 		}
 
 		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
@@ -463,6 +470,11 @@ public class AdminController {
 		com.ecom.model.Deposit updatedDeposit = depositService.updateDepositStatus(id, status, adminNote);
 
 		if (!ObjectUtils.isEmpty(updatedDeposit)) {
+			// Reset session "đã xem" của user để badge xuất hiện lại
+			if (updatedDeposit.getUser() != null) {
+				session.removeAttribute("depositNotificationsViewed_" + updatedDeposit.getUser().getId());
+			}
+
 			if ("APPROVED".equals(status)) {
 				session.setAttribute("succMsg", "Đã chấp nhận yêu cầu đặt cọc! Phòng trọ đã được đánh dấu là đã thuê.");
 			} else if ("REJECTED".equals(status)) {
