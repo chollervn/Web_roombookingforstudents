@@ -67,11 +67,9 @@ public class OrderServiceImpl implements OrderService {
 
 			OrderAddress address = new OrderAddress();
 			address.setFirstName(orderRequest.getFirstName());
-			address.setLastName(orderRequest.getLastName());
 			address.setEmail(orderRequest.getEmail());
 			address.setMobileNo(orderRequest.getMobileNo());
 			address.setAddress(orderRequest.getAddress());
-			address.setCity(orderRequest.getCity());
 
 
 			order.setOrderAddress(address);
