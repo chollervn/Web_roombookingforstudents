@@ -93,7 +93,65 @@ public class AdminController {
 	}
 
 	@GetMapping("/")
-	public String index() {
+	public String index(Model m, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Lấy tất cả phòng của chủ trọ
+		List<Room> ownerRooms = roomService.getRoomsByOwnerId(loggedInUser.getId());
+
+		// Lấy tất cả đơn thuê của chủ trọ
+		List<RoomOrder> ownerOrders = orderService.getOrdersByOwnerId(loggedInUser.getId());
+
+		// Lấy tất cả booking đang hoạt động
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByOwner(loggedInUser.getId());
+		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
+			.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+			.toList();
+
+		// Lấy tất cả đặt cọc
+		List<com.ecom.model.Deposit> deposits = depositService.getDepositsByOwner(loggedInUser.getId());
+
+		// Thống kê đặt cọc theo trạng thái
+		long pendingDeposits = deposits.stream().filter(d -> "PENDING".equals(d.getStatus())).count();
+		long approvedDeposits = deposits.stream().filter(d -> "APPROVED".equals(d.getStatus())).count();
+
+		// Tính tổng doanh thu từ đơn thuê đã hoàn thành
+		double totalRevenue = ownerOrders.stream()
+			.filter(o -> "SUCCESS".equalsIgnoreCase(o.getStatus()) || "DELIVERED".equalsIgnoreCase(o.getStatus()))
+			.mapToDouble(RoomOrder::getPrice)
+			.sum();
+
+		// Tính tổng tiền đặt cọc đã nhận
+		double totalDepositReceived = deposits.stream()
+			.filter(d -> "APPROVED".equals(d.getStatus()))
+			.mapToDouble(com.ecom.model.Deposit::getAmount)
+			.sum();
+
+		// Đếm số phòng
+		long totalRooms = ownerRooms.size();
+		long availableRooms = ownerRooms.stream().filter(Room::getIsAvailable).count();
+		long occupiedRooms = totalRooms - availableRooms;
+
+		// Đếm người thuê (unique users từ active bookings)
+		long totalTenants = activeBookings.stream()
+			.map(com.ecom.model.RoomBooking::getUser)
+			.distinct()
+			.count();
+
+		// Thêm vào model
+		m.addAttribute("totalRooms", totalRooms);
+		m.addAttribute("availableRooms", availableRooms);
+		m.addAttribute("occupiedRooms", occupiedRooms);
+		m.addAttribute("totalTenants", totalTenants);
+		m.addAttribute("totalRevenue", totalRevenue);
+		m.addAttribute("totalDepositReceived", totalDepositReceived);
+		m.addAttribute("pendingDeposits", pendingDeposits);
+		m.addAttribute("approvedDeposits", approvedDeposits);
+		m.addAttribute("totalOrders", ownerOrders.size());
+		m.addAttribute("activeBookings", activeBookings);
+		m.addAttribute("recentDeposits", deposits.stream().limit(5).toList());
+		m.addAttribute("recentOrders", ownerOrders.stream().limit(5).toList());
+
 		return "admin/index";
 	}
 

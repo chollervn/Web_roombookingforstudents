@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:fragment="adminLayout(content)">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản lý Nhà Trọ</title>
+
+<!-- Bootstrap CSS -->
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+	crossorigin="anonymous">
+
+<!-- Font Awesome -->
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+	integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+	crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Custom CSS -->
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	body {
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+		background: #f5f7fa;
+		overflow-x: hidden;
+	}
+
+	.admin-layout {
+		display: flex;
+		min-height: 100vh;
+	}
+
+	/* Sidebar Styles */
+	.admin-sidebar {
+		width: 280px;
+		background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+		color: white;
+		position: fixed;
+		height: 100vh;
+		overflow-y: auto;
+		box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+		z-index: 1000;
+	}
+
+	.sidebar-header {
+		padding: 30px 20px;
+		background: rgba(0,0,0,0.2);
+		text-align: center;
+		border-bottom: 1px solid rgba(255,255,255,0.1);
+	}
+
+	.sidebar-header h3 {
+		margin: 0;
+		font-size: 24px;
+		font-weight: 700;
+		color: white;
+	}
+
+	.sidebar-header p {
+		margin: 5px 0 0 0;
+		font-size: 13px;
+		opacity: 0.8;
+		color: white;
+	}
+
+	.sidebar-menu {
+		padding: 20px 0;
+	}
+
+	.menu-section {
+		margin-bottom: 25px;
+	}
+
+	.menu-section-title {
+		padding: 10px 20px;
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		opacity: 0.6;
+		font-weight: 600;
+		color: white;
+	}
+
+	.menu-item {
+		display: flex;
+		align-items: center;
+		padding: 14px 20px;
+		color: white !important;
+		text-decoration: none;
+		transition: all 0.3s;
+		border-left: 3px solid transparent;
+	}
+
+	.menu-item:hover, .menu-item.active {
+		background: rgba(255,255,255,0.1);
+		border-left-color: #4CAF50;
+		color: white !important;
+	}
+
+	.menu-item i {
+		width: 24px;
+		margin-right: 12px;
+		font-size: 18px;
+	}
+
+	.menu-item .badge {
+		margin-left: auto;
+		background: #ff4444;
+		padding: 3px 8px;
+		border-radius: 10px;
+		font-size: 11px;
+	}
+
+	/* Main Content Area */
+	.admin-content {
+		margin-left: 280px;
+		flex: 1;
+		padding: 30px;
+		min-height: 100vh;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.admin-sidebar {
+			width: 250px;
+		}
+		.admin-content {
+			margin-left: 250px;
+			padding: 20px;
+		}
+	}
+</style>
+</head>
+<body>
+	<div class="admin-layout">
+		<!-- Sidebar -->
+		<div class="admin-sidebar">
+			<div class="sidebar-header">
+				<h3><i class="fas fa-home"></i> Nhà Trọ SV</h3>
+				<p>Quản lý nhà trọ</p>
+			</div>
+
+			<div class="sidebar-menu">
+				<div class="menu-section">
+					<div class="menu-section-title">Tổng quan</div>
+					<a href="/admin/" class="menu-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
+						<i class="fas fa-chart-line"></i>
+						<span>Dashboard</span>
+					</a>
+				</div>
+
+				<div class="menu-section">
+					<div class="menu-section-title">Quản lý phòng trọ</div>
+					<a href="/admin/loadAddRoom" class="menu-item" th:classappend="${currentPage == 'add-room'} ? 'active' : ''">
+						<i class="fas fa-plus-circle"></i>
+						<span>Thêm phòng mới</span>
+					</a>
+					<a href="/admin/rooms" class="menu-item" th:classappend="${currentPage == 'rooms'} ? 'active' : ''">
+						<i class="fas fa-door-open"></i>
+						<span>Danh sách phòng</span>
+					</a>
+				</div>
+
+				<div class="menu-section">
+					<div class="menu-section-title">Theo dõi & Quản lý</div>
+					<a href="/admin/orders" class="menu-item" th:classappend="${currentPage == 'orders'} ? 'active' : ''">
+						<i class="fas fa-file-contract"></i>
+						<span>Đơn thuê trọ</span>
+					</a>
+					<a href="/admin/deposits" class="menu-item" th:classappend="${currentPage == 'deposits'} ? 'active' : ''">
+						<i class="fas fa-money-check-dollar"></i>
+						<span>Yêu cầu đặt cọc</span>
+						<span class="badge" th:if="${pendingDepositCount > 0}" th:text="${pendingDepositCount}">0</span>
+					</a>
+					<a href="/admin/users?type=1" class="menu-item" th:classappend="${currentPage == 'users'} ? 'active' : ''">
+						<i class="fas fa-users"></i>
+						<span>Người thuê trọ</span>
+					</a>
+				</div>
+
+				<div class="menu-section">
+					<div class="menu-section-title">Tài khoản</div>
+					<a href="/admin/profile" class="menu-item" th:classappend="${currentPage == 'profile'} ? 'active' : ''">
+						<i class="fas fa-user-circle"></i>
+						<span>Hồ sơ cá nhân</span>
+					</a>
+					<a href="/logout" class="menu-item">
+						<i class="fas fa-sign-out-alt"></i>
+						<span>Đăng xuất</span>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Main Content -->
+		<div class="admin-content">
+			<div th:replace="${content}"></div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+		crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
+	<script type="text/javascript" src="/js/script.js"></script>
+</body>
+</html>
+

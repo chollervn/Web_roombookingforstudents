@@ -1,134 +1,128 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{base::layout(~{::section})}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/admin_base::adminLayout(~{::section})}">
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>Hồ sơ admin</title>
 </head>
 <body>
-	<section>
-		<div class="container-fluid mt-5 p-5 bg-light">
-			<div class="row">
-				<div class="col-md-10 offset-md-1 ">
+	<section th:with="currentPage='profile'">
+		<style>
+			.page-header {
+				margin-bottom: 30px;
+			}
+			.page-header h2 {
+				font-size: 28px;
+				color: #2c3e50;
+				margin-bottom: 10px;
+			}
+			.profile-card {
+				background: white;
+				padding: 30px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+			}
+			.profile-image {
+				width: 110px;
+				height: 110px;
+				border-radius: 50%;
+				object-fit: cover;
+				border: 4px solid #e3f2fd;
+			}
+		</style>
 
-					<p class="fs-3 text-center">My Profile</p>
-					<th:block th:if="${session.succMsg}">
-						<p class="text-success fw-bold  text-center">[[${session.succMsg}]]</p>
-						<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
-					</th:block>
-
-					<th:block th:if="${session.errorMsg}">
-						<p class="text-danger fw-bold  text-center">[[${session.errorMsg}]]</p>
-						<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
-					</th:block>
-					<hr>
-					<div class="text-center">
-						<img alt="Profile Image" th:src="@{'/img/profile_img/'+${user.profileImage}}"
-							class="border p-2"
-							style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover;"
-							onerror="this.src='/img/profile_img/default.jpg'">
-					</div>
-					<div class="col-md-8 offset-md-2 mt-4">
-						<table class="table table-borderless">
-
-							<tbody>
-								<form action="/admin/update-profile" method="post"
-									enctype="multipart/form-data">
-									<input type="hidden" name="id" th:value="${user.id}">
-								<tr>
-									<th scope="row">Họ tên</th>
-									<td>:</td>
-									<td><input type="text" name="name" class="form-control"
-										th:value="${user.name}"></td>
-								</tr>
-								<tr>
-									<th scope="row">Số điện thoại</th>
-									<td>:</td>
-									<td><input type="text" name="mobileNumber"
-										class="form-control" th:value="${user.mobileNumber}"></td>
-								</tr>
-								<tr>
-									<th scope="row">Email</th>
-									<td>:</td>
-									<td><input type="text" name="" class="form-control"
-										readonly th:value="${user.email}"></td>
-								</tr>
-								<tr>
-									<th scope="row">Địa chỉ</th>
-									<td>:</td>
-									<td><input type="text" name="address" class="form-control"
-										th:value="${user.address}"></td>
-								</tr>
-
-
-								<tr>
-									<th scope="row">Ảnh đại diện</th>
-									<td>:</td>
-									<td><input type="file" name="img" class="form-control" accept="image/*"></td>
-								</tr>
-
-
-								<tr>
-									<td></td>
-									<td class="text-center">
-										<button type="submit" class="btn btn-sm bg-primary text-light">Cập nhật</button>
-									</td>
-								</tr>
-								</form>
-							</tbody>
-						</table>
-
-					</div>
-
-				</div>
-				<hr>
-				<div class="col-md-10 offset-md-1 mt-1">
-					<div class="row">
-						<p class="text-center fs-3">Đổi mật khẩu</p>
-						<div class="col-md-6 offset-md-3">
-							<table class="table table-borderless">
-
-								<tbody>
-									<form action="/admin/change-password" method="post">
-										<tr>
-											<th scope="row">Mật khẩu hiện tại</th>
-
-											<td><input type="password" name="currentPassword" class="form-control"></td>
-										</tr>
-
-										<tr>
-											<th scope="row">Mật khẩu mới</th>
-
-											<td><input type="password" name="newPassword" class="form-control"></td>
-										</tr>
-
-										<tr>
-											<th scope="row">Xác nhận mật khẩu mới</th>
-
-											<td><input type="password" name="confirmPassword" class="form-control"></td>
-										</tr>
-										<tr>
-											<td></td>
-											<td class="text-center">
-												<button class="btn btn-sm bg-primary text-light col-md-4">Cập nhật</button>
-											</td>
-
-										</tr>
-									</form>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-
-			</div>
-
+		<div class="page-header">
+			<h2><i class="fas fa-user-circle"></i> Hồ sơ cá nhân</h2>
 		</div>
 
+		<th:block th:if="${session.succMsg}">
+			<div class="alert alert-success alert-dismissible fade show">
+				[[${session.succMsg}]]
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+		</th:block>
 
+		<th:block th:if="${session.errorMsg}">
+			<div class="alert alert-danger alert-dismissible fade show">
+				[[${session.errorMsg}]]
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+		</th:block>
 
+		<div class="profile-card">
+			<div class="text-center mb-4">
+				<img alt="Profile Image" th:src="@{'/img/profile_img/'+${user.profileImage}}"
+					class="profile-image"
+					onerror="this.src='/img/profile_img/default.jpg'">
+			</div>
 
+			<div class="row">
+				<div class="col-md-8 offset-md-2">
+					<form action="/admin/update-profile" method="post" enctype="multipart/form-data">
+						<input type="hidden" name="id" th:value="${user.id}">
 
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-user"></i> Họ tên</label>
+							<input type="text" name="name" class="form-control" th:value="${user.name}" required>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-phone"></i> Số điện thoại</label>
+							<input type="text" name="mobileNumber" class="form-control" th:value="${user.mobileNumber}" required>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+							<input type="email" class="form-control" th:value="${user.email}" readonly>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ</label>
+							<input type="text" name="address" class="form-control" th:value="${user.address}">
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-image"></i> Ảnh đại diện</label>
+							<input type="file" name="img" class="form-control" accept="image/*">
+						</div>
+
+						<div class="d-grid gap-2">
+							<button type="submit" class="btn btn-primary">
+								<i class="fas fa-save"></i> Cập nhật hồ sơ
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Đổi mật khẩu -->
+		<div class="profile-card mt-4">
+			<h4 class="mb-4"><i class="fas fa-lock"></i> Đổi mật khẩu</h4>
+			<div class="row">
+				<div class="col-md-8 offset-md-2">
+					<form action="/admin/change-password" method="post">
+						<div class="mb-3">
+							<label class="form-label">Mật khẩu hiện tại</label>
+							<input type="password" name="currentPassword" class="form-control" required>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label">Mật khẩu mới</label>
+							<input type="password" name="newPassword" class="form-control" required>
+						</div>
+
+						<div class="d-grid gap-2">
+							<button type="submit" class="btn btn-warning">
+								<i class="fas fa-key"></i> Đổi mật khẩu
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 
 	</section>
 </body>

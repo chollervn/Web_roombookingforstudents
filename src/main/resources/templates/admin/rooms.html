@@ -1,117 +1,121 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{base::layout(~{::section})}">
+	th:replace="~{admin/admin_base::adminLayout(~{::section})}">
 <head>
 <meta charset="UTF-8">
 <title>Danh sách phòng trọ</title>
 </head>
 <body>
-	<section>
-		<div class="container-fluid mt-4 p-3">
-			<div class="row">
-				<p class="text-center fs-3 mt-2">Danh sách phòng trọ</p>
-				<hr>
-				<a href="/admin/" class="text-decoration-none"><i
-					class="fa-solid fa-arrow-left"></i> Quay lại</a>
-				<th:block th:if="${session.succMsg}">
-					<p class="text-success fw-bold">[[${session.succMsg}]]</p>
-					<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-				</th:block>
+	<section th:with="currentPage='rooms'">
+		<style>
+			.page-header {
+				margin-bottom: 30px;
+			}
+			.page-header h2 {
+				font-size: 28px;
+				color: #2c3e50;
+				margin-bottom: 10px;
+			}
+			.search-box {
+				background: white;
+				padding: 20px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+				margin-bottom: 20px;
+			}
+			.table-container {
+				background: white;
+				padding: 25px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+			}
+		</style>
 
-				<th:block th:if="${session.errorMsg}">
-					<p class="text-danger fw-bold">[[${session.errorMsg}]]</p>
-					<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-				</th:block>
+		<div class="page-header">
+			<h2><i class="fas fa-door-open"></i> Danh sách phòng trọ</h2>
+		</div>
 
-				<div class="col-md-4 p-3">
-					<form action="/admin/rooms" method="get">
-						<div class="row">
-							<div class="col">
-								<input type="text" class="form-control" name="ch" placeholder="Tìm kiếm phòng trọ...">
-							</div>
-							<div class="col">
-								<button class="btn btn-primary col">Tìm kiếm</button>
-							</div>
-						</div>
-					</form>
-				</div>
+		<th:block th:if="${session.succMsg}">
+			<div class="alert alert-success alert-dismissible fade show">
+				[[${session.succMsg}]]
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+		</th:block>
 
-				<div class="p-3">
-					<table class="table table-bordered">
-						<thead class="table-light">
-							<tr>
-								<th scope="col">STT</th>
-								<th scope="col">Ảnh</th>
-								<th scope="col">Tên phòng</th>
-								<th scope="col">Loại phòng</th>
-								<th scope="col">Giá thuê/tháng</th>
-								<th scope="col">Diện tích (m²)</th>
-								<th scope="col">Địa chỉ</th>
-								<th scope="col">Trạng thái</th>
-								<th scope="col">Tình trạng</th>
-								<th scope="col">Hành động</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr th:each="room,c:${rooms}">
-								<th scope="row">[[${c.count}]]</th>
-								<td><img th:src="@{'/img/room_img/'+${room.image}}"
-									width="70px" height="70px" style="object-fit: cover;"></td>
-								<td>[[${room.roomName}]]</td>
-								<td>[[${room.roomType}]]</td>
-								<td>[[${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] VNĐ</td>
-								<td>[[${room.area}]]</td>
-								<td>[[${room.address}]], [[${room.city}]]</td>
-								<td>
-									<span th:if="${room.isActive}" class="badge bg-success">Hiển thị</span>
-									<span th:unless="${room.isActive}" class="badge bg-secondary">Ẩn</span>
-								</td>
-								<td>
-									<span th:if="${room.isAvailable}" class="badge bg-primary">Còn trống</span>
-									<span th:unless="${room.isAvailable}" class="badge bg-warning">Đã cho thuê</span>
-								</td>
-								<td>
-									<a th:href="@{'/admin/editRoom/'+${room.id}}"
-										class="btn btn-sm btn-primary"><i
-										class="fa-solid fa-pen-to-square"></i> Sửa</a>
-									<a th:href="@{'/admin/deleteRoom/'+${room.id}}"
-										class="btn btn-sm btn-danger"
-										onclick="return confirm('Bạn có chắc muốn xóa phòng này?')"><i
-										class="fa-solid fa-trash"></i> Xóa</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+		<th:block th:if="${session.errorMsg}">
+			<div class="alert alert-danger alert-dismissible fade show">
+				[[${session.errorMsg}]]
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+		</th:block>
 
-					<div class="row">
-						<div class="col-md-4">Tổng số phòng: [[${totalElements}]]</div>
-						<div class="col-md-6">
-							<nav aria-label="Page navigation">
-								<ul class="pagination">
-									<li class="page-item"
-										th:classappend="${isFirst} ? 'disabled':''"><a
-										class="page-link"
-										th:href="@{'/admin/rooms?pageNo='+${pageNo-1}}"
-										aria-label="Previous"> <span aria-hidden="true">&laquo;</span>
-									</a></li>
-
-									<li th:each="i:${#numbers.sequence(1,totalPages)}"
-										class="page-item" th:classappend="${pageNo+1==i}?'active':''"><a
-										class="page-link"
-										th:href="@{'/admin/rooms?pageNo='+${i-1}}">[[${i}]]</a></li>
-
-									<li class="page-item"
-										th:classappend="${isLast} ? 'disabled':''"><a
-										class="page-link"
-										th:href="@{'/admin/rooms?pageNo='+${pageNo+1}}"
-										aria-label="Next"> <span aria-hidden="true">&raquo;</span>
-									</a></li>
-								</ul>
-							</nav>
-						</div>
+		<div class="search-box">
+			<form action="/admin/rooms" method="get">
+				<div class="row">
+					<div class="col-md-10">
+						<input type="text" class="form-control" name="ch" placeholder="Tìm kiếm phòng trọ theo tên hoặc loại phòng...">
+					</div>
+					<div class="col-md-2">
+						<button class="btn btn-primary w-100"><i class="fas fa-search"></i> Tìm kiếm</button>
 					</div>
 				</div>
-			</div>
+			</form>
+		</div>
+
+		<div class="table-container">
+			<table class="table table-hover table-bordered">
+				<thead class="table-light">
+					<tr>
+						<th scope="col">STT</th>
+						<th scope="col">Ảnh</th>
+						<th scope="col">Tên phòng</th>
+						<th scope="col">Loại phòng</th>
+						<th scope="col">Giá thuê/tháng</th>
+						<th scope="col">Diện tích (m²)</th>
+						<th scope="col">Địa chỉ</th>
+						<th scope="col">Trạng thái</th>
+						<th scope="col">Tình trạng</th>
+						<th scope="col">Hành động</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="room,c:${rooms}">
+						<th scope="row">[[${c.count}]]</th>
+						<td><img th:src="@{'/img/room_img/'+${room.image}}"
+							width="70px" height="70px" style="object-fit: cover; border-radius: 8px;"></td>
+						<td>[[${room.roomName}]]</td>
+						<td>[[${room.roomType}]]</td>
+						<td>[[${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] VNĐ</td>
+						<td>[[${room.area}]]</td>
+						<td>[[${room.address}]], [[${room.city}]]</td>
+						<td>
+							<span th:if="${room.isActive}" class="badge bg-success">Hiển thị</span>
+							<span th:unless="${room.isActive}" class="badge bg-secondary">Ẩn</span>
+						</td>
+						<td>
+							<span th:if="${room.isAvailable}" class="badge bg-primary">Còn trống</span>
+							<span th:unless="${room.isAvailable}" class="badge bg-warning">Đã cho thuê</span>
+						</td>
+						<td>
+							<a th:href="@{'/admin/editRoom/'+${room.id}}"
+								class="btn btn-sm btn-primary"><i
+								class="fa-solid fa-pen-to-square"></i> Sửa</a>
+							<a th:href="@{'/admin/deleteRoom/'+${room.id}}"
+								class="btn btn-sm btn-danger"
+								onclick="return confirm('Bạn có chắc muốn xóa phòng này?')"><i
+								class="fa-solid fa-trash"></i> Xóa</a>
+						</td>
+					</tr>
+					<tr th:if="${#lists.isEmpty(rooms)}">
+						<td colspan="10" class="text-center text-muted py-5">
+							<i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i>
+							<p>Chưa có phòng trọ nào</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 	</section>
 </body>

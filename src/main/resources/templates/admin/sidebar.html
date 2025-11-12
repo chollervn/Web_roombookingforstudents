@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            background: rgba(0,0,0,0.2);
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-header p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            opacity: 0.8;
+            color: white;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            font-weight: 600;
+            color: white;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: white !important;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #4CAF50;
+            color: white !important;
+        }
+
+        .menu-item i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .menu-item .badge {
+            margin-left: auto;
+            background: #ff4444;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .admin-content-wrapper {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+    </style>
+</head>
+<body>
+<div th:fragment="sidebar" class="admin-sidebar">
+    <div class="sidebar-header">
+        <h3><i class="fas fa-home"></i> Nhà Trọ SV</h3>
+        <p>Quản lý nhà trọ</p>
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-section">
+            <div class="menu-section-title">Tổng quan</div>
+            <a href="/admin/" class="menu-item" th:classappend="${#strings.equals(currentPage, 'dashboard')} ? 'active' : ''">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Quản lý phòng trọ</div>
+            <a href="/admin/loadAddRoom" class="menu-item" th:classappend="${#strings.equals(currentPage, 'add-room')} ? 'active' : ''">
+                <i class="fas fa-plus-circle"></i>
+                <span>Thêm phòng mới</span>
+            </a>
+            <a href="/admin/rooms" class="menu-item" th:classappend="${#strings.equals(currentPage, 'rooms')} ? 'active' : ''">
+                <i class="fas fa-door-open"></i>
+                <span>Danh sách phòng</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Theo dõi & Quản lý</div>
+            <a href="/admin/orders" class="menu-item" th:classappend="${#strings.equals(currentPage, 'orders')} ? 'active' : ''">
+                <i class="fas fa-file-contract"></i>
+                <span>Đơn thuê trọ</span>
+            </a>
+            <a href="/admin/deposits" class="menu-item" th:classappend="${#strings.equals(currentPage, 'deposits')} ? 'active' : ''">
+                <i class="fas fa-money-check-dollar"></i>
+                <span>Yêu cầu đặt cọc</span>
+                <span class="badge" th:if="${pendingDepositCount > 0}" th:text="${pendingDepositCount}">0</span>
+            </a>
+            <a href="/admin/users?type=1" class="menu-item" th:classappend="${#strings.equals(currentPage, 'users')} ? 'active' : ''">
+                <i class="fas fa-users"></i>
+                <span>Người thuê trọ</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Tài khoản</div>
+            <a href="/admin/profile" class="menu-item" th:classappend="${#strings.equals(currentPage, 'profile')} ? 'active' : ''">
+                <i class="fas fa-user-circle"></i>
+                <span>Hồ sơ cá nhân</span>
+            </a>
+            <a href="/logout" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

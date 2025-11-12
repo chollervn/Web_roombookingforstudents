@@ -1,191 +1,202 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{base::layout(~{::section})}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/admin_base::adminLayout(~{::section})}">
 <head>
 <meta charset="UTF-8">
 <title>Quản lý đặt cọc</title>
 </head>
 <body>
-<section>
-	<div class="container-fluid mt-3 p-3">
-		<div class="card card-sh">
-			<div class="card-header text-center bg-primary text-white">
-				<h4><i class="fas fa-money-check-alt"></i> Quản lý đặt cọc phòng trọ</h4>
-			</div>
+<section th:with="currentPage='deposits'">
+    <style>
+        .page-header {
+            margin-bottom: 30px;
+        }
+        .page-header h2 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .table-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+    </style>
 
-			<th:block th:if="${session.succMsg}">
-				<p class="text-success fw-bold alert alert-success m-3">[[${session.succMsg}]]</p>
-				<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
-			</th:block>
+    <div class="page-header">
+        <h2><i class="fas fa-money-check-dollar"></i> Quản lý đặt cọc phòng trọ</h2>
+    </div>
 
-			<th:block th:if="${session.errorMsg}">
-				<p class="text-danger fw-bold alert alert-danger m-3">[[${session.errorMsg}]]</p>
-				<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
-			</th:block>
+    <th:block th:if="${session.succMsg}">
+        <div class="alert alert-success alert-dismissible fade show">
+            [[${session.succMsg}]]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+    </th:block>
 
-			<div class="card-body">
-				<div th:if="${deposits.isEmpty()}" class="text-center py-5">
-					<i class="fas fa-inbox fa-5x text-muted mb-3"></i>
-					<h5 class="text-muted">Chưa có đơn đặt cọc nào cho phòng của bạn</h5>
-				</div>
+    <th:block th:if="${session.errorMsg}">
+        <div class="alert alert-danger alert-dismissible fade show">
+            [[${session.errorMsg}]]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+    </th:block>
 
-				<div th:if="${!deposits.isEmpty()}" class="table-responsive">
-					<table class="table table-hover table-bordered align-middle">
-						<thead class="table-light">
-							<tr>
-								<th width="5%">STT</th>
-								<th width="15%">Người đặt cọc</th>
-								<th width="15%">Phòng trọ</th>
-								<th width="10%">Số tiền</th>
-								<th width="10%">Ngày đặt</th>
-								<th width="10%">Phương thức</th>
-								<th width="15%">Ghi chú</th>
-								<th width="10%">Trạng thái</th>
-								<th width="10%">Thao tác</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr th:each="deposit, iterStat : ${deposits}">
-								<td class="text-center" th:text="${iterStat.count}">1</td>
-								<td>
-									<strong th:text="${deposit.user.name}">Tên người thuê</strong><br>
-									<small class="text-muted">
-										<i class="fas fa-envelope"></i> <span th:text="${deposit.user.email}">email</span><br>
-										<i class="fas fa-phone"></i> <span th:text="${deposit.user.mobileNumber}">0900...</span>
-									</small>
-								</td>
-								<td>
-									<strong th:text="${deposit.room.roomName}">Tên phòng</strong><br>
-									<small class="text-muted" th:text="${deposit.room.address}">Địa chỉ</small>
-								</td>
-								<td class="text-end">
-									<strong class="text-success" th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</strong> VNĐ
-								</td>
-								<td th:text="${#temporals.format(deposit.depositDate, 'dd/MM/yyyy')}">--/--/----</td>
-								<td>
-									<span th:if="${deposit.paymentMethod == 'CASH'}" class="badge bg-secondary">
-										<i class="fas fa-money-bill"></i> Tiền mặt
-									</span>
-									<span th:if="${deposit.paymentMethod == 'BANK_TRANSFER'}" class="badge bg-info">
-										<i class="fas fa-university"></i> Chuyển khoản
-									</span>
-									<span th:if="${deposit.paymentMethod == 'E_WALLET'}" class="badge bg-primary">
-										<i class="fas fa-wallet"></i> Ví điện tử
-									</span>
-								</td>
-								<td>
-									<small th:if="${deposit.note != null and !deposit.note.isEmpty()}"
-										th:text="${deposit.note}">Ghi chú</small>
-									<span th:if="${deposit.note == null or deposit.note.isEmpty()}"
-										class="text-muted">--</span>
-								</td>
-								<td>
-									<span th:if="${deposit.status == 'PENDING'}" class="badge bg-warning text-dark">
-										<i class="fas fa-clock"></i> Chờ xác nhận
-									</span>
-									<span th:if="${deposit.status == 'APPROVED'}" class="badge bg-success">
-										<i class="fas fa-check"></i> Đã xác nhận
-									</span>
-									<span th:if="${deposit.status == 'REJECTED'}" class="badge bg-danger">
-										<i class="fas fa-times"></i> Đã từ chối
-									</span>
+    <div class="table-card">
+        <div th:if="${deposits.isEmpty()}" class="text-center py-5">
+            <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+            <h5 class="text-muted">Chưa có đơn đặt cọc nào cho phòng của bạn</h5>
+        </div>
 
-									<div th:if="${deposit.approvedDate != null}" class="mt-1">
-										<small class="text-muted">
-											<i class="fas fa-calendar-check"></i>
-											<span th:text="${#temporals.format(deposit.approvedDate, 'dd/MM/yyyy')}">--/--/----</span>
-										</small>
-									</div>
-								</td>
-								<td>
-									<!-- Button trigger modal -->
-									<button type="button" class="btn btn-sm btn-primary"
-										data-bs-toggle="modal" th:attr="data-bs-target='#updateModal' + ${deposit.id}">
-										<i class="fas fa-edit"></i> Cập nhật
-									</button>
+        <div th:if="${!deposits.isEmpty()}" class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%">STT</th>
+                        <th width="15%">Người đặt cọc</th>
+                        <th width="15%">Phòng trọ</th>
+                        <th width="10%">Số tiền</th>
+                        <th width="10%">Ngày đặt</th>
+                        <th width="10%">Phương thức</th>
+                        <th width="15%">Ghi chú</th>
+                        <th width="10%">Trạng thái</th>
+                        <th width="10%">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="deposit, iterStat : ${deposits}">
+                        <td class="text-center" th:text="${iterStat.count}">1</td>
+                        <td>
+                            <strong th:text="${deposit.user.name}">Tên người thuê</strong><br>
+                            <small class="text-muted">
+                                <i class="fas fa-envelope"></i> <span th:text="${deposit.user.email}">email</span><br>
+                                <i class="fas fa-phone"></i> <span th:text="${deposit.user.mobileNumber}">0900...</span>
+                            </small>
+                        </td>
+                        <td>
+                            <strong th:text="${deposit.room.roomName}">Tên phòng</strong><br>
+                            <small class="text-muted" th:text="${deposit.room.address}">Địa chỉ</small>
+                        </td>
+                        <td class="text-end">
+                            <strong class="text-success" th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</strong> VNĐ
+                        </td>
+                        <td th:text="${#temporals.format(deposit.depositDate, 'dd/MM/yyyy')}">--/--/----</td>
+                        <td>
+                            <span th:if="${deposit.paymentMethod == 'CASH'}" class="badge bg-secondary">
+                                <i class="fas fa-money-bill"></i> Tiền mặt
+                            </span>
+                            <span th:if="${deposit.paymentMethod == 'BANK_TRANSFER'}" class="badge bg-info">
+                                <i class="fas fa-university"></i> Chuyển khoản
+                            </span>
+                            <span th:if="${deposit.paymentMethod == 'E_WALLET'}" class="badge bg-primary">
+                                <i class="fas fa-wallet"></i> Ví điện tử
+                            </span>
+                        </td>
+                        <td>
+                            <small th:if="${deposit.note != null and !deposit.note.isEmpty()}"
+                                th:text="${deposit.note}">Ghi chú</small>
+                            <span th:if="${deposit.note == null or deposit.note.isEmpty()}"
+                                class="text-muted">--</span>
+                        </td>
+                        <td>
+                            <span th:if="${deposit.status == 'PENDING'}" class="badge bg-warning text-dark">
+                                <i class="fas fa-clock"></i> Chờ xác nhận
+                            </span>
+                            <span th:if="${deposit.status == 'APPROVED'}" class="badge bg-success">
+                                <i class="fas fa-check"></i> Đã xác nhận
+                            </span>
+                            <span th:if="${deposit.status == 'REJECTED'}" class="badge bg-danger">
+                                <i class="fas fa-times"></i> Đã từ chối
+                            </span>
 
-									<!-- Modal for updating status -->
-									<div class="modal fade" th:id="'updateModal' + ${deposit.id}" tabindex="-1">
-										<div class="modal-dialog">
-											<div class="modal-content">
-												<div class="modal-header">
-													<h5 class="modal-title">
-														<i class="fas fa-edit"></i> Cập nhật trạng thái đặt cọc
-													</h5>
-													<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-												</div>
-												<form th:action="@{/admin/update-deposit-status}" method="post">
-													<div class="modal-body">
-														<input type="hidden" name="id" th:value="${deposit.id}"/>
+                            <div th:if="${deposit.approvedDate != null}" class="mt-1">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span th:text="${#temporals.format(deposit.approvedDate, 'dd/MM/yyyy')}">--/--/----</span>
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary"
+                                data-bs-toggle="modal" th:attr="data-bs-target='#updateModal' + ${deposit.id}">
+                                <i class="fas fa-edit"></i> Cập nhật
+                            </button>
 
-														<div class="mb-3">
-															<label class="form-label"><strong>Người đặt cọc:</strong></label>
-															<p th:text="${deposit.user.name}">Tên</p>
-														</div>
+                            <!-- Modal for updating status -->
+                            <div class="modal fade" th:id="'updateModal' + ${deposit.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-edit"></i> Cập nhật trạng thái đặt cọc
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form th:action="@{/admin/update-deposit-status}" method="post">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="id" th:value="${deposit.id}"/>
 
-														<div class="mb-3">
-															<label class="form-label"><strong>Phòng:</strong></label>
-															<p th:text="${deposit.room.roomName}">Phòng</p>
-														</div>
+                                                <div class="mb-3">
+                                                    <label class="form-label"><strong>Người đặt cọc:</strong></label>
+                                                    <p th:text="${deposit.user.name}">Tên</p>
+                                                </div>
 
-														<div class="mb-3">
-															<label class="form-label"><strong>Số tiền:</strong></label>
-															<p class="text-success fs-5 fw-bold">
-																<span th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</span> VNĐ
-															</p>
-														</div>
+                                                <div class="mb-3">
+                                                    <label class="form-label"><strong>Phòng:</strong></label>
+                                                    <p th:text="${deposit.room.roomName}">Phòng</p>
+                                                </div>
 
-														<div class="mb-3">
-															<label class="form-label"><i class="fas fa-tasks"></i> Trạng thái *</label>
-															<select name="status" class="form-select" required>
-																<option value="APPROVED" th:selected="${deposit.status == 'APPROVED'}">Xác nhận đặt cọc</option>
-																<option value="REJECTED" th:selected="${deposit.status == 'REJECTED'}">Từ chối</option>
-															</select>
-														</div>
+                                                <div class="mb-3">
+                                                    <label class="form-label"><strong>Số tiền:</strong></label>
+                                                    <p class="text-success fs-5 fw-bold">
+                                                        <span th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+                                                    </p>
+                                                </div>
 
-														<div class="mb-3">
-															<label class="form-label"><i class="fas fa-comment"></i> Ghi chú của bạn</label>
-															<textarea name="adminNote" class="form-control" rows="3"
-																placeholder="Thêm ghi chú cho người thuê..."
-																th:text="${deposit.adminNote}"></textarea>
-														</div>
-													</div>
-													<div class="modal-footer">
-														<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-															<i class="fas fa-times"></i> Đóng
-														</button>
-														<button type="submit" class="btn btn-primary">
-															<i class="fas fa-save"></i> Lưu thay đổi
-														</button>
-													</div>
-												</form>
-											</div>
-										</div>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
+                                                <div class="mb-3">
+                                                    <label class="form-label"><i class="fas fa-tasks"></i> Trạng thái *</label>
+                                                    <select name="status" class="form-select" required>
+                                                        <option value="APPROVED" th:selected="${deposit.status == 'APPROVED'}">Xác nhận đặt cọc</option>
+                                                        <option value="REJECTED" th:selected="${deposit.status == 'REJECTED'}">Từ chối</option>
+                                                    </select>
+                                                </div>
 
-			<div class="card-footer">
-				<div class="row">
-					<div class="col-md-6">
-						<p class="mb-0">
-							<strong>Tổng số đơn đặt cọc:</strong>
-							<span class="badge bg-primary" th:text="${deposits.size()}">0</span>
-						</p>
-					</div>
-					<div class="col-md-6 text-end">
-						<a href="/admin/" class="btn btn-secondary">
-							<i class="fas fa-arrow-left"></i> Quay lại
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                                                <div class="mb-3">
+                                                    <label class="form-label"><i class="fas fa-comment"></i> Ghi chú của bạn</label>
+                                                    <textarea name="adminNote" class="form-control" rows="3"
+                                                        placeholder="Thêm ghi chú cho người thuê..."
+                                                        th:text="${deposit.adminNote}"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times"></i> Đóng
+                                                </button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save"></i> Lưu thay đổi
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${!deposits.isEmpty()}" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="mb-0">
+                    <strong>Tổng số đơn đặt cọc:</strong>
+                    <span class="badge bg-primary" th:text="${deposits.size()}">0</span>
+                </p>
+            </div>
+        </div>
+    </div>
 </section>
 </body>
 </html>
-

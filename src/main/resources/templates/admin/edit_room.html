@@ -1,272 +1,169 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{base::layout(~{::section})}">
+	th:replace="~{admin/admin_base::adminLayout(~{::section})}">
 <head>
 <meta charset="UTF-8">
 <title>Chỉnh sửa phòng trọ</title>
 </head>
 <body>
-	<section>
-		<div class="container p-5 mt-3">
-			<div class="row">
-				<div class="col-md-8 offset-md-2">
-					<div class="card card-sh">
-						<div class="card-header text-center">
-							<h4 class="text-primary"><i class="fas fa-edit"></i> Chỉnh sửa phòng trọ</h4>
+	<section th:with="currentPage='rooms'">
+		<style>
+			.page-header {
+				margin-bottom: 30px;
+			}
+			.page-header h2 {
+				font-size: 28px;
+				color: #2c3e50;
+				margin-bottom: 10px;
+			}
+			.form-card {
+				background: white;
+				padding: 30px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+			}
+		</style>
 
-							<th:block th:if="${session.succMsg}">
-								<p class="text-success fw-bold alert alert-success">[[${session.succMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
+		<div class="page-header">
+			<h2><i class="fas fa-edit"></i> Chỉnh sửa phòng trọ</h2>
+		</div>
 
-							<th:block th:if="${session.errorMsg}">
-								<p class="text-danger fw-bold alert alert-danger">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
+		<th:block th:if="${session.succMsg}">
+			<div class="alert alert-success alert-dismissible fade show">
+				[[${session.succMsg}]]
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+		</th:block>
+
+		<th:block th:if="${session.errorMsg}">
+			<div class="alert alert-danger alert-dismissible fade show">
+				[[${session.errorMsg}]]
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+		</th:block>
+
+		<div class="form-card">
+			<form action="/admin/updateRoom" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="id" th:value="${room.id}">
+
+				<div class="row">
+					<!-- Thông tin cơ bản -->
+					<div class="col-md-6">
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-home"></i> Tên phòng trọ *</label>
+							<input type="text" name="roomName" th:value="${room.roomName}"
+								   class="form-control" required>
 						</div>
 
-						<div class="card-body">
-							<form action="/admin/updateRoom" method="post" enctype="multipart/form-data">
-								<input type="hidden" name="id" th:value="${room.id}">
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-list"></i> Loại phòng *</label>
+							<input type="text" name="roomType" th:value="${room.roomType}"
+								   class="form-control" required>
+						</div>
 
-								<div class="row">
-									<!-- Thông tin cơ bản -->
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-home"></i> Tên phòng trọ *</label>
-											<input type="text" name="roomName" th:value="${room.roomName}"
-												class="form-control" required>
-										</div>
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-money-bill-wave"></i> Giá thuê/tháng (VNĐ) *</label>
+							<input type="number" name="monthlyRent" th:value="${room.monthlyRent}"
+								   class="form-control" min="0" required>
+						</div>
 
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-list"></i> Loại phòng *</label>
-											<input type="text" name="roomType" th:value="${room.roomType}"
-												class="form-control" placeholder="VD: Phòng trọ đơn, Căn hộ mini..." required>
-											<small class="text-muted">Nhập loại phòng của bạn (VD: Phòng trọ đơn, Phòng trọ đôi, Căn hộ mini...)</small>
-										</div>
-
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-money-bill-wave"></i> Giá thuê/tháng (VNĐ) *</label>
-											<input type="number" name="monthlyRent" th:value="${room.monthlyRent}"
-												class="form-control" min="0" required>
-										</div>
-
-										<div class="row">
-											<div class="col-6">
-												<div class="mb-3">
-													<label class="form-label"><i class="fas fa-expand-arrows-alt"></i> Diện tích (m²) *</label>
-													<input type="number" name="area" th:value="${room.area}"
-														class="form-control" step="0.1" min="0" required>
-												</div>
-											</div>
-											<div class="col-6">
-												<div class="mb-3">
-													<label class="form-label"><i class="fas fa-users"></i> Số người tối đa *</label>
-													<input type="number" name="maxOccupants" th:value="${room.maxOccupants}"
-														class="form-control" min="1" required>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Địa chỉ -->
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ ngắn *</label>
-											<input type="text" name="address" th:value="${room.address}"
-												class="form-control" required>
-										</div>
-
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-location-arrow"></i> Địa chỉ đầy đủ *</label>
-											<input type="text" name="fullAddress" th:value="${room.fullAddress}"
-												class="form-control" required>
-										</div>
-
-										<div class="row">
-											<div class="col-6">
-												<div class="mb-3">
-													<label class="form-label"><i class="fas fa-map"></i> Quận/Huyện *</label>
-													<input type="text" name="district" th:value="${room.district}"
-														class="form-control" required>
-												</div>
-											</div>
-											<div class="col-6">
-												<div class="mb-3">
-													<label class="form-label"><i class="fas fa-city"></i> Thành phố *</label>
-													<input type="text" name="city" th:value="${room.city}"
-														class="form-control" required>
-												</div>
-											</div>
-										</div>
-
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-image"></i> Thay đổi ảnh</label>
-											<input type="file" name="file" class="form-control" accept="image/*">
-											<div class="mt-2">
-												<img th:src="@{'/img/room_img/'+${room.image}}"
-													width="100px" height="100px" style="object-fit: cover;">
-											</div>
-										</div>
-									</div>
-								</div>
-
-								<!-- Mô tả -->
+						<div class="row">
+							<div class="col-6">
 								<div class="mb-3">
-									<label class="form-label"><i class="fas fa-align-left"></i> Mô tả chi tiết</label>
-									<textarea rows="4" class="form-control" name="description">[[${room.description}]]</textarea>
+									<label class="form-label"><i class="fas fa-expand-arrows-alt"></i> Diện tích (m²) *</label>
+									<input type="number" name="area" th:value="${room.area}"
+										   class="form-control" step="0.1" min="0" required>
 								</div>
-
-								<!-- Tiện ích -->
-								<div class="mb-4">
-									<label class="form-label"><i class="fas fa-check-circle"></i> Tiện ích có sẵn:</label>
-									<div class="row">
-										<div class="col-md-3">
-											<div class="form-check">
-												<input class="form-check-input" type="checkbox" name="hasWifi"
-													id="wifi" th:checked="${room.hasWifi}">
-												<label class="form-check-label" for="wifi">
-													<i class="fas fa-wifi text-primary"></i> WiFi
-												</label>
-											</div>
-										</div>
-										<div class="col-md-3">
-											<div class="form-check">
-												<input class="form-check-input" type="checkbox" name="hasAirConditioner"
-													id="ac" th:checked="${room.hasAirConditioner}">
-												<label class="form-check-label" for="ac">
-													<i class="fas fa-snowflake text-info"></i> Điều hòa
-												</label>
-											</div>
-										</div>
-										<div class="col-md-3">
-											<div class="form-check">
-												<input class="form-check-input" type="checkbox" name="hasParking"
-													id="parking" th:checked="${room.hasParking}">
-												<label class="form-check-label" for="parking">
-													<i class="fas fa-car text-success"></i> Chỗ đậu xe
-												</label>
-											</div>
-										</div>
-										<div class="col-md-3">
-											<div class="form-check">
-												<input class="form-check-input" type="checkbox" name="hasElevator"
-													id="elevator" th:checked="${room.hasElevator}">
-												<label class="form-check-label" for="elevator">
-													<i class="fas fa-building text-secondary"></i> Thang máy
-												</label>
-											</div>
-										</div>
-										<div class="col-md-3 mt-2">
-											<div class="form-check">
-												<input class="form-check-input" type="checkbox" name="allowPets"
-													id="pets" th:checked="${room.allowPets}">
-												<label class="form-check-label" for="pets">
-													<i class="fas fa-paw text-warning"></i> Cho phép thú cưng
-												</label>
-											</div>
-										</div>
-									</div>
+							</div>
+							<div class="col-6">
+								<div class="mb-3">
+									<label class="form-label"><i class="fas fa-users"></i> Số người tối đa *</label>
+									<input type="number" name="maxOccupants" th:value="${room.maxOccupants}"
+										   class="form-control" min="1" required>
 								</div>
+							</div>
+						</div>
+					</div>
 
-								<!-- Chi phí & Liên hệ -->
-								<div class="row">
-									<div class="col-md-4">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-hand-holding-usd"></i> Tiền cọc (VNĐ)</label>
-											<input type="number" name="deposit" th:value="${room.deposit}"
-												class="form-control" min="0">
-										</div>
-									</div>
-									<div class="col-md-4">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-bolt"></i> Giá điện (VNĐ/kWh)</label>
-											<input type="number" name="electricityCost" th:value="${room.electricityCost}"
-												class="form-control" min="0" step="0.01">
-										</div>
-									</div>
-									<div class="col-md-4">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-tint"></i> Giá nước (VNĐ/tháng)</label>
-											<input type="number" name="waterCost" th:value="${room.waterCost}"
-												class="form-control" min="0">
-										</div>
-									</div>
+					<!-- Địa chỉ và tiện ích -->
+					<div class="col-md-6">
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ *</label>
+							<input type="text" name="address" th:value="${room.address}"
+								   class="form-control" required>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-city"></i> Thành phố *</label>
+							<select name="city" class="form-select" required>
+								<option value="">-- Chọn thành phố --</option>
+								<option value="Hà Nội" th:selected="${room.city == 'Hà Nội'}">Hà Nội</option>
+								<option value="Hải Phòng" th:selected="${room.city == 'Hải Phòng'}">Hải Phòng</option>
+								<option value="Thái Nguyên" th:selected="${room.city == 'Thái Nguyên'}">Thái Nguyên</option>
+								<option value="Bắc Ninh" th:selected="${room.city == 'Bắc Ninh'}">Bắc Ninh</option>
+								<option value="Vĩnh Phúc" th:selected="${room.city == 'Vĩnh Phúc'}">Vĩnh Phúc</option>
+								<option value="Hưng Yên" th:selected="${room.city == 'Hưng Yên'}">Hưng Yên</option>
+							</select>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-image"></i> Ảnh phòng trọ</label>
+							<input type="file" name="file" class="form-control" accept="image/*">
+							<small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
+							<div class="mt-2" th:if="${room.image}">
+								<img th:src="@{'/img/room_img/'+${room.image}}"
+									 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-info-circle"></i> Mô tả</label>
+							<textarea name="description" class="form-control" rows="3" th:text="${room.description}"></textarea>
+						</div>
+					</div>
+
+					<!-- Trạng thái -->
+					<div class="col-md-12">
+						<hr>
+						<h5 class="mb-3"><i class="fas fa-cog"></i> Trạng thái phòng</h5>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-check form-switch">
+									<input class="form-check-input" type="checkbox" name="isActive"
+										   th:checked="${room.isActive}" id="isActive">
+									<label class="form-check-label" for="isActive">
+										<i class="fas fa-eye"></i> Hiển thị phòng trên trang web
+									</label>
 								</div>
-
-								<div class="row">
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-phone"></i> Số điện thoại liên hệ *</label>
-											<input type="text" name="contactPhone" th:value="${room.contactPhone}"
-												class="form-control" required>
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-user"></i> Tên người liên hệ *</label>
-											<input type="text" name="contactName" th:value="${room.contactName}"
-												class="form-control" required>
-										</div>
-									</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-check form-switch">
+									<input class="form-check-input" type="checkbox" name="isAvailable"
+										   th:checked="${room.isAvailable}" id="isAvailable">
+									<label class="form-check-label" for="isAvailable">
+										<i class="fas fa-check-circle"></i> Phòng còn trống
+									</label>
 								</div>
+							</div>
+						</div>
+					</div>
 
-								<!-- Trạng thái -->
-								<div class="row">
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-toggle-on"></i> Trạng thái hiển thị:</label>
-											<div class="form-check">
-												<input class="form-check-input" type="radio" th:checked="${room.isActive==true}"
-													value="true" name="isActive" id="active">
-												<label class="form-check-label" for="active">
-													<span class="badge bg-success">Hiển thị</span>
-												</label>
-											</div>
-											<div class="form-check">
-												<input class="form-check-input" type="radio" name="isActive"
-													th:checked="${room.isActive==false}" value="false" id="inactive">
-												<label class="form-check-label" for="inactive">
-													<span class="badge bg-secondary">Ẩn</span>
-												</label>
-											</div>
-										</div>
-									</div>
-
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label class="form-label"><i class="fas fa-door-open"></i> Tình trạng phòng:</label>
-											<div class="form-check">
-												<input class="form-check-input" type="radio" th:checked="${room.isAvailable==true}"
-													value="true" name="isAvailable" id="available">
-												<label class="form-check-label" for="available">
-													<span class="badge bg-primary">Còn trống</span>
-												</label>
-											</div>
-											<div class="form-check">
-												<input class="form-check-input" type="radio" name="isAvailable"
-													th:checked="${room.isAvailable==false}" value="false" id="rented">
-												<label class="form-check-label" for="rented">
-													<span class="badge bg-warning">Đã cho thuê</span>
-												</label>
-											</div>
-										</div>
-									</div>
-								</div>
-
-								<div class="text-center mt-3">
-									<button type="submit" class="btn btn-primary btn-lg px-5">
-										<i class="fas fa-save"></i> Cập nhật
-									</button>
-									<a href="/admin/rooms" class="btn btn-secondary btn-lg px-5 ms-2">
-										<i class="fas fa-arrow-left"></i> Quay lại
-									</a>
-								</div>
-							</form>
+					<!-- Buttons -->
+					<div class="col-md-12 mt-4">
+						<hr>
+						<div class="d-flex justify-content-between">
+							<a href="/admin/rooms" class="btn btn-secondary">
+								<i class="fas fa-arrow-left"></i> Quay lại
+							</a>
+							<button type="submit" class="btn btn-primary">
+								<i class="fas fa-save"></i> Cập nhật phòng trọ
+							</button>
 						</div>
 					</div>
 				</div>
-			</div>
+			</form>
 		</div>
 	</section>
 </body>
