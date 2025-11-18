@@ -135,10 +135,15 @@ public class HomeController {
 	}
 
 	@GetMapping("/rooms")
-	public String rooms(Model m, @RequestParam(value = "roomType", defaultValue = "") String roomType,
+	public String rooms(Model m,
+			@RequestParam(value = "roomType", defaultValue = "") String roomType,
 			@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "12") Integer pageSize,
-			@RequestParam(defaultValue = "") String ch) {
+			@RequestParam(defaultValue = "") String ch,
+			@RequestParam(name = "sortBy", defaultValue = "") String sortBy,
+			@RequestParam(name = "city", defaultValue = "") String city,
+			@RequestParam(name = "minPrice", required = false) Double minPrice,
+			@RequestParam(name = "maxPrice", required = false) Double maxPrice) {
 
 		// Get unique room types and remove duplicates
 		List<RoomType> allRoomTypes = roomTypeService.getAllActiveRoomType();
@@ -146,14 +151,26 @@ public class HomeController {
 				.distinct()
 				.collect(java.util.stream.Collectors.toList());
 
+		// Get unique cities for filter
+		List<String> cities = roomService.getAllActiveRooms("").stream()
+				.map(Room::getCity)
+				.distinct()
+				.sorted()
+				.collect(java.util.stream.Collectors.toList());
+
 		m.addAttribute("paramValue", roomType);
 		m.addAttribute("roomTypes", uniqueRoomTypes);
+		m.addAttribute("cities", cities);
+		m.addAttribute("sortBy", sortBy);
+		m.addAttribute("selectedCity", city);
+		m.addAttribute("minPrice", minPrice);
+		m.addAttribute("maxPrice", maxPrice);
 
 		Page<Room> page = null;
 		if (StringUtils.isEmpty(ch)) {
-			page = roomService.getAllActiveRoomPagination(pageNo, pageSize, roomType);
+			page = roomService.getAllActiveRoomPagination(pageNo, pageSize, roomType, sortBy, city, minPrice, maxPrice);
 		} else {
-			page = roomService.searchActiveRoomPagination(pageNo, pageSize, roomType, ch);
+			page = roomService.searchActiveRoomPagination(pageNo, pageSize, roomType, ch, sortBy, city, minPrice, maxPrice);
 		}
 
 		List<Room> rooms = page.getContent();

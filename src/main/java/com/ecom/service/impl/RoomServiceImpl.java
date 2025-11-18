@@ -12,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -135,30 +136,58 @@ public class RoomServiceImpl implements RoomService {
 		return roomRepository.findByRoomNameContainingIgnoreCaseOrRoomTypeContainingIgnoreCase(ch, ch, pageable);
 	}
 
-	@Override
-	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType) {
 
-		Pageable pageable = PageRequest.of(pageNo, pageSize);
+	@Override
+	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String sortBy, String city, Double minPrice, Double maxPrice) {
+
+		Pageable pageable = createPageable(pageNo, pageSize, sortBy);
 		Page<Room> pageRoom = null;
 
-		if (ObjectUtils.isEmpty(roomType)) {
+		// Apply filters
+		if (ObjectUtils.isEmpty(roomType) && ObjectUtils.isEmpty(city) && minPrice == null && maxPrice == null) {
+			// No filters
 			pageRoom = roomRepository.findByIsActiveTrue(pageable);
 		} else {
-			pageRoom = roomRepository.findByRoomType(pageable, roomType);
+			// Use custom query with filters
+			pageRoom = roomRepository.findByFilters(roomType, city, minPrice, maxPrice, pageable);
 		}
 		return pageRoom;
 	}
 
 	@Override
-	public Page<Room> searchActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String ch) {
+	public Page<Room> searchActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String ch,
+			String sortBy, String city, Double minPrice, Double maxPrice) {
 
 		Page<Room> pageRoom = null;
-		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Pageable pageable = createPageable(pageNo, pageSize, sortBy);
 
-		pageRoom = roomRepository.findByisActiveTrueAndRoomNameContainingIgnoreCaseOrRoomTypeContainingIgnoreCase(ch,
-				ch, pageable);
+		// Search with filters
+		pageRoom = roomRepository.findBySearchAndFilters(ch, roomType, city, minPrice, maxPrice, pageable);
 
 		return pageRoom;
+	}
+
+	// Helper method để tạo Pageable với sort
+	private Pageable createPageable(Integer pageNo, Integer pageSize, String sortBy) {
+		Sort sort = Sort.unsorted();
+
+		if (sortBy != null && !sortBy.isEmpty()) {
+			switch (sortBy) {
+				case "priceLowToHigh":
+					sort = Sort.by(Sort.Direction.ASC, "monthlyRent");
+					break;
+				case "priceHighToLow":
+					sort = Sort.by(Sort.Direction.DESC, "monthlyRent");
+					break;
+				case "newest":
+					sort = Sort.by(Sort.Direction.DESC, "id");
+					break;
+				default:
+					sort = Sort.unsorted();
+			}
+		}
+
+		return PageRequest.of(pageNo, pageSize, sort);
 	}
 
 	@Override

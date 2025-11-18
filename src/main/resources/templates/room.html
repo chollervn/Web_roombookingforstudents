@@ -26,30 +26,85 @@
 		<!-- Main Content -->
 		<div class="container-fluid mt-1">
 			<div class="row">
-				<!-- Sidebar - Room Types Filter -->
-				<div class="col-md-2 p-0">
-					<div class="card shadow-sm p-0 mb-5 bg-body-tertiary rounded">
-						<div class="card-body">
-							<div class="list-group">
-								<p class="fs-5">Loại phòng trọ</p>
-								<a href="/rooms"
-									th:classappend="${paramValue==''} ? 'active':''"
-									class="list-group-item list-group-item-action"
-									aria-current="true">Tất cả</a>
-								<a th:each="rt:${roomTypes}"
-									th:href="@{'/rooms?roomType='+${rt.name}}"
-									th:classappend="${paramValue == rt.name} ? 'active':''"
-									class="list-group-item list-group-item-action">[[${rt.name}]]</a>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Room List -->
-				<div class="col-md-10">
+				<!-- Room List - Full Width -->
+				<div class="col-md-12">
 					<div class="card">
 						<div class="card-body">
-							<p class="fs-3 text-center">Phòng trọ cho thuê</p>
+							<!-- Filter Bar -->
+							<div class="mb-4 p-3 bg-light rounded">
+								<form action="/rooms" method="get" id="filterForm">
+									<div class="row g-3 align-items-end">
+										<!-- Loại trọ -->
+										<div class="col-md-2">
+											<label class="form-label fw-bold"><i class="fas fa-home text-info"></i> Loại trọ</label>
+											<select class="form-select" name="roomType" id="roomTypeSelect">
+												<option value="" th:selected="${paramValue == ''}">Tất cả</option>
+												<option th:each="rt : ${roomTypes}"
+														th:value="${rt.name}"
+														th:text="${rt.name}"
+														th:selected="${rt.name == paramValue}"></option>
+											</select>
+										</div>
+
+										<!-- Khu vực -->
+										<div class="col-md-2">
+											<label class="form-label fw-bold"><i class="fas fa-map-marker-alt text-danger"></i> Khu vực</label>
+											<select class="form-select" name="city" id="citySelect">
+												<option value="">Tất cả khu vực</option>
+												<option value="Hà Nội" th:selected="${selectedCity == 'Hà Nội'}">Hà Nội</option>
+												<option value="Hải Phòng" th:selected="${selectedCity == 'Hải Phòng'}">Hải Phòng</option>
+												<option value="Thái Nguyên" th:selected="${selectedCity == 'Thái Nguyên'}">Thái Nguyên</option>
+												<option value="Quảng Ninh" th:selected="${selectedCity == 'Quảng Ninh'}">Quảng Ninh</option>
+												<option value="Nam Định" th:selected="${selectedCity == 'Nam Định'}">Nam Định</option>
+												<option value="Ninh Bình" th:selected="${selectedCity == 'Ninh Bình'}">Ninh Bình</option>
+											</select>
+										</div>
+
+										<!-- Khoảng giá -->
+										<div class="col-md-3">
+											<label class="form-label fw-bold"><i class="fas fa-dollar-sign text-success"></i> Khoảng giá</label>
+											<select class="form-select" id="priceRangeSelect" onchange="updatePriceRange()">
+												<option value="">Tất cả mức giá</option>
+												<option value="0-2000000" th:selected="${minPrice == 0 && maxPrice == 2000000}">Dưới 2 triệu</option>
+												<option value="2000000-5000000" th:selected="${minPrice == 2000000 && maxPrice == 5000000}">2 - 5 triệu</option>
+												<option value="5000000-10000000" th:selected="${minPrice == 5000000 && maxPrice == 10000000}">5 - 10 triệu</option>
+												<option value="10000000-999999999" th:selected="${minPrice == 10000000}">Trên 10 triệu</option>
+											</select>
+											<input type="hidden" name="minPrice" id="minPrice" th:value="${minPrice}">
+											<input type="hidden" name="maxPrice" id="maxPrice" th:value="${maxPrice}">
+										</div>
+
+										<!-- Sắp xếp giá -->
+										<div class="col-md-3">
+											<label class="form-label fw-bold"><i class="fas fa-sort text-primary"></i> Sắp xếp</label>
+											<select class="form-select" name="sortBy" id="sortBySelect">
+												<option value="">Mặc định</option>
+												<option value="newest" th:selected="${sortBy == 'newest'}">Mới nhất</option>
+												<option value="priceLowToHigh" th:selected="${sortBy == 'priceLowToHigh'}">Giá: Thấp → Cao</option>
+												<option value="priceHighToLow" th:selected="${sortBy == 'priceHighToLow'}">Giá: Cao → Thấp</option>
+											</select>
+										</div>
+
+										<!-- Nút lọc -->
+										<div class="col-md-2">
+											<button type="submit" class="btn btn-primary w-100">
+												<i class="fas fa-filter"></i> Áp dụng
+											</button>
+											<a th:href="@{/rooms}" class="btn btn-outline-secondary w-100 mt-2">
+												<i class="fas fa-redo"></i> Xóa lọc
+											</a>
+										</div>
+									</div>
+								</form>
+							</div>
+
+							<!-- Room count -->
+							<div class="d-flex justify-content-between align-items-center mb-3">
+								<p class="fs-5 mb-0 text-muted">
+									<i class="fas fa-home"></i> Tìm thấy <strong>[[${totalElements}]]</strong> phòng trọ
+								</p>
+							</div>
+
 							<div class="row">
 								<th:block th:if="${roomsSize >0}">
 									<div class="col-md-4 mt-3" th:each="room:${rooms}">
@@ -115,18 +170,23 @@
 							<nav aria-label="Phân trang">
 								<ul class="pagination justify-content-center">
 									<li class="page-item" th:classappend="${isFirst} ? 'disabled':''">
-										<a class="page-link" th:href="@{'/rooms?pageNo='+${pageNo-1}}" aria-label="Previous">
+										<a class="page-link"
+										   th:href="@{'/rooms?pageNo='+${pageNo-1}+'&roomType='+${paramValue}+'&sortBy='+${sortBy}}"
+										   aria-label="Previous">
 											<span aria-hidden="true">&laquo;</span>
 										</a>
 									</li>
 
 									<li th:each="i:${#numbers.sequence(1,totalPages)}" class="page-item"
 										th:classappend="${pageNo+1==i}?'active':''">
-										<a class="page-link" th:href="@{'/rooms?pageNo='+${i-1}}">[[${i}]]</a>
+										<a class="page-link"
+										   th:href="@{'/rooms?pageNo='+${i-1}+'&roomType='+${paramValue}+'&sortBy='+${sortBy}}">[[${i}]]</a>
 									</li>
 
 									<li class="page-item" th:classappend="${isLast} ? 'disabled':''">
-										<a class="page-link" th:href="@{'/rooms?pageNo='+${pageNo+1}}" aria-label="Next">
+										<a class="page-link"
+										   th:href="@{'/rooms?pageNo='+${pageNo+1}+'&roomType='+${paramValue}+'&sortBy='+${sortBy}}"
+										   aria-label="Next">
 											<span aria-hidden="true">&raquo;</span>
 										</a>
 									</li>
@@ -139,5 +199,40 @@
 		</div>
 
 	</section>
+
+	<script>
+		function applySorting() {
+			var sortBy = document.getElementById('sortSelect').value;
+			var url = new URL(window.location.href);
+
+			// Giữ các tham số hiện tại
+			var roomType = url.searchParams.get('roomType') || '';
+			var ch = url.searchParams.get('ch') || '';
+
+			// Tạo URL mới với sort
+			var newUrl = '/rooms?';
+			if (roomType) newUrl += 'roomType=' + encodeURIComponent(roomType) + '&';
+			if (ch) newUrl += 'ch=' + encodeURIComponent(ch) + '&';
+			if (sortBy) newUrl += 'sortBy=' + encodeURIComponent(sortBy);
+
+			// Redirect đến URL mới
+			window.location.href = newUrl;
+		}
+
+		function updatePriceRange() {
+			var priceRange = document.getElementById('priceRangeSelect').value;
+			var minPrice = document.getElementById('minPrice');
+			var maxPrice = document.getElementById('maxPrice');
+
+			if (priceRange) {
+				var prices = priceRange.split('-');
+				minPrice.value = prices[0];
+				maxPrice.value = prices[1];
+			} else {
+				minPrice.value = '';
+				maxPrice.value = '';
+			}
+		}
+	</script>
 </body>
 </html>

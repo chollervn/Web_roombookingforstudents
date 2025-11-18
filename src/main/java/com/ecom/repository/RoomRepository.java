@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.ecom.model.Room;
 
@@ -45,4 +47,30 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 	List<Room> findByCityAndMonthlyRentBetween(String city, Double minRent, Double maxRent);
 
 	List<Room> findByOwnerId(Integer ownerId);
+
+	// Custom query for filtering with multiple conditions
+	@Query("SELECT r FROM Room r WHERE r.isActive = true " +
+		   "AND (:roomType IS NULL OR :roomType = '' OR r.roomType = :roomType) " +
+		   "AND (:city IS NULL OR :city = '' OR r.city = :city) " +
+		   "AND (:minPrice IS NULL OR r.monthlyRent >= :minPrice) " +
+		   "AND (:maxPrice IS NULL OR r.monthlyRent <= :maxPrice)")
+	Page<Room> findByFilters(@Param("roomType") String roomType,
+							 @Param("city") String city,
+							 @Param("minPrice") Double minPrice,
+							 @Param("maxPrice") Double maxPrice,
+							 Pageable pageable);
+
+	// Custom query for search with filters
+	@Query("SELECT r FROM Room r WHERE r.isActive = true " +
+		   "AND (r.roomName LIKE %:keyword% OR r.roomType LIKE %:keyword% OR r.address LIKE %:keyword%) " +
+		   "AND (:roomType IS NULL OR :roomType = '' OR r.roomType = :roomType) " +
+		   "AND (:city IS NULL OR :city = '' OR r.city = :city) " +
+		   "AND (:minPrice IS NULL OR r.monthlyRent >= :minPrice) " +
+		   "AND (:maxPrice IS NULL OR r.monthlyRent <= :maxPrice)")
+	Page<Room> findBySearchAndFilters(@Param("keyword") String keyword,
+									   @Param("roomType") String roomType,
+									   @Param("city") String city,
+									   @Param("minPrice") Double minPrice,
+									   @Param("maxPrice") Double maxPrice,
+									   Pageable pageable);
 }

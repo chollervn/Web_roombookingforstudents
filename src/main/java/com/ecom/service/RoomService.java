@@ -23,13 +23,13 @@ public interface RoomService {
 
 	public List<Room> searchRoom(String ch);
 
-	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType);
+	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String sortBy, String city, Double minPrice, Double maxPrice);
 
 	public Page<Room> searchRoomPagination(Integer pageNo, Integer pageSize, String ch);
 
 	public Page<Room> getAllRoomsPagination(Integer pageNo, Integer pageSize);
 
-	public Page<Room> searchActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String ch);
+	public Page<Room> searchActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String ch, String sortBy, String city, Double minPrice, Double maxPrice);
 
 	public List<Room> getAvailableRooms();
 
