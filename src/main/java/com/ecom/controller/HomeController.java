@@ -29,11 +29,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.Cart;
 import com.ecom.model.Deposit;
+import com.ecom.model.Review;
 import com.ecom.model.RoomType;
 import com.ecom.model.Room;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
 import com.ecom.service.DepositService;
+import com.ecom.service.ReviewService;
 import com.ecom.service.RoomTypeService;
 import com.ecom.service.RoomService;
 import com.ecom.service.UserService;
@@ -67,6 +69,9 @@ public class HomeController {
 
 	@Autowired
 	private DepositService depositService;
+
+	@Autowired
+	private ReviewService reviewService;
 
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m, HttpSession session) {
@@ -188,9 +193,27 @@ public class HomeController {
 	}
 
 	@GetMapping("/room/{id}")
-	public String room(@PathVariable int id, Model m) {
+	public String room(@PathVariable int id, Model m, Principal p) {
 		Room roomById = roomService.getRoomById(id);
 		m.addAttribute("room", roomById);
+
+		// Lấy thông tin review của phòng
+		List<Review> reviews = reviewService.getReviewsByRoomId(id);
+		Long reviewCount = reviewService.getReviewCountByRoomId(id);
+		Double averageRating = reviewService.getAverageRatingByRoomId(id);
+
+		m.addAttribute("reviews", reviews);
+		m.addAttribute("reviewCount", reviewCount);
+		m.addAttribute("averageRating", averageRating);
+
+		// Kiểm tra user đã review chưa (nếu đã đăng nhập)
+		if (p != null) {
+			String email = p.getName();
+			UserDtls user = userService.getUserByEmail(email);
+			Boolean hasReviewed = reviewService.hasUserReviewedRoom(id, user.getId());
+			m.addAttribute("hasReviewed", hasReviewed);
+			m.addAttribute("currentUserId", user.getId());
+		}
 
 		// Kiểm tra trạng thái đặt cọc của phòng
 		List<Deposit> roomDeposits = depositService.getDepositsByRoom(id);

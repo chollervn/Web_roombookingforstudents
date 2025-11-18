@@ -24,6 +24,7 @@ import com.ecom.model.Room;
 import com.ecom.model.RoomType;
 import com.ecom.model.OrderRequest;
 import com.ecom.model.RoomOrder;
+import com.ecom.model.Review;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
 import com.ecom.service.DepositService;
@@ -31,6 +32,7 @@ import com.ecom.service.OrderService;
 import com.ecom.service.RoomBookingService;
 import com.ecom.service.RoomService;
 import com.ecom.service.RoomTypeService;
+import com.ecom.service.ReviewService;
 import com.ecom.service.UserService;
 import com.ecom.util.CommonUtil;
 import com.ecom.util.OrderStatus;
@@ -65,6 +67,9 @@ public class UserController {
 
 	@Autowired
 	private RoomBookingService roomBookingService;
+
+	@Autowired
+	private ReviewService reviewService;
 
 
 	@GetMapping("/")
@@ -428,6 +433,74 @@ public class UserController {
 		}
 		m.addAttribute("deposit", deposit);
 		return "/user/deposit_success";
+	}
+
+	@PostMapping("/save-review")
+	public String saveReview(@RequestParam Integer roomId,
+							 @RequestParam Integer rating,
+							 @RequestParam String comment,
+							 Principal p,
+							 HttpSession session) {
+		try {
+			if (p == null) {
+				session.setAttribute("errorMsg", "Vui lòng đăng nhập để đánh giá");
+				return "redirect:/signin";
+			}
+
+			UserDtls user = getLoggedInUserDetails(p);
+
+			// Kiểm tra xem user đã đánh giá phòng này chưa
+			Boolean hasReviewed = reviewService.hasUserReviewedRoom(roomId, user.getId());
+			if (hasReviewed) {
+				session.setAttribute("errorMsg", "Bạn đã đánh giá phòng này rồi!");
+				return "redirect:/room/" + roomId;
+			}
+
+			Review review = new Review();
+			review.setRoomId(roomId);
+			review.setUserId(user.getId());
+			review.setUserName(user.getName());
+			review.setRating(rating);
+			review.setComment(comment);
+
+			reviewService.saveReview(review);
+			session.setAttribute("succMsg", "Đánh giá của bạn đã được gửi thành công!");
+
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Có lỗi xảy ra: " + e.getMessage());
+		}
+
+		return "redirect:/room/" + roomId;
+	}
+
+	@GetMapping("/delete-review")
+	public String deleteReview(@RequestParam Integer reviewId,
+							   @RequestParam Integer roomId,
+							   Principal p,
+							   HttpSession session) {
+		try {
+			if (p == null) {
+				session.setAttribute("errorMsg", "Vui lòng đăng nhập");
+				return "redirect:/signin";
+			}
+
+			UserDtls user = getLoggedInUserDetails(p);
+			Review review = reviewService.getReviewById(reviewId);
+
+			// Kiểm tra xem review có thuộc về user này không
+			if (review == null || !review.getUserId().equals(user.getId())) {
+				session.setAttribute("errorMsg", "Không thể xóa đánh giá này");
+				return "redirect:/room/" + roomId;
+			}
+
+			reviewService.deleteReview(reviewId);
+			session.setAttribute("succMsg", "Đã xóa đánh giá thành công");
+
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Có lỗi xảy ra: " + e.getMessage());
+		}
+
+		return "redirect:/room/" + roomId;
 	}
 
 }

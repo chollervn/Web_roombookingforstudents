@@ -286,11 +286,14 @@ public class AdminController {
 
 		Room updateRoom = roomService.updateRoom(room, image);
 		if (!ObjectUtils.isEmpty(updateRoom)) {
-			session.setAttribute("succMsg", "Room update success");
+			session.setAttribute("succMsg", "Chỉnh sửa phòng thành công");
+			// Sau khi cập nhật thành công, quay về danh sách phòng để tránh lỗi Whitelabel
+			return "redirect:/admin/rooms";
 		} else {
-			session.setAttribute("errorMsg", "Something wrong on server");
+			session.setAttribute("errorMsg", "Có lỗi xảy ra trên máy chủ");
+			// Quay lại trang chỉnh sửa hiện tại để người dùng có thể thử lại
+			return "redirect:/admin/editRoom/" + room.getId();
 		}
-		return "redirect:/admin/editRoom/" + room.getId();
 	}
 
 	@GetMapping("/users")

@@ -203,6 +203,115 @@
 			</div>
 		</div>
 
+		<!-- ============================================ -->
+		<!-- PHẦN ĐÁNH GIÁ / NHẬN XÉT -->
+		<!-- ============================================ -->
+		<div class="row mt-5">
+			<div class="col-md-12">
+				<div class="card shadow-sm">
+					<div class="card-header bg-primary text-white">
+						<h4 class="mb-0">
+							<i class="fas fa-star me-2"></i>Đánh giá phòng trọ
+							<span class="badge bg-light text-dark ms-2">[[${reviewCount}]] đánh giá</span>
+						</h4>
+						<div th:if="${reviewCount > 0}">
+							<span class="fs-5">
+								<th:block th:each="i : ${#numbers.sequence(1, 5)}">
+									<i th:if="${i <= averageRating}" class="fas fa-star text-warning"></i>
+									<i th:if="${i > averageRating}" class="far fa-star text-warning"></i>
+								</th:block>
+								<span class="ms-2">([[${#numbers.formatDecimal(averageRating, 1, 1)}]]/5)</span>
+							</span>
+						</div>
+					</div>
+					<div class="card-body">
+						<!-- Form thêm đánh giá - CHỈ hiển thị nếu đã đăng nhập và chưa đánh giá -->
+						<div th:if="${user != null and !hasReviewed}" class="mb-4">
+							<h5 class="mb-3"><i class="fas fa-edit me-2"></i>Viết đánh giá của bạn</h5>
+							<form th:action="@{/user/save-review}" method="post">
+								<input type="hidden" name="roomId" th:value="${room.id}">
+
+								<div class="mb-3">
+									<label class="form-label"><i class="fas fa-star text-warning"></i> Đánh giá sao *</label>
+									<div class="rating-stars">
+										<div class="form-check form-check-inline" th:each="i : ${#numbers.sequence(1, 5)}">
+											<input class="form-check-input" type="radio" name="rating" th:id="'rating'+${i}" th:value="${i}" required>
+											<label class="form-check-label" th:for="'rating'+${i}">
+												<i class="fas fa-star text-warning"></i> [[${i}]]
+											</label>
+										</div>
+									</div>
+								</div>
+
+								<div class="mb-3">
+									<label class="form-label"><i class="fas fa-comment"></i> Nhận xét *</label>
+									<textarea class="form-control" name="comment" rows="4"
+											  placeholder="Chia sẻ trải nghiệm của bạn về phòng trọ này..."
+											  required maxlength="2000"></textarea>
+									<small class="text-muted">Tối đa 2000 ký tự</small>
+								</div>
+
+								<button type="submit" class="btn btn-primary">
+									<i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+								</button>
+							</form>
+						</div>
+
+						<!-- Thông báo nếu đã đánh giá -->
+						<div th:if="${user != null and hasReviewed}" class="alert alert-info mb-4">
+							<i class="fas fa-info-circle me-2"></i>Bạn đã đánh giá phòng trọ này rồi.
+						</div>
+
+						<!-- Thông báo nếu chưa đăng nhập -->
+						<div th:if="${user == null}" class="alert alert-warning mb-4">
+							<i class="fas fa-exclamation-triangle me-2"></i>
+							Vui lòng <a th:href="@{/signin}" class="alert-link">đăng nhập</a> để viết đánh giá.
+						</div>
+
+						<!-- Danh sách đánh giá -->
+						<hr class="my-4">
+						<h5 class="mb-3"><i class="fas fa-comments me-2"></i>Các đánh giá từ người dùng</h5>
+
+						<div th:if="${reviewCount == 0}" class="text-center text-muted py-4">
+							<i class="fas fa-inbox fa-3x mb-3"></i>
+							<p>Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá phòng trọ này!</p>
+						</div>
+
+						<div th:if="${reviewCount > 0}">
+							<div th:each="review : ${reviews}" class="review-item mb-3 pb-3 border-bottom">
+								<div class="d-flex justify-content-between align-items-start">
+									<div class="flex-grow-1">
+										<h6 class="mb-1">
+											<i class="fas fa-user-circle text-primary me-2"></i>
+											<strong>[[${review.userName}]]</strong>
+										</h6>
+										<div class="mb-2">
+											<th:block th:each="i : ${#numbers.sequence(1, 5)}">
+												<i th:if="${i <= review.rating}" class="fas fa-star text-warning"></i>
+												<i th:if="${i > review.rating}" class="far fa-star text-warning"></i>
+											</th:block>
+											<small class="text-muted ms-2">
+												[[${#temporals.format(review.createdDate, 'dd/MM/yyyy HH:mm')}]]
+											</small>
+										</div>
+										<p class="mb-0 text-justify">[[${review.comment}]]</p>
+									</div>
+									<!-- Nút xóa - chỉ hiển thị nếu là review của user hiện tại -->
+									<div th:if="${user != null and review.userId == currentUserId}">
+										<a th:href="@{/user/delete-review(reviewId=${review.id}, roomId=${room.id})}"
+										   class="btn btn-sm btn-outline-danger"
+										   onclick="return confirm('Bạn có chắc muốn xóa đánh giá này?')">
+											<i class="fas fa-trash"></i>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</section>
 </body>
 </html>
