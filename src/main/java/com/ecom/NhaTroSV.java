@@ -8,5 +8,4 @@ public class NhaTroSV {
 	public static void main(String[] args) {
 		SpringApplication.run(NhaTroSV.class, args);
 	}
-
 }
