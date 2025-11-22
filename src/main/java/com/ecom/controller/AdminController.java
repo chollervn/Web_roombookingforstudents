@@ -654,19 +654,6 @@ public class AdminController {
 		return "redirect:/admin/profile";
 	}
 
-	@GetMapping("/chat")
-	public String chat(@RequestParam(required = false) String orderId, Model m, HttpSession session) {
-		if (orderId != null && !orderId.isEmpty()) {
-			RoomOrder order = orderService.getOrdersByOrderId(orderId.trim());
-			if (ObjectUtils.isEmpty(order)) {
-				session.setAttribute("errorMsg", "Không tìm thấy đơn thuê");
-				return "redirect:/admin/orders";
-			}
-			m.addAttribute("order", order);
-		}
-		return "/admin/chat";
-	}
-
 	@GetMapping("/deposits")
 	public String getDeposits(Model m, Principal p) {
 		// Get current logged-in owner
@@ -731,75 +718,6 @@ public class AdminController {
 		}
 		session.setAttribute("succMsg", "Đã hủy cho thuê thành công!");
 		return "redirect:/admin/orders";
-	}
-
-	// ==================== REVIEW MANAGEMENT ====================
-
-	@GetMapping("/reviews")
-	public String getAllReviews(Model m, Principal p) {
-		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
-
-		// Lấy tất cả reviews của các phòng thuộc owner này
-		List<com.ecom.model.Review> reviews = reviewService.getReviewsByOwnerId(loggedInUser.getId());
-
-		m.addAttribute("reviews", reviews);
-		return "/admin/reviews";
-	}
-
-	@GetMapping("/room/{roomId}/reviews")
-	public String getRoomReviews(@PathVariable Integer roomId, Model m, Principal p, HttpSession session) {
-		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
-
-		// Kiểm tra xem phòng có thuộc owner này không
-		Room room = roomService.getRoomById(roomId);
-		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
-			session.setAttribute("errorMsg", "Bạn không có quyền xem đánh giá của phòng này!");
-			return "redirect:/admin/rooms";
-		}
-
-		// Lấy reviews của phòng
-		List<com.ecom.model.Review> reviews = reviewService.getReviewsByRoomId(roomId);
-		Double avgRating = reviewService.getAverageRatingByRoomId(roomId);
-		Long reviewCount = reviewService.getReviewCountByRoomId(roomId);
-
-		m.addAttribute("room", room);
-		m.addAttribute("reviews", reviews);
-		m.addAttribute("avgRating", avgRating);
-		m.addAttribute("reviewCount", reviewCount);
-
-		return "/admin/room_reviews";
-	}
-
-	@PostMapping("/review/{reviewId}/respond")
-	public String respondToReview(@PathVariable Integer reviewId,
-			@RequestParam String response,
-			HttpSession session,
-			Principal p) {
-		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
-
-		// Kiểm tra xem review có thuộc phòng của owner này không
-		com.ecom.model.Review review = reviewService.getReviewById(reviewId);
-		if (review == null) {
-			session.setAttribute("errorMsg", "Không tìm thấy đánh giá!");
-			return "redirect:/admin/reviews";
-		}
-
-		Room room = roomService.getRoomById(review.getRoomId());
-		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
-			session.setAttribute("errorMsg", "Bạn không có quyền phản hồi đánh giá này!");
-			return "redirect:/admin/reviews";
-		}
-
-		// Cập nhật phản hồi
-		com.ecom.model.Review updatedReview = reviewService.updateOwnerResponse(reviewId, response);
-
-		if (updatedReview != null) {
-			session.setAttribute("succMsg", "Đã gửi phản hồi thành công!");
-		} else {
-			session.setAttribute("errorMsg", "Không thể gửi phản hồi!");
-		}
-
-		return "redirect:/admin/room/" + review.getRoomId() + "/reviews";
 	}
 
 	// ==================== PAYMENT MANAGEMENT ====================
@@ -1123,6 +1041,99 @@ public class AdminController {
 		m.addAttribute("currentStatus", status);
 
 		return "/admin/bookings";
+	}
+
+	// ==================== REVIEW MANAGEMENT ====================
+
+	/**
+	 * Admin Reviews Page - display all reviews for owner's rooms
+	 */
+	@GetMapping("/admin/reviews")
+	public String viewReviews(Model m, Principal p,
+			@RequestParam(defaultValue = "") String roomId,
+			@RequestParam(defaultValue = "") String status) {
+		UserDtls user = getLoggedInUser(p);
+
+		List<com.ecom.model.Review> reviews;
+
+		if ("ROLE_ADMIN".equals(user.getRole())) {
+			// Admin sees all reviews
+			reviews = reviewService.getAllReviews();
+		} else {
+			// Owner sees only their rooms' reviews
+			reviews = reviewService.getReviewsByOwnerId(user.getId());
+		}
+
+		// Filter by room if specified
+		if (!roomId.isEmpty()) {
+			Integer rid = Integer.parseInt(roomId);
+			reviews = reviews.stream()
+					.filter(r -> r.getRoomId().equals(rid))
+					.toList();
+		}
+
+		// Filter by status (with/without response)
+		if ("responded".equals(status)) {
+			reviews = reviews.stream()
+					.filter(r -> r.getOwnerResponse() != null && !r.getOwnerResponse().isEmpty())
+					.toList();
+		} else if ("pending".equals(status)) {
+			reviews = reviews.stream()
+					.filter(r -> r.getOwnerResponse() == null || r.getOwnerResponse().isEmpty())
+					.toList();
+		}
+
+		// Calculate statistics
+		long totalReviews = reviews.size();
+		long pendingResponse = reviews.stream()
+				.filter(r -> r.getOwnerResponse() == null || r.getOwnerResponse().isEmpty())
+				.count();
+		double averageRating = reviews.isEmpty() ? 0.0
+				: reviews.stream().mapToInt(com.ecom.model.Review::getRating).average().orElse(0.0);
+
+		// Get owner's rooms for filtering
+		List<Room> ownerRooms = roomService.getRoomsByOwnerId(user.getId());
+
+		m.addAttribute("reviews", reviews);
+		m.addAttribute("totalReviews", totalReviews);
+		m.addAttribute("pendingResponse", pendingResponse);
+		m.addAttribute("averageRating", averageRating);
+		m.addAttribute("ownerRooms", ownerRooms);
+		m.addAttribute("selectedRoomId", roomId);
+		m.addAttribute("selectedStatus", status);
+
+		return "admin/admin_reviews";
+	}
+
+	/**
+	 * Submit owner response to a review
+	 */
+	@PostMapping("/admin/review/respond")
+	public String respondToReview(@RequestParam Integer reviewId,
+			@RequestParam String ownerResponse,
+			Principal p,
+			HttpSession session) {
+		UserDtls user = getLoggedInUser(p);
+
+		// Get review and verify ownership
+		com.ecom.model.Review review = reviewService.getReviewById(reviewId);
+		if (review == null) {
+			setErrorMessage(session, "Review not found");
+			return "redirect:/admin/reviews";
+		}
+
+		// Verify that user owns the room
+		Room room = roomService.getRoomById(review.getRoomId());
+		if (!isRoomOwner(user, room)) {
+			setErrorMessage(session, "Unauthorized access");
+			return "redirect:/admin/reviews";
+		}
+
+		// Update owner response
+		reviewService.updateOwnerResponse(reviewId, ownerResponse);
+		setSuccessMessage(session, "Response submitted successfully!");
+
+		return "redirect:/admin/reviews";
 	}
 
 }

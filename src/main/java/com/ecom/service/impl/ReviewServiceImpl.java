@@ -61,7 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
 	public Review getReviewById(Integer reviewId) {
 		return reviewRepository.findById(reviewId).orElse(null);
 	}
-	
+
 	@Override
 	public Review updateOwnerResponse(Integer reviewId, String response) {
 		Review review = reviewRepository.findById(reviewId).orElse(null);
@@ -72,10 +72,14 @@ public class ReviewServiceImpl implements ReviewService {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public List<Review> getReviewsByOwnerId(Integer ownerId) {
 		return reviewRepository.findByOwnerId(ownerId);
 	}
-}
 
+	@Override
+	public List<Review> getAllReviews() {
+		return reviewRepository.findAll();
+	}
+}

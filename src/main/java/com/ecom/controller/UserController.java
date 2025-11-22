@@ -71,7 +71,6 @@ public class UserController {
 	@Autowired
 	private ReviewService reviewService;
 
-
 	@GetMapping("/")
 	public String home() {
 		return "user/home";
@@ -94,10 +93,10 @@ public class UserController {
 				List<Deposit> userDeposits = depositService.getDepositsByUser(userDtls.getId());
 				LocalDate today = LocalDate.now();
 				long unreadDepositNotifications = userDeposits.stream()
-					.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
-						&& d.getApprovedDate() != null
-						&& d.getApprovedDate().equals(today))
-					.count();
+						.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
+								&& d.getApprovedDate() != null
+								&& d.getApprovedDate().equals(today))
+						.count();
 				m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
 			} else {
 				// Đã xem rồi, không hiển thị badge
@@ -149,12 +148,14 @@ public class UserController {
 		Map<Integer, Deposit> depositMap = new HashMap<>();
 		if (userDeposits != null) {
 			for (Deposit d : userDeposits) {
-				if (d == null || d.getRoom() == null) continue;
+				if (d == null || d.getRoom() == null)
+					continue;
 				Integer rid = d.getRoom().getId();
 				Deposit existing = depositMap.get(rid);
 
 				// Always keep the deposit with HIGHER ID (more recent record)
-				if (existing == null || (d.getId() != null && existing.getId() != null && d.getId() > existing.getId())) {
+				if (existing == null
+						|| (d.getId() != null && existing.getId() != null && d.getId() > existing.getId())) {
 					depositMap.put(rid, d);
 				}
 			}
@@ -184,9 +185,9 @@ public class UserController {
 
 		// Kiểm tra xem cart này có thuộc về user này không
 		Cart cart = cartService.getCartsByUser(user.getId()).stream()
-			.filter(c -> c.getId().equals(cid))
-			.findFirst()
-			.orElse(null);
+				.filter(c -> c.getId().equals(cid))
+				.findFirst()
+				.orElse(null);
 
 		if (cart == null) {
 			session.setAttribute("errorMsg", "Không tìm thấy trọ trong danh sách");
@@ -200,7 +201,8 @@ public class UserController {
 		if (deposits != null) {
 			for (Deposit d : deposits) {
 				if (d.getRoom() != null && d.getRoom().getId().equals(cart.getRoom().getId())) {
-					if (latestDeposit == null || (d.getId() != null && latestDeposit.getId() != null && d.getId() > latestDeposit.getId())) {
+					if (latestDeposit == null || (d.getId() != null && latestDeposit.getId() != null
+							&& d.getId() > latestDeposit.getId())) {
 						latestDeposit = d;
 					}
 				}
@@ -209,7 +211,7 @@ public class UserController {
 
 		// Nếu có đặt cọc đang pending hoặc approved thì không cho xóa
 		if (latestDeposit != null &&
-			(latestDeposit.getStatus().equals("PENDING") || latestDeposit.getStatus().equals("APPROVED"))) {
+				(latestDeposit.getStatus().equals("PENDING") || latestDeposit.getStatus().equals("APPROVED"))) {
 			session.setAttribute("errorMsg", "Không thể xóa trọ đã đặt cọc hoặc đang chờ duyệt");
 			return "redirect:/user/cart";
 		}
@@ -265,14 +267,14 @@ public class UserController {
 		UserDtls loginUser = getLoggedInUserDetails(p);
 		List<RoomOrder> allOrders = orderService.getOrdersByUser(loginUser.getId());
 		List<RoomOrder> rentedOrders = allOrders.stream()
-			.filter(o -> "RENTED".equalsIgnoreCase(o.getStatus()))
-			.toList();
+				.filter(o -> "RENTED".equalsIgnoreCase(o.getStatus()))
+				.toList();
 
 		// Lấy thông tin booking
 		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByUser(loginUser.getId());
 		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
-			.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
-			.toList();
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.toList();
 
 		m.addAttribute("orders", allOrders);
 		m.addAttribute("rentedOrders", rentedOrders);
@@ -294,8 +296,6 @@ public class UserController {
 
 		RoomOrder updateOrder = orderService.updateOrderStatus(id, status);
 
-
-
 		if (!ObjectUtils.isEmpty(updateOrder)) {
 			session.setAttribute("succMsg", "Status Updated");
 		} else {
@@ -310,7 +310,8 @@ public class UserController {
 	}
 
 	@PostMapping("/update-profile")
-	public String updateProfile(@ModelAttribute UserDtls user, @RequestParam(value = "img", required = false) MultipartFile img, HttpSession session) {
+	public String updateProfile(@ModelAttribute UserDtls user,
+			@RequestParam(value = "img", required = false) MultipartFile img, HttpSession session) {
 		UserDtls updateUserProfile = userService.updateUserProfile(user, img);
 		if (ObjectUtils.isEmpty(updateUserProfile)) {
 			session.setAttribute("errorMsg", "Profile not updated");
@@ -343,32 +344,25 @@ public class UserController {
 		return "redirect:/user/profile";
 	}
 
-	// New: Chat page for a room (simple view)
-	@GetMapping("/chat")
-	public String chatWithOwner(@RequestParam Integer rid, Model m, Principal p) {
-		Room room = roomService.getRoomById(rid);
-		m.addAttribute("room", room);
-		return "/user/chat";
-	}
-
 	// New: Deposit page for a room (simple flow)
 	@GetMapping("/deposit")
 	public String depositPage(@RequestParam Integer rid, Model m, Principal p) {
 		Room room = roomService.getRoomById(rid);
 		m.addAttribute("room", room);
 		// default deposit amount: if null use 20% of monthly rent
-		double suggested = (room.getDeposit() != null) ? room.getDeposit() : ((room.getMonthlyRent() != null) ? room.getMonthlyRent() * 0.2 : 0.0);
+		double suggested = (room.getDeposit() != null) ? room.getDeposit()
+				: ((room.getMonthlyRent() != null) ? room.getMonthlyRent() * 0.2 : 0.0);
 		m.addAttribute("suggestedDeposit", suggested);
 		return "/user/deposit";
 	}
 
 	@PostMapping("/save-deposit")
 	public String saveDeposit(@RequestParam Integer rid,
-							  @RequestParam(required = false) Double amount,
-							  @RequestParam(required = false) String paymentMethod,
-							  @RequestParam(required = false) String note,
-							  Principal p,
-							  HttpSession session) {
+			@RequestParam(required = false) Double amount,
+			@RequestParam(required = false) String paymentMethod,
+			@RequestParam(required = false) String note,
+			Principal p,
+			HttpSession session) {
 		try {
 			UserDtls user = getLoggedInUserDetails(p);
 			Room room = roomService.getRoomById(rid);
@@ -379,7 +373,8 @@ public class UserController {
 				return "redirect:/rooms";
 			}
 
-			// Kiểm tra phòng còn khả dụng không - nếu không thì quay lại trang chi tiết phòng với thông báo
+			// Kiểm tra phòng còn khả dụng không - nếu không thì quay lại trang chi tiết
+			// phòng với thông báo
 			if (!room.getIsAvailable()) {
 				session.setAttribute("errorMsg", "Phòng trọ này đã có người thuê! Vui lòng chọn phòng khác.");
 				return "redirect:/room/" + rid; // Quay lại trang chi tiết phòng
@@ -388,10 +383,11 @@ public class UserController {
 			// Kiểm tra user đã có yêu cầu đặt cọc pending cho phòng này chưa
 			List<Deposit> existingDeposits = depositService.getDepositsByRoom(rid);
 			boolean hasPendingDeposit = existingDeposits.stream()
-				.anyMatch(d -> "PENDING".equals(d.getStatus()) || "APPROVED".equals(d.getStatus()));
+					.anyMatch(d -> "PENDING".equals(d.getStatus()) || "APPROVED".equals(d.getStatus()));
 
 			if (hasPendingDeposit) {
-				session.setAttribute("errorMsg", "Phòng này đã có yêu cầu đặt cọc đang chờ xử lý hoặc đã được chấp nhận!");
+				session.setAttribute("errorMsg",
+						"Phòng này đã có yêu cầu đặt cọc đang chờ xử lý hoặc đã được chấp nhận!");
 				return "redirect:/room/" + rid; // Quay lại trang chi tiết phòng
 			}
 
@@ -437,10 +433,10 @@ public class UserController {
 
 	@PostMapping("/save-review")
 	public String saveReview(@RequestParam Integer roomId,
-							 @RequestParam Integer rating,
-							 @RequestParam String comment,
-							 Principal p,
-							 HttpSession session) {
+			@RequestParam Integer rating,
+			@RequestParam String comment,
+			Principal p,
+			HttpSession session) {
 		try {
 			if (p == null) {
 				session.setAttribute("errorMsg", "Vui lòng đăng nhập để đánh giá");
@@ -475,9 +471,9 @@ public class UserController {
 
 	@GetMapping("/delete-review")
 	public String deleteReview(@RequestParam Integer reviewId,
-							   @RequestParam Integer roomId,
-							   Principal p,
-							   HttpSession session) {
+			@RequestParam Integer roomId,
+			Principal p,
+			HttpSession session) {
 		try {
 			if (p == null) {
 				session.setAttribute("errorMsg", "Vui lòng đăng nhập");

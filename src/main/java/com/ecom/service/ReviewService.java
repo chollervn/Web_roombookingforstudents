@@ -25,4 +25,6 @@ public interface ReviewService {
 	Review updateOwnerResponse(Integer reviewId, String response);
 
 	List<Review> getReviewsByOwnerId(Integer ownerId);
+
+	List<Review> getAllReviews();
 }
