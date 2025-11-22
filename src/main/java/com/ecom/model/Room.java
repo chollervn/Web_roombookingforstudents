@@ -73,4 +73,8 @@ public class Room {
 	
 	private Integer ownerId; // ID của chủ trọ
 
+	private Double latitude; // Vĩ độ (latitude) để hiển thị trên Google Maps
+
+	private Double longitude; // Kinh độ (longitude) để hiển thị trên Google Maps
+
 }
