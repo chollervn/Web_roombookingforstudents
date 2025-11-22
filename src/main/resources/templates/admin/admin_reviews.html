@@ -25,62 +25,106 @@
         .review-header {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 15px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .room-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .room-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .room-details h6 {
+            margin: 0;
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .room-address {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin: 3px 0 0 0;
         }
 
         .user-info {
             display: flex;
             align-items: center;
+            gap: 12px;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: #e3f2fd;
-            color: #2196F3;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            margin-right: 12px;
+            font-size: 18px;
         }
 
         .user-details h5 {
             margin: 0;
-            font-size: 15px;
+            font-size: 16px;
             color: #2c3e50;
+            font-weight: 600;
         }
 
         .review-date {
             font-size: 12px;
             color: #95a5a6;
+            margin: 3px 0 0 0;
         }
 
-        .room-badge {
-            background: #f8f9fa;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            color: #7f8c8d;
-            border: 1px solid #eee;
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .rating-stars {
             color: #ffc107;
-            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .rating-number {
+            background: #ffc107;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
         }
 
         .review-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
             color: #34495e;
-            line-height: 1.5;
-            margin-bottom: 15px;
+            line-height: 1.6;
+            margin: 15px 0;
+            border-left: 3px solid #3498db;
         }
 
         .owner-response {
-            background: #f8f9fa;
+            background: #e8f5e9;
             padding: 15px;
             border-radius: 8px;
             border-left: 3px solid #4CAF50;
@@ -88,29 +132,30 @@
         }
 
         .response-header {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             color: #4CAF50;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         .btn-respond {
-            background: #e8f5e9;
-            color: #4CAF50;
+            background: #4CAF50;
+            color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .btn-respond:hover {
-            background: #4CAF50;
-            color: white;
+            background: #45a049;
+            transform: translateY(-1px);
         }
 
         .stats-container {
@@ -122,119 +167,219 @@
 
         .stat-box {
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid #3498db;
         }
 
+        .stat-box.warning { border-top-color: #f39c12; }
+        .stat-box.success { border-top-color: #27ae60; }
+        .stat-box.danger { border-top-color: #e74c3c; }
+
         .stat-value {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: 13px;
+            font-size: 14px;
             color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .filter-btn:hover {
+            border-color: #3498db;
         }
     </style>
 
     <div class="container-fluid">
+        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="mb-1">Quản lý Đánh giá</h2>
-                <p class="text-muted mb-0">Xem và phản hồi đánh giá từ khách thuê</p>
+                <h2 class="mb-1">
+                    <i class="fas fa-star text-warning me-2"></i>Quản lý Đánh giá
+                </h2>
+                <p class="text-muted mb-0">Xem và phản hồi đánh giá từ khách thuê về phòng trọ của bạn</p>
             </div>
         </div>
 
-        <!-- Stats -->
+        <!-- Messages -->
+        <div th:if="${session.succMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${session.succMsg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+        </div>
+
+        <div th:if="${session.errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${session.errorMsg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+        </div>
+
+        <!-- Statistics -->
         <div class="stats-container">
             <div class="stat-box">
-                <div class="stat-value" th:text="${reviews.size()}">0</div>
+                <div class="stat-value" th:text="${totalReviews}">0</div>
                 <div class="stat-label">Tổng đánh giá</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-box warning">
                 <div class="stat-value text-warning">
-                    <span th:if="${reviews.size() > 0}" 
-                          th:text="${#numbers.formatDecimal(#aggregates.avg(reviews.![rating]), 1, 1)}">0.0</span>
-                    <span th:unless="${reviews.size() > 0}">0.0</span>
-                    <i class="fas fa-star" style="font-size: 16px;"></i>
+                    <span th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">0.0</span>
+                    <i class="fas fa-star" style="font-size: 20px;"></i>
                 </div>
                 <div class="stat-label">Điểm trung bình</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-value text-success" 
-                     th:text="${reviews.size() - #lists.size(reviews.?[response == null])}">0</div>
+            <div class="stat-box success">
+                <div class="stat-value text-success" th:text="${totalReviews - pendingResponse}">0</div>
                 <div class="stat-label">Đã phản hồi</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-value text-danger" 
-                     th:text="${#lists.size(reviews.?[response == null])}">0</div>
+            <div class="stat-box danger">
+                <div class="stat-value text-danger" th:text="${pendingResponse}">0</div>
                 <div class="stat-label">Chờ phản hồi</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <label class="form-label mb-2"><i class="fas fa-filter me-2"></i>Lọc theo phòng:</label>
+                    <select class="form-select" onchange="window.location.href='/admin/reviews?roomId=' + this.value">
+                        <option value="">Tất cả phòng trọ</option>
+                        <option th:each="room : ${ownerRooms}"
+                                th:value="${room.id}"
+                                th:text="${room.roomName}"
+                                th:selected="${param.roomId != null && param.roomId[0] == room.id.toString()}">
+                            Phòng
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label mb-2"><i class="fas fa-check-circle me-2"></i>Trạng thái:</label>
+                    <div class="btn-group w-100" role="group">
+                        <button type="button"
+                                class="filter-btn"
+                                th:classappend="${param.status == null || param.status[0] == ''} ? 'active' : ''"
+                                onclick="window.location.href='/admin/reviews'">
+                            Tất cả
+                        </button>
+                        <button type="button"
+                                class="filter-btn"
+                                th:classappend="${param.status != null && param.status[0] == 'pending'} ? 'active' : ''"
+                                onclick="window.location.href='/admin/reviews?status=pending'">
+                            Chờ phản hồi
+                        </button>
+                        <button type="button"
+                                class="filter-btn"
+                                th:classappend="${param.status != null && param.status[0] == 'responded'} ? 'active' : ''"
+                                onclick="window.location.href='/admin/reviews?status=responded'">
+                            Đã phản hồi
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Reviews List -->
         <div class="row">
             <div class="col-12">
-                <div th:if="${session.succMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
-                    <span th:text="${session.succMsg}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    <th:block th:text="${@commonUtil.removeSessionMessage()}"></th:block>
-                </div>
-                <div th:if="${session.errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <span th:text="${session.errorMsg}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    <th:block th:text="${@commonUtil.removeSessionMessage()}"></th:block>
-                </div>
-
                 <div th:if="${#lists.isEmpty(reviews)}" class="text-center py-5 bg-white rounded-3">
-                    <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Chưa có đánh giá nào</p>
+                    <i class="far fa-comment-dots fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Chưa có đánh giá nào</h4>
+                    <p class="text-muted">Đánh giá từ khách thuê sẽ xuất hiện ở đây</p>
                 </div>
 
                 <div th:each="review : ${reviews}" class="review-card">
+                    <!-- Room Info -->
+                    <div class="room-info">
+                        <img th:src="@{'/img/room_img/' + ${review.room.image}}"
+                             alt="Room"
+                             class="room-img"
+                             onerror="this.src='/img/room_img/default.jpg'">
+                        <div class="room-details flex-grow-1">
+                            <h6 th:text="${review.room.roomName}">Tên phòng</h6>
+                            <p class="room-address mb-0">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                <span th:text="${review.room.fullAddress}">Địa chỉ</span>
+                            </p>
+                        </div>
+                        <div class="rating-display">
+                            <div class="rating-stars">
+                                <i th:each="i : ${#numbers.sequence(1, 5)}"
+                                   th:class="${i <= review.rating} ? 'fas fa-star' : 'far fa-star'"></i>
+                            </div>
+                            <div class="rating-number" th:text="${review.rating} + '/5'">5/5</div>
+                        </div>
+                    </div>
+
+                    <!-- User Info & Date -->
                     <div class="review-header">
                         <div class="user-info">
                             <div class="user-avatar" th:text="${#strings.substring(review.user.name, 0, 1)}">A</div>
                             <div class="user-details">
-                                <h5 th:text="${review.user.name}">Nguyễn Văn A</h5>
-                                <div class="review-date" th:text="${#temporals.format(review.reviewDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</div>
+                                <h5 th:text="${review.user.name}">Tên người dùng</h5>
+                                <p class="review-date mb-0">
+                                    <i class="far fa-clock me-1"></i>
+                                    <span th:text="${#temporals.format(review.createdDate, 'dd/MM/yyyy HH:mm')}">Ngày đánh giá</span>
+                                </p>
                             </div>
                         </div>
-                        <div class="room-badge">
-                            <i class="fas fa-door-open me-1"></i>
-                            <span th:text="${review.room.roomName}">Phòng 101</span>
-                        </div>
                     </div>
 
-                    <div class="rating-stars">
-                        <i th:each="i : ${#numbers.sequence(1, 5)}" 
-                           class="fas fa-star" 
-                           th:classappend="${i <= review.rating} ? '' : 'text-muted'"
-                           style="opacity: ${i <= review.rating} ? 1 : 0.3"></i>
+                    <!-- Review Content -->
+                    <div class="review-content">
+                        <i class="fas fa-quote-left text-muted me-2"></i>
+                        <span th:text="${review.comment}">Nội dung đánh giá...</span>
+                        <i class="fas fa-quote-right text-muted ms-2"></i>
                     </div>
 
-                    <div class="review-content" th:text="${review.comment}">
-                        Nội dung đánh giá...
-                    </div>
-
-                    <div th:if="${review.response}" class="owner-response">
+                    <!-- Owner Response -->
+                    <div th:if="${review.ownerResponse}" class="owner-response">
                         <div class="response-header">
-                            <span><i class="fas fa-reply me-1"></i> Phản hồi của bạn</span>
-                            <button class="btn btn-sm btn-link p-0 text-success" 
-                                    th:onclick="'openRespondModal(' + ${review.id} + ', `' + ${review.response} + '`)'">
-                                Chỉnh sửa
+                            <span><i class="fas fa-reply me-2"></i>Phản hồi của bạn</span>
+                            <button class="btn btn-sm btn-link p-0 text-success"
+                                    th:onclick="'openRespondModal(' + ${review.id} + ', `' + ${review.ownerResponse} + '`)'">
+                                <i class="fas fa-edit me-1"></i>Chỉnh sửa
                             </button>
                         </div>
-                        <p class="mb-0" th:text="${review.response}">Nội dung phản hồi...</p>
+                        <p class="mb-0" th:text="${review.ownerResponse}">Nội dung phản hồi...</p>
                     </div>
 
-                    <div th:unless="${review.response}" class="text-end">
+                    <!-- Respond Button -->
+                    <div th:unless="${review.ownerResponse}" class="text-end mt-3">
                         <button class="btn-respond" th:onclick="'openRespondModal(' + ${review.id} + ', \'\')'">
-                            <i class="fas fa-reply me-1"></i> Trả lời
+                            <i class="fas fa-reply me-2"></i>Phản hồi đánh giá
                         </button>
                     </div>
                 </div>
@@ -246,20 +391,36 @@
     <div class="modal fade" id="respondModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Phản hồi đánh giá</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-reply me-2"></i>Phản hồi đánh giá
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="respondForm" method="post">
                     <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Phản hồi của bạn sẽ được hiển thị công khai cho người dùng
+                        </div>
                         <div class="mb-3">
-                            <label class="form-label">Nội dung phản hồi</label>
-                            <textarea class="form-control" name="response" rows="4" required></textarea>
+                            <label class="form-label fw-bold">Nội dung phản hồi *</label>
+                            <textarea class="form-control"
+                                      name="response"
+                                      rows="5"
+                                      placeholder="Nhập phản hồi của bạn..."
+                                      required
+                                      maxlength="1000"></textarea>
+                            <small class="text-muted">Tối đa 1000 ký tự</small>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Đóng
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi phản hồi
+                        </button>
                     </div>
                 </form>
             </div>

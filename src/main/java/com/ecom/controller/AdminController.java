@@ -1048,7 +1048,7 @@ public class AdminController {
 	/**
 	 * Admin Reviews Page - display all reviews for owner's rooms
 	 */
-	@GetMapping("/admin/reviews")
+	@GetMapping("/reviews")
 	public String viewReviews(Model m, Principal p,
 			@RequestParam(defaultValue = "") String roomId,
 			@RequestParam(defaultValue = "") String status) {
@@ -1108,9 +1108,9 @@ public class AdminController {
 	/**
 	 * Submit owner response to a review
 	 */
-	@PostMapping("/admin/review/respond")
-	public String respondToReview(@RequestParam Integer reviewId,
-			@RequestParam String ownerResponse,
+	@PostMapping("/review/{reviewId}/respond")
+	public String respondToReview(@PathVariable Integer reviewId,
+			@RequestParam String response,
 			Principal p,
 			HttpSession session) {
 		UserDtls user = getLoggedInUser(p);
@@ -1118,22 +1118,22 @@ public class AdminController {
 		// Get review and verify ownership
 		com.ecom.model.Review review = reviewService.getReviewById(reviewId);
 		if (review == null) {
-			setErrorMessage(session, "Review not found");
-			return "redirect:/admin/reviews";
+			setErrorMessage(session, Messages.ERROR_REVIEW_NOT_FOUND);
+			return Routes.REDIRECT_REVIEWS;
 		}
 
 		// Verify that user owns the room
 		Room room = roomService.getRoomById(review.getRoomId());
 		if (!isRoomOwner(user, room)) {
-			setErrorMessage(session, "Unauthorized access");
-			return "redirect:/admin/reviews";
+			setErrorMessage(session, Messages.ERROR_UNAUTHORIZED_REVIEW);
+			return Routes.REDIRECT_REVIEWS;
 		}
 
 		// Update owner response
-		reviewService.updateOwnerResponse(reviewId, ownerResponse);
-		setSuccessMessage(session, "Response submitted successfully!");
+		reviewService.updateOwnerResponse(reviewId, response);
+		setSuccessMessage(session, Messages.SUCCESS_REVIEW_RESPONDED);
 
-		return "redirect:/admin/reviews";
+		return Routes.REDIRECT_REVIEWS;
 	}
 
 }
