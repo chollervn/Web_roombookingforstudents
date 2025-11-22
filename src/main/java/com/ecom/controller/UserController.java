@@ -71,6 +71,9 @@ public class UserController {
 	@Autowired
 	private ReviewService reviewService;
 
+	@Autowired
+	private com.ecom.service.TenantDashboardService tenantDashboardService;
+
 	@GetMapping("/")
 	public String home() {
 		return "user/home";
@@ -497,6 +500,31 @@ public class UserController {
 		}
 
 		return "redirect:/room/" + roomId;
+	}
+
+	/**
+	 * NEW: Tenant Dashboard - My Rental page
+	 * Shows comprehensive rental information using TenantDashboardService
+	 */
+	@GetMapping("/my-rental")
+	public String myRental(Model m, Principal p, HttpSession session) {
+		if (p == null) {
+			return "redirect:/signin";
+		}
+
+		UserDtls user = getLoggedInUserDetails(p);
+
+		// Use TenantDashboardService to get aggregated data (Facade pattern)
+		com.ecom.dto.TenantDashboardDTO dashboard = tenantDashboardService.getDashboardData(user.getId());
+
+		m.addAttribute("dashboard", dashboard);
+
+		// Check if user has active rental
+		if (dashboard.getCurrentRoom() == null) {
+			session.setAttribute("errorMsg", "Bạn chưa thuê phòng nào");
+		}
+
+		return "/user/my_rental";
 	}
 
 }
