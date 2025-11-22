@@ -14,7 +14,7 @@
 			<div class="card-body">
 				<div class="row">
 					<div class="col-md-4 text-center">
-						<img th:src="@{'/img/room_img/'+${room.image}}" alt="Ảnh phòng" class="img-fluid img-thumbnail" style="max-height:200px; object-fit:cover;"/>
+						<img th:src="@{'/uploads/room_img/'+${room.image}}" alt="Ảnh phòng" class="img-fluid img-thumbnail" style="max-height:200px; object-fit:cover;"/>
 						<p class="mt-2"><strong>Chủ trọ:</strong> <span th:text="${room.contactName}">Chủ trọ</span></p>
 						<p><strong>Liên hệ:</strong> <span th:text="${room.contactPhone}">0900...</span></p>
 					</div>

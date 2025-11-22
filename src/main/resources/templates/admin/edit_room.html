@@ -132,7 +132,7 @@
 							<input type="file" name="file" class="form-control" accept="image/*">
 							<small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
 							<div class="mt-2" th:if="${room.image}">
-								<img th:src="@{'/img/room_img/'+${room.image}}"
+								<img th:src="@{'/uploads/room_img/'+${room.image}}"
 									 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
 							</div>
 						</div>

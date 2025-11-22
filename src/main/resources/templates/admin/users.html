@@ -69,8 +69,8 @@
 						<tr th:each="u,c:${users}">
 							<th scope="row">[[${c.count}]]</th>
 							<td>
-								<img th:src="@{'/img/profile_img/'+${u.profileImage}}"
-									class="profile-img" onerror="this.src='/img/profile_img/default.jpg'">
+								<img th:src="@{'/uploads/profile_img/'+${u.profileImage}}"
+									class="profile-img" onerror="this.src='/uploads/profile_img/default.jpg'">
 							</td>
 							<td><strong>[[${u.name}]]</strong></td>
 							<td>[[${u.email}]]</td>

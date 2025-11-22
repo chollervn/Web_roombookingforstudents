@@ -37,9 +37,13 @@ public class Review {
 
 	private LocalDateTime createdDate;
 
+	@Column(length = 2000)
+	private String ownerResponse; // Phản hồi từ chủ trọ
+
+	private LocalDateTime responseDate; // Ngày chủ trọ phản hồi
+
 	@PrePersist
 	public void prePersist() {
 		this.createdDate = LocalDateTime.now();
 	}
 }
-

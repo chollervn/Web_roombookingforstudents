@@ -98,11 +98,18 @@ public class RoomServiceImpl implements RoomService {
 			if (!image.isEmpty()) {
 
 				try {
-					File saveFile = new ClassPathResource("static/img").getFile();
+					// Save to external uploads directory (not classpath)
+					String uploadsDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator
+							+ "room_img";
+					Path uploadPath = Paths.get(uploadsDir);
 
-					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "room_img" + File.separator
-							+ image.getOriginalFilename());
-					Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+					// Create directory if it doesn't exist
+					if (!Files.exists(uploadPath)) {
+						Files.createDirectories(uploadPath);
+					}
+
+					Path filePath = uploadPath.resolve(image.getOriginalFilename());
+					Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -136,9 +143,9 @@ public class RoomServiceImpl implements RoomService {
 		return roomRepository.findByRoomNameContainingIgnoreCaseOrRoomTypeContainingIgnoreCase(ch, ch, pageable);
 	}
 
-
 	@Override
-	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String sortBy, String city, Double minPrice, Double maxPrice) {
+	public Page<Room> getAllActiveRoomPagination(Integer pageNo, Integer pageSize, String roomType, String sortBy,
+			String city, Double minPrice, Double maxPrice) {
 
 		Pageable pageable = createPageable(pageNo, pageSize, sortBy);
 		Page<Room> pageRoom = null;

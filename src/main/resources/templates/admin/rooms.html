@@ -83,7 +83,7 @@
 				<tbody>
 					<tr th:each="room,c:${rooms}">
 						<th scope="row">[[${c.count}]]</th>
-						<td><img th:src="@{'/img/room_img/'+${room.image}}"
+						<td><img th:src="@{'/uploads/room_img/'+${room.image}}"
 							width="70px" height="70px" style="object-fit: cover; border-radius: 8px;"></td>
 						<td>[[${room.roomName}]]</td>
 						<td>[[${room.roomType}]]</td>

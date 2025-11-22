@@ -44,6 +44,50 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/admin")
 public class AdminController {
 
+	// ==================== CONSTANTS ====================
+	private static class Routes {
+		static final String REDIRECT_ADMIN = "redirect:/admin/";
+		static final String REDIRECT_ROOMS = "redirect:/admin/rooms";
+		static final String REDIRECT_ORDERS = "redirect:/admin/orders";
+		static final String REDIRECT_PAYMENTS = "redirect:/admin/payments";
+		static final String REDIRECT_DEPOSITS = "redirect:/admin/deposits";
+		static final String REDIRECT_REVIEWS = "redirect:/admin/reviews";
+		static final String REDIRECT_PROFILE = "redirect:/admin/profile";
+		static final String REDIRECT_ADD_ADMIN = "redirect:/admin/add-admin";
+		static final String REDIRECT_ADD_ROOM = "redirect:/admin/loadAddRoom";
+	}
+
+	private static class Views {
+		static final String ADMIN_INDEX = "admin/index";
+		static final String ADMIN_ROOMS = "admin/rooms";
+		static final String ADMIN_PAYMENTS = "/admin/payments";
+		static final String ADMIN_REVIEWS = "/admin/reviews";
+		static final String ADMIN_DEPOSITS = "/admin/deposits";
+		static final String ADMIN_PROFILE = "/admin/profile";
+	}
+
+	private static class Messages {
+		// Success messages
+		static final String SUCCESS_ROOM_SAVED = "Room Saved Success";
+		static final String SUCCESS_ROOM_UPDATED = "Chỉnh sửa phòng thành công";
+		static final String SUCCESS_ROOM_DELETED = "Room delete success";
+		static final String SUCCESS_PAYMENT_RECORDED = "Đã ghi nhận thanh toán thành công!";
+		static final String SUCCESS_PAYMENT_CREATED = "Đã tạo hóa đơn thanh toán thành công!";
+		static final String SUCCESS_REVIEW_RESPONDED = "Đã gửi phản hồi thành công!";
+		static final String SUCCESS_REMINDER_SENT = "Đã gửi nhắc nhở thanh toán thành công!";
+		static final String SUCCESS_BULK_REMINDERS_SENT = "Đã gửi nhắc nhở hàng loạt thành công!";
+
+		// Error messages
+		static final String ERROR_SERVER = "something wrong on server";
+		static final String ERROR_UNAUTHORIZED_ROOM = "Bạn không có quyền xem chi tiết phòng này!";
+		static final String ERROR_UNAUTHORIZED_PAYMENT = "Bạn không có quyền ghi nhận thanh toán này!";
+		static final String ERROR_UNAUTHORIZED_REVIEW = "Bạn không có quyền phản hồi đánh giá này!";
+		static final String ERROR_REVIEW_NOT_FOUND = "Không tìm thấy đánh giá!";
+		static final String ERROR_PAYMENT_FAILED = "Không thể ghi nhận thanh toán!";
+		static final String ERROR_PAYMENT_CREATE_FAILED = "Không thể tạo hóa đơn. Có thể hóa đơn này đã tồn tại!";
+	}
+
+	// ==================== DEPENDENCIES ====================
 	@Autowired
 	private RoomTypeService roomTypeService;
 
@@ -71,6 +115,124 @@ public class AdminController {
 	@Autowired
 	private RoomBookingService roomBookingService;
 
+	@Autowired
+	private com.ecom.service.ReviewService reviewService;
+
+	@Autowired
+	private com.ecom.service.MonthlyPaymentService monthlyPaymentService;
+
+	@Autowired
+	private com.ecom.service.PaymentNotificationService paymentNotificationService;
+
+	// ==================== HELPER METHODS ====================
+
+	/**
+	 * Get logged-in user from Principal
+	 */
+	private UserDtls getLoggedInUser(Principal p) {
+		return commonUtil.getLoggedInUserDetails(p);
+	}
+
+	/**
+	 * Check if user is owner of the room
+	 */
+	private boolean isRoomOwner(UserDtls user, Room room) {
+		return room != null && user != null && room.getOwnerId().equals(user.getId());
+	}
+
+	/**
+	 * Check if user is owner of the payment
+	 */
+	private boolean isPaymentOwner(UserDtls user, com.ecom.model.MonthlyPayment payment) {
+		return payment != null
+				&& payment.getRoomBooking() != null
+				&& payment.getRoomBooking().getRoom() != null
+				&& isRoomOwner(user, payment.getRoomBooking().getRoom());
+	}
+
+	/**
+	 * Set success message in session
+	 */
+	private void setSuccessMessage(HttpSession session, String message) {
+		session.setAttribute("succMsg", message);
+	}
+
+	/**
+	 * Set error message in session
+	 */
+	private void setErrorMessage(HttpSession session, String message) {
+		session.setAttribute("errorMsg", message);
+	}
+
+	/**
+	 * Calculate room statistics for dashboard
+	 */
+	private void calculateRoomStatistics(List<Room> ownerRooms, Model m) {
+		long totalRooms = ownerRooms.size();
+		// Add null safety for getIsAvailable
+		long availableRooms = ownerRooms.stream()
+				.filter(r -> r != null && r.getIsAvailable() != null && r.getIsAvailable())
+				.count();
+		long occupiedRooms = totalRooms - availableRooms;
+
+		m.addAttribute("totalRooms", totalRooms);
+		m.addAttribute("availableRooms", availableRooms);
+		m.addAttribute("occupiedRooms", occupiedRooms);
+	}
+
+	/**
+	 * Calculate payment statistics for dashboard
+	 */
+	private void calculatePaymentStatistics(Integer ownerId, Model m) {
+		List<com.ecom.model.MonthlyPayment> allPayments = monthlyPaymentService.getAllPaymentsByOwnerId(ownerId);
+
+		long pendingPayments = allPayments.stream().filter(p -> "PENDING".equals(p.getStatus())).count();
+		long overduePayments = allPayments.stream().filter(p -> "OVERDUE".equals(p.getStatus())).count();
+		long paidPayments = allPayments.stream().filter(p -> "PAID".equals(p.getStatus())).count();
+
+		Double totalMonthlyRevenue = monthlyPaymentService.getTotalRevenueByOwnerId(ownerId);
+		Double expectedRevenue = allPayments.stream()
+				.filter(p -> !"PAID".equals(p.getStatus()))
+				.mapToDouble(com.ecom.model.MonthlyPayment::getAmount)
+				.sum();
+
+		List<com.ecom.model.MonthlyPayment> upcomingPayments = monthlyPaymentService.getUpcomingPayments(7);
+		List<com.ecom.model.MonthlyPayment> overduePaymentsList = monthlyPaymentService.getOverduePayments();
+
+		m.addAttribute("pendingPayments", pendingPayments);
+		m.addAttribute("overduePayments", overduePayments);
+		m.addAttribute("paidPayments", paidPayments);
+		m.addAttribute("totalMonthlyRevenue", totalMonthlyRevenue);
+		m.addAttribute("expectedRevenue", expectedRevenue);
+		m.addAttribute("upcomingPayments", upcomingPayments);
+		m.addAttribute("overduePaymentsList", overduePaymentsList);
+	}
+
+	/**
+	 * Calculate booking statistics for dashboard
+	 */
+	private void calculateBookingStatistics(List<com.ecom.model.RoomBooking> activeBookings, Model m) {
+		java.time.LocalDate today = java.time.LocalDate.now();
+		java.time.LocalDate thirtyDaysLater = today.plusDays(30);
+
+		long totalTenants = activeBookings.stream()
+				.map(com.ecom.model.RoomBooking::getUser)
+				.distinct()
+				.count();
+
+		List<com.ecom.model.RoomBooking> expiringBookings = activeBookings.stream()
+				.filter(b -> b.getEndDate() != null
+						&& b.getEndDate().isAfter(today)
+						&& b.getEndDate().isBefore(thirtyDaysLater))
+				.sorted((b1, b2) -> b1.getEndDate().compareTo(b2.getEndDate()))
+				.limit(5)
+				.toList();
+
+		m.addAttribute("totalTenants", totalTenants);
+		m.addAttribute("expiringBookings", expiringBookings);
+	}
+
+	// ==================== COMMON ATTRIBUTES ====================
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
 		if (p != null) {
@@ -83,8 +245,8 @@ public class AdminController {
 			// Đếm số yêu cầu đặt cọc đang chờ xử lý (pending)
 			List<com.ecom.model.Deposit> deposits = depositService.getDepositsByOwner(userDtls.getId());
 			long pendingDepositCount = deposits.stream()
-				.filter(d -> "PENDING".equals(d.getStatus()))
-				.count();
+					.filter(d -> "PENDING".equals(d.getStatus()))
+					.count();
 			m.addAttribute("pendingDepositCount", pendingDepositCount);
 		}
 
@@ -92,57 +254,47 @@ public class AdminController {
 		m.addAttribute("roomTypes", allActiveRoomType);
 	}
 
+	// ==================== DASHBOARD ====================
+
 	@GetMapping("/")
 	public String index(Model m, Principal p) {
-		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+		UserDtls loggedInUser = getLoggedInUser(p);
 
-		// Lấy tất cả phòng của chủ trọ
+		// Lấy dữ liệu cơ bản
 		List<Room> ownerRooms = roomService.getRoomsByOwnerId(loggedInUser.getId());
-
-		// Lấy tất cả đơn thuê của chủ trọ
 		List<RoomOrder> ownerOrders = orderService.getOrdersByOwnerId(loggedInUser.getId());
-
-		// Lấy tất cả booking đang hoạt động
 		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByOwner(loggedInUser.getId());
 		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
-			.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
-			.toList();
-
-		// Lấy tất cả đặt cọc
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.toList();
 		List<com.ecom.model.Deposit> deposits = depositService.getDepositsByOwner(loggedInUser.getId());
 
-		// Thống kê đặt cọc theo trạng thái
+		// Tính thống kê cơ bản
 		long pendingDeposits = deposits.stream().filter(d -> "PENDING".equals(d.getStatus())).count();
 		long approvedDeposits = deposits.stream().filter(d -> "APPROVED".equals(d.getStatus())).count();
 
-		// Tính tổng doanh thu từ đơn thuê đã hoàn thành
 		double totalRevenue = ownerOrders.stream()
-			.filter(o -> "SUCCESS".equalsIgnoreCase(o.getStatus()) || "DELIVERED".equalsIgnoreCase(o.getStatus()))
-			.mapToDouble(RoomOrder::getPrice)
-			.sum();
+				.filter(o -> "SUCCESS".equalsIgnoreCase(o.getStatus()) || "DELIVERED".equalsIgnoreCase(o.getStatus()))
+				.mapToDouble(RoomOrder::getPrice)
+				.sum();
 
-		// Tính tổng tiền đặt cọc đã nhận
 		double totalDepositReceived = deposits.stream()
-			.filter(d -> "APPROVED".equals(d.getStatus()))
-			.mapToDouble(com.ecom.model.Deposit::getAmount)
-			.sum();
+				.filter(d -> "APPROVED".equals(d.getStatus()))
+				.mapToDouble(com.ecom.model.Deposit::getAmount)
+				.sum();
 
-		// Đếm số phòng
-		long totalRooms = ownerRooms.size();
-		long availableRooms = ownerRooms.stream().filter(Room::getIsAvailable).count();
-		long occupiedRooms = totalRooms - availableRooms;
+		// Sử dụng helper methods để tính thống kê phức tạp
+		calculateRoomStatistics(ownerRooms, m);
+		calculatePaymentStatistics(loggedInUser.getId(), m);
+		calculateBookingStatistics(activeBookings, m);
 
-		// Đếm người thuê (unique users từ active bookings)
-		long totalTenants = activeBookings.stream()
-			.map(com.ecom.model.RoomBooking::getUser)
-			.distinct()
-			.count();
+		// Recent reviews
+		List<com.ecom.model.Review> recentReviews = reviewService.getReviewsByOwnerId(loggedInUser.getId())
+				.stream()
+				.limit(5)
+				.toList();
 
-		// Thêm vào model
-		m.addAttribute("totalRooms", totalRooms);
-		m.addAttribute("availableRooms", availableRooms);
-		m.addAttribute("occupiedRooms", occupiedRooms);
-		m.addAttribute("totalTenants", totalTenants);
+		// Thêm các thống kê khác vào model
 		m.addAttribute("totalRevenue", totalRevenue);
 		m.addAttribute("totalDepositReceived", totalDepositReceived);
 		m.addAttribute("pendingDeposits", pendingDeposits);
@@ -151,6 +303,7 @@ public class AdminController {
 		m.addAttribute("activeBookings", activeBookings);
 		m.addAttribute("recentDeposits", deposits.stream().limit(5).toList());
 		m.addAttribute("recentOrders", ownerOrders.stream().limit(5).toList());
+		m.addAttribute("recentReviews", recentReviews);
 
 		return "admin/index";
 	}
@@ -209,26 +362,33 @@ public class AdminController {
 		room.setIsActive(true);
 
 		// Set owner ID to current logged-in user
-		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+		UserDtls loggedInUser = getLoggedInUser(p);
 		room.setOwnerId(loggedInUser.getId());
 
 		Room saveRoom = roomService.saveRoom(room);
 
-		if (!ObjectUtils.isEmpty(saveRoom)) {
+		if (!ObjectUtils.isEmpty(saveRoom) && !image.isEmpty()) {
+			// Save to external uploads directory (not classpath)
+			String uploadsDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator
+					+ "room_img";
+			Path uploadPath = Paths.get(uploadsDir);
 
-			File saveFile = new ClassPathResource("static/img").getFile();
+			// Create directory if it doesn't exist
+			if (!Files.exists(uploadPath)) {
+				Files.createDirectories(uploadPath);
+			}
 
-			Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "room_img" + File.separator
-					+ image.getOriginalFilename());
+			Path filePath = uploadPath.resolve(image.getOriginalFilename());
+			Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-			Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-			session.setAttribute("succMsg", "Room Saved Success");
+			setSuccessMessage(session, Messages.SUCCESS_ROOM_SAVED);
+		} else if (!ObjectUtils.isEmpty(saveRoom)) {
+			setSuccessMessage(session, Messages.SUCCESS_ROOM_SAVED);
 		} else {
-			session.setAttribute("errorMsg", "something wrong on server");
+			setErrorMessage(session, Messages.ERROR_SERVER);
 		}
 
-		return "redirect:/admin/loadAddRoom";
+		return Routes.REDIRECT_ADD_ROOM;
 	}
 
 	@GetMapping("/rooms")
@@ -246,9 +406,9 @@ public class AdminController {
 		// Apply search filter if needed
 		if (ch != null && ch.length() > 0) {
 			ownerRooms = ownerRooms.stream()
-				.filter(room -> room.getRoomName().toLowerCase().contains(ch.toLowerCase())
-					|| room.getRoomType().toLowerCase().contains(ch.toLowerCase()))
-				.toList();
+					.filter(room -> room.getRoomName().toLowerCase().contains(ch.toLowerCase())
+							|| room.getRoomType().toLowerCase().contains(ch.toLowerCase()))
+					.toList();
 		}
 
 		m.addAttribute("rooms", ownerRooms);
@@ -266,11 +426,11 @@ public class AdminController {
 	public String deleteRoom(@PathVariable int id, HttpSession session) {
 		Boolean deleteRoom = roomService.deleteRoom(id);
 		if (deleteRoom) {
-			session.setAttribute("succMsg", "Room delete success");
+			setSuccessMessage(session, Messages.SUCCESS_ROOM_DELETED);
 		} else {
-			session.setAttribute("errorMsg", "Something wrong on server");
+			setErrorMessage(session, Messages.ERROR_SERVER);
 		}
-		return "redirect:/admin/rooms";
+		return Routes.REDIRECT_ROOMS;
 	}
 
 	@GetMapping("/editRoom/{id}")
@@ -286,12 +446,10 @@ public class AdminController {
 
 		Room updateRoom = roomService.updateRoom(room, image);
 		if (!ObjectUtils.isEmpty(updateRoom)) {
-			session.setAttribute("succMsg", "Chỉnh sửa phòng thành công");
-			// Sau khi cập nhật thành công, quay về danh sách phòng để tránh lỗi Whitelabel
-			return "redirect:/admin/rooms";
+			setSuccessMessage(session, Messages.SUCCESS_ROOM_UPDATED);
+			return Routes.REDIRECT_ROOMS;
 		} else {
-			session.setAttribute("errorMsg", "Có lỗi xảy ra trên máy chủ");
-			// Quay lại trang chỉnh sửa hiện tại để người dùng có thể thử lại
+			setErrorMessage(session, Messages.ERROR_SERVER);
 			return "redirect:/admin/editRoom/" + room.getId();
 		}
 	}
@@ -307,10 +465,10 @@ public class AdminController {
 
 			// Extract unique users (renters) from these orders
 			users = ownerOrders.stream()
-				.map(RoomOrder::getUser)
-				.distinct()
-				.filter(user -> user != null && "ROLE_USER".equals(user.getRole()))
-				.toList();
+					.map(RoomOrder::getUser)
+					.distinct()
+					.filter(user -> user != null && "ROLE_USER".equals(user.getRole()))
+					.toList();
 		} else {
 			// For admin type, just return the current logged-in admin
 			users = List.of(loggedInUser);
@@ -321,14 +479,15 @@ public class AdminController {
 	}
 
 	@GetMapping("/updateSts")
-	public String updateUserAccountStatus(@RequestParam Boolean status, @RequestParam Integer id,@RequestParam Integer type, HttpSession session) {
+	public String updateUserAccountStatus(@RequestParam Boolean status, @RequestParam Integer id,
+			@RequestParam Integer type, HttpSession session) {
 		Boolean f = userService.updateAccountStatus(id, status);
 		if (f) {
 			session.setAttribute("succMsg", "Account Status Updated");
 		} else {
 			session.setAttribute("errorMsg", "Something wrong on server");
 		}
-		return "redirect:/admin/users?type="+type;
+		return "redirect:/admin/users?type=" + type;
 	}
 
 	@GetMapping("/orders")
@@ -345,8 +504,8 @@ public class AdminController {
 		// Lấy thông tin booking để hiển thị
 		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByOwner(loggedInUser.getId());
 		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
-			.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
-			.toList();
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.toList();
 
 		m.addAttribute("orders", ownerOrders);
 		m.addAttribute("bookings", activeBookings);
@@ -375,8 +534,6 @@ public class AdminController {
 		}
 
 		RoomOrder updateOrder = orderService.updateOrderStatus(id, status);
-
-
 
 		if (!ObjectUtils.isEmpty(updateOrder)) {
 			session.setAttribute("succMsg", "Status Updated");
@@ -436,13 +593,18 @@ public class AdminController {
 
 		if (!ObjectUtils.isEmpty(saveUser)) {
 			if (!file.isEmpty()) {
-				File saveFile = new ClassPathResource("static/img").getFile();
+				// Save to external uploads directory (not classpath)
+				String uploadsDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator
+						+ "profile_img";
+				Path uploadPath = Paths.get(uploadsDir);
 
-				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-						+ file.getOriginalFilename());
+				// Create directory if it doesn't exist
+				if (!Files.exists(uploadPath)) {
+					Files.createDirectories(uploadPath);
+				}
 
-//				System.out.println(path);
-				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+				Path filePath = uploadPath.resolve(file.getOriginalFilename());
+				Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 			}
 			session.setAttribute("succMsg", "Register successfully");
 		} else {
@@ -458,7 +620,8 @@ public class AdminController {
 	}
 
 	@PostMapping("/update-profile")
-	public String updateProfile(@ModelAttribute UserDtls user, @RequestParam(required = false) MultipartFile img, HttpSession session) {
+	public String updateProfile(@ModelAttribute UserDtls user, @RequestParam(required = false) MultipartFile img,
+			HttpSession session) {
 		UserDtls updateUserProfile = userService.updateUserProfile(user, img);
 		if (ObjectUtils.isEmpty(updateUserProfile)) {
 			session.setAttribute("errorMsg", "Profile not updated");
@@ -518,9 +681,9 @@ public class AdminController {
 
 	@PostMapping("/update-deposit-status")
 	public String updateDepositStatus(@RequestParam Integer id,
-									  @RequestParam String status,
-									  @RequestParam(required = false) String adminNote,
-									  HttpSession session) {
+			@RequestParam String status,
+			@RequestParam(required = false) String adminNote,
+			HttpSession session) {
 
 		// Đơn giản hóa: chỉ có 2 trạng thái APPROVED hoặc REJECTED
 		if (!"APPROVED".equals(status) && !"REJECTED".equals(status)) {
@@ -560,14 +723,406 @@ public class AdminController {
 
 	@PostMapping("/cancel-rent")
 	public String cancelRent(@RequestParam Integer orderId, HttpSession session) {
-	    RoomOrder order = orderService.updateOrderStatus(orderId, "CANCELLED");
-	    if (order != null && order.getRoom() != null) {
-	        order.getRoom().setStatus("ACTIVE");
-	        order.getRoom().setIsAvailable(true);
-	        roomService.updateRoomStatus(order.getRoom().getId(), "ACTIVE");
-	    }
-	    session.setAttribute("succMsg", "Đã hủy cho thuê thành công!");
-	    return "redirect:/admin/orders";
+		RoomOrder order = orderService.updateOrderStatus(orderId, "CANCELLED");
+		if (order != null && order.getRoom() != null) {
+			order.getRoom().setStatus("ACTIVE");
+			order.getRoom().setIsAvailable(true);
+			roomService.updateRoomStatus(order.getRoom().getId(), "ACTIVE");
+		}
+		session.setAttribute("succMsg", "Đã hủy cho thuê thành công!");
+		return "redirect:/admin/orders";
+	}
+
+	// ==================== REVIEW MANAGEMENT ====================
+
+	@GetMapping("/reviews")
+	public String getAllReviews(Model m, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Lấy tất cả reviews của các phòng thuộc owner này
+		List<com.ecom.model.Review> reviews = reviewService.getReviewsByOwnerId(loggedInUser.getId());
+
+		m.addAttribute("reviews", reviews);
+		return "/admin/reviews";
+	}
+
+	@GetMapping("/room/{roomId}/reviews")
+	public String getRoomReviews(@PathVariable Integer roomId, Model m, Principal p, HttpSession session) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra xem phòng có thuộc owner này không
+		Room room = roomService.getRoomById(roomId);
+		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền xem đánh giá của phòng này!");
+			return "redirect:/admin/rooms";
+		}
+
+		// Lấy reviews của phòng
+		List<com.ecom.model.Review> reviews = reviewService.getReviewsByRoomId(roomId);
+		Double avgRating = reviewService.getAverageRatingByRoomId(roomId);
+		Long reviewCount = reviewService.getReviewCountByRoomId(roomId);
+
+		m.addAttribute("room", room);
+		m.addAttribute("reviews", reviews);
+		m.addAttribute("avgRating", avgRating);
+		m.addAttribute("reviewCount", reviewCount);
+
+		return "/admin/room_reviews";
+	}
+
+	@PostMapping("/review/{reviewId}/respond")
+	public String respondToReview(@PathVariable Integer reviewId,
+			@RequestParam String response,
+			HttpSession session,
+			Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra xem review có thuộc phòng của owner này không
+		com.ecom.model.Review review = reviewService.getReviewById(reviewId);
+		if (review == null) {
+			session.setAttribute("errorMsg", "Không tìm thấy đánh giá!");
+			return "redirect:/admin/reviews";
+		}
+
+		Room room = roomService.getRoomById(review.getRoomId());
+		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền phản hồi đánh giá này!");
+			return "redirect:/admin/reviews";
+		}
+
+		// Cập nhật phản hồi
+		com.ecom.model.Review updatedReview = reviewService.updateOwnerResponse(reviewId, response);
+
+		if (updatedReview != null) {
+			session.setAttribute("succMsg", "Đã gửi phản hồi thành công!");
+		} else {
+			session.setAttribute("errorMsg", "Không thể gửi phản hồi!");
+		}
+
+		return "redirect:/admin/room/" + review.getRoomId() + "/reviews";
+	}
+
+	// ==================== PAYMENT MANAGEMENT ====================
+
+	@GetMapping("/payments")
+	public String getAllPayments(Model m, Principal p,
+			@RequestParam(required = false) String status) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		List<com.ecom.model.MonthlyPayment> payments;
+		if (status != null && !status.isEmpty()) {
+			payments = monthlyPaymentService.getPaymentsByOwnerAndStatus(loggedInUser.getId(), status);
+		} else {
+			payments = monthlyPaymentService.getAllPaymentsByOwnerId(loggedInUser.getId());
+		}
+
+		// Thống kê
+		long pendingCount = payments.stream().filter(p1 -> "PENDING".equals(p1.getStatus())).count();
+		long overdueCount = payments.stream().filter(p1 -> "OVERDUE".equals(p1.getStatus())).count();
+		long paidCount = payments.stream().filter(p1 -> "PAID".equals(p1.getStatus())).count();
+
+		Double totalExpected = payments.stream()
+				.filter(p1 -> !"PAID".equals(p1.getStatus()))
+				.mapToDouble(com.ecom.model.MonthlyPayment::getAmount)
+				.sum();
+
+		Double totalReceived = monthlyPaymentService.getTotalRevenueByOwnerId(loggedInUser.getId());
+
+		m.addAttribute("payments", payments);
+		m.addAttribute("pendingCount", pendingCount);
+		m.addAttribute("overdueCount", overdueCount);
+		m.addAttribute("paidCount", paidCount);
+		m.addAttribute("totalExpected", totalExpected);
+		m.addAttribute("totalReceived", totalReceived);
+		m.addAttribute("currentStatus", status);
+
+		return "/admin/payments";
+	}
+
+	@GetMapping("/room/{roomId}/payments")
+	public String getRoomPayments(@PathVariable Integer roomId, Model m, Principal p, HttpSession session) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền sở hữu phòng
+		Room room = roomService.getRoomById(roomId);
+		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền xem thanh toán của phòng này!");
+			return "redirect:/admin/rooms";
+		}
+
+		List<com.ecom.model.MonthlyPayment> payments = monthlyPaymentService.getPaymentsByRoomId(roomId);
+
+		m.addAttribute("room", room);
+		m.addAttribute("payments", payments);
+
+		return "/admin/room_payments";
+	}
+
+	@GetMapping("/booking/{bookingId}/payments")
+	public String getBookingPayments(@PathVariable Integer bookingId, Model m, Principal p, HttpSession session) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền (thông qua room)
+		com.ecom.model.RoomBooking booking = roomBookingService.getBookingById(bookingId);
+		if (booking == null || booking.getRoom() == null
+				|| !booking.getRoom().getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền xem thanh toán này!");
+			return "redirect:/admin/orders";
+		}
+
+		List<com.ecom.model.MonthlyPayment> payments = monthlyPaymentService.getPaymentsByBookingId(bookingId);
+
+		m.addAttribute("booking", booking);
+		m.addAttribute("payments", payments);
+
+		return "/admin/booking_payments";
+	}
+
+	@PostMapping("/payment/create")
+	public String createPayment(@RequestParam Integer bookingId,
+			@RequestParam Integer month,
+			@RequestParam Integer year,
+			HttpSession session,
+			Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền
+		com.ecom.model.RoomBooking booking = roomBookingService.getBookingById(bookingId);
+		if (booking == null || booking.getRoom() == null
+				|| !booking.getRoom().getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền tạo hóa đơn cho booking này!");
+			return "redirect:/admin/orders";
+		}
+
+		// Tạo payment
+		com.ecom.model.MonthlyPayment payment = monthlyPaymentService.createMonthlyPayment(bookingId, month, year);
+
+		if (payment != null) {
+			session.setAttribute("succMsg", "Đã tạo hóa đơn thanh toán thành công!");
+		} else {
+			session.setAttribute("errorMsg", "Không thể tạo hóa đơn. Có thể hóa đơn này đã tồn tại!");
+		}
+
+		return "redirect:/admin/booking/" + bookingId + "/payments";
+	}
+
+	@PostMapping("/payment/{paymentId}/record")
+	public String recordPayment(@PathVariable Integer paymentId,
+			@RequestParam Double amount,
+			@RequestParam(required = false) String paidDateStr,
+			@RequestParam(required = false) Double electricityUsed,
+			@RequestParam(required = false) Double waterUsed,
+			@RequestParam(required = false) Double additionalFees,
+			HttpSession session,
+			Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền
+		com.ecom.model.MonthlyPayment payment = monthlyPaymentService.getPaymentById(paymentId);
+		if (payment == null || payment.getRoomBooking() == null
+				|| payment.getRoomBooking().getRoom() == null
+				|| !payment.getRoomBooking().getRoom().getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền ghi nhận thanh toán này!");
+			return "redirect:/admin/payments";
+		}
+
+		// Cập nhật thông tin điện nước nếu có
+		if (electricityUsed != null) {
+			payment.setElectricityUsed(electricityUsed);
+		}
+		if (waterUsed != null) {
+			payment.setWaterUsed(waterUsed);
+		}
+		if (additionalFees != null) {
+			payment.setAdditionalFees(additionalFees);
+		}
+
+		// Tính lại tổng tiền nếu có điện nước
+		if (electricityUsed != null || waterUsed != null || additionalFees != null) {
+			Room room = payment.getRoomBooking().getRoom();
+			Double totalAmount = payment.calculateTotalAmount(
+					room.getElectricityCost(),
+					room.getWaterCost());
+			payment.setAmount(totalAmount);
+			monthlyPaymentService.savePayment(payment);
+		}
+
+		// Ghi nhận thanh toán
+		java.time.LocalDate paidDate = paidDateStr != null && !paidDateStr.isEmpty()
+				? java.time.LocalDate.parse(paidDateStr)
+				: java.time.LocalDate.now();
+
+		com.ecom.model.MonthlyPayment updatedPayment = monthlyPaymentService.recordPayment(
+				paymentId, amount, paidDate);
+
+		if (updatedPayment != null) {
+			session.setAttribute("succMsg", "Đã ghi nhận thanh toán thành công!");
+		} else {
+			session.setAttribute("errorMsg", "Không thể ghi nhận thanh toán!");
+		}
+
+		return "redirect:/admin/payments";
+	}
+
+	@PostMapping("/payment/{paymentId}/update-status")
+	public String updatePaymentStatus(@PathVariable Integer paymentId,
+			@RequestParam String status,
+			HttpSession session,
+			Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền
+		com.ecom.model.MonthlyPayment payment = monthlyPaymentService.getPaymentById(paymentId);
+		if (payment == null || payment.getRoomBooking() == null
+				|| payment.getRoomBooking().getRoom() == null
+				|| !payment.getRoomBooking().getRoom().getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền cập nhật thanh toán này!");
+			return "redirect:/admin/payments";
+		}
+
+		com.ecom.model.MonthlyPayment updatedPayment = monthlyPaymentService.updatePaymentStatus(paymentId, status);
+
+		if (updatedPayment != null) {
+			session.setAttribute("succMsg", "Đã cập nhật trạng thái thanh toán!");
+		} else {
+			session.setAttribute("errorMsg", "Không thể cập nhật trạng thái!");
+		}
+
+		return "redirect:/admin/payments";
+	}
+
+	// ==================== NOTIFICATION MANAGEMENT ====================
+
+	@PostMapping("/payment/{paymentId}/send-reminder")
+	public String sendPaymentReminder(@PathVariable Integer paymentId,
+			@RequestParam(defaultValue = "IN_APP") String type,
+			HttpSession session,
+			Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền
+		com.ecom.model.MonthlyPayment payment = monthlyPaymentService.getPaymentById(paymentId);
+		if (payment == null || payment.getRoomBooking() == null
+				|| payment.getRoomBooking().getRoom() == null
+				|| !payment.getRoomBooking().getRoom().getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền gửi nhắc nhở cho thanh toán này!");
+			return "redirect:/admin/payments";
+		}
+
+		com.ecom.model.PaymentNotification notification = paymentNotificationService.sendPaymentReminder(
+				paymentId, type);
+
+		if (notification != null) {
+			session.setAttribute("succMsg", "Đã gửi nhắc nhở thanh toán thành công!");
+		} else {
+			session.setAttribute("errorMsg", "Không thể gửi nhắc nhở!");
+		}
+
+		return "redirect:/admin/payments";
+	}
+
+	@PostMapping("/send-bulk-reminders")
+	public String sendBulkReminders(@RequestParam(defaultValue = "IN_APP") String type,
+			HttpSession session,
+			Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		paymentNotificationService.sendBulkReminders(loggedInUser.getId(), type);
+
+		session.setAttribute("succMsg", "Đã gửi nhắc nhở hàng loạt thành công!");
+
+		return "redirect:/admin/payments";
+	}
+
+	@GetMapping("/notifications")
+	public String getNotifications(Model m, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		List<com.ecom.model.PaymentNotification> notifications = paymentNotificationService
+				.getNotificationsByOwnerId(loggedInUser.getId());
+
+		m.addAttribute("notifications", notifications);
+
+		return "/admin/notifications";
+	}
+
+	// ==================== BOOKING DETAILS ====================
+
+	@GetMapping("/room/{roomId}/details")
+	public String getRoomDetails(@PathVariable Integer roomId, Model m, Principal p, HttpSession session) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Kiểm tra quyền
+		Room room = roomService.getRoomById(roomId);
+		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền xem chi tiết phòng này!");
+			return "redirect:/admin/rooms";
+		}
+
+		// Lấy booking hiện tại (nếu có)
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByRoom(roomId);
+		com.ecom.model.RoomBooking activeBooking = bookings.stream()
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.findFirst()
+				.orElse(null);
+
+		// Lấy reviews
+		List<com.ecom.model.Review> reviews = reviewService.getReviewsByRoomId(roomId);
+		Double avgRating = reviewService.getAverageRatingByRoomId(roomId);
+
+		// Lấy payments nếu có booking
+		List<com.ecom.model.MonthlyPayment> payments = null;
+		if (activeBooking != null) {
+			payments = monthlyPaymentService.getPaymentsByBookingId(activeBooking.getId());
+		}
+
+		m.addAttribute("room", room);
+		m.addAttribute("activeBooking", activeBooking);
+		m.addAttribute("allBookings", bookings);
+		m.addAttribute("reviews", reviews);
+		m.addAttribute("avgRating", avgRating);
+		m.addAttribute("payments", payments);
+
+		return "/admin/room_details";
+	}
+
+	@GetMapping("/bookings")
+	public String getAllBookings(Model m, Principal p,
+			@RequestParam(required = false) String status) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByOwner(loggedInUser.getId());
+
+		// Filter by status if provided
+		if (status != null && !status.isEmpty()) {
+			bookings = bookings.stream()
+					.filter(b -> status.equalsIgnoreCase(b.getStatus()))
+					.toList();
+		}
+
+		// Tính thống kê
+		long activeCount = bookings.stream().filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus())).count();
+		long expiredCount = bookings.stream().filter(b -> "EXPIRED".equalsIgnoreCase(b.getStatus())).count();
+		long cancelledCount = bookings.stream().filter(b -> "CANCELLED".equalsIgnoreCase(b.getStatus())).count();
+
+		// Tìm bookings sắp hết hạn (trong 30 ngày)
+		java.time.LocalDate today = java.time.LocalDate.now();
+		java.time.LocalDate thirtyDaysLater = today.plusDays(30);
+		List<com.ecom.model.RoomBooking> expiringSoon = bookings.stream()
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus())
+						&& b.getEndDate() != null
+						&& b.getEndDate().isAfter(today)
+						&& b.getEndDate().isBefore(thirtyDaysLater))
+				.toList();
+
+		m.addAttribute("bookings", bookings);
+		m.addAttribute("activeCount", activeCount);
+		m.addAttribute("expiredCount", expiredCount);
+		m.addAttribute("cancelledCount", cancelledCount);
+		m.addAttribute("expiringSoon", expiringSoon);
+		m.addAttribute("currentStatus", status);
+
+		return "/admin/bookings";
 	}
 
 }

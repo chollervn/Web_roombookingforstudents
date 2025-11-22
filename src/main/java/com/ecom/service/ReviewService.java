@@ -21,5 +21,8 @@ public interface ReviewService {
 	void deleteReview(Integer reviewId);
 
 	Review getReviewById(Integer reviewId);
-}
 
+	Review updateOwnerResponse(Integer reviewId, String response);
+
+	List<Review> getReviewsByOwnerId(Integer ownerId);
+}
