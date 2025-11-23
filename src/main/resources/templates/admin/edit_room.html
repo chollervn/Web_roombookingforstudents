@@ -1,26 +1,29 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/admin_base::adminLayout(~{::section})}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/admin_base::adminLayout(~{::section})}">
+
 <head>
-<meta charset="UTF-8">
-<title>Chỉnh sửa phòng trọ</title>
+	<meta charset="UTF-8">
+	<title>Chỉnh sửa phòng trọ</title>
 </head>
+
 <body>
 	<section th:with="currentPage='rooms'">
 		<style>
 			.page-header {
 				margin-bottom: 30px;
 			}
+
 			.page-header h2 {
 				font-size: 28px;
 				color: #2c3e50;
 				margin-bottom: 10px;
 			}
+
 			.form-card {
 				background: white;
 				padding: 30px;
 				border-radius: 12px;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 			}
 		</style>
 
@@ -53,35 +56,37 @@
 					<div class="col-md-6">
 						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-home"></i> Tên phòng trọ *</label>
-							<input type="text" name="roomName" th:value="${room.roomName}"
-								   class="form-control" required>
+							<input type="text" name="roomName" th:value="${room.roomName}" class="form-control"
+								required>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-list"></i> Loại phòng *</label>
-							<input type="text" name="roomType" th:value="${room.roomType}"
-								   class="form-control" required>
+							<input type="text" name="roomType" th:value="${room.roomType}" class="form-control"
+								required>
 						</div>
 
 						<div class="mb-3">
-							<label class="form-label"><i class="fas fa-money-bill-wave"></i> Giá thuê/tháng (VNĐ) *</label>
-							<input type="number" name="monthlyRent" th:value="${room.monthlyRent}"
-								   class="form-control" min="0" required>
+							<label class="form-label"><i class="fas fa-money-bill-wave"></i> Giá thuê/tháng (VNĐ)
+								*</label>
+							<input type="number" name="monthlyRent" th:value="${room.monthlyRent}" class="form-control"
+								min="0" required>
 						</div>
 
 						<div class="row">
 							<div class="col-6">
 								<div class="mb-3">
-									<label class="form-label"><i class="fas fa-expand-arrows-alt"></i> Diện tích (m²) *</label>
-									<input type="number" name="area" th:value="${room.area}"
-										   class="form-control" step="0.1" min="0" required>
+									<label class="form-label"><i class="fas fa-expand-arrows-alt"></i> Diện tích (m²)
+										*</label>
+									<input type="number" name="area" th:value="${room.area}" class="form-control"
+										step="0.1" min="0" required>
 								</div>
 							</div>
 							<div class="col-6">
 								<div class="mb-3">
 									<label class="form-label"><i class="fas fa-users"></i> Số người tối đa *</label>
 									<input type="number" name="maxOccupants" th:value="${room.maxOccupants}"
-										   class="form-control" min="1" required>
+										class="form-control" min="1" required>
 								</div>
 							</div>
 						</div>
@@ -91,8 +96,7 @@
 					<div class="col-md-6">
 						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ *</label>
-							<input type="text" name="address" th:value="${room.address}"
-								   class="form-control" required>
+							<input type="text" name="address" th:value="${room.address}" class="form-control" required>
 						</div>
 
 						<div class="mb-3">
@@ -101,7 +105,8 @@
 								<option value="">-- Chọn thành phố --</option>
 								<option value="Hà Nội" th:selected="${room.city == 'Hà Nội'}">Hà Nội</option>
 								<option value="Hải Phòng" th:selected="${room.city == 'Hải Phòng'}">Hải Phòng</option>
-								<option value="Thái Nguyên" th:selected="${room.city == 'Thái Nguyên'}">Thái Nguyên</option>
+								<option value="Thái Nguyên" th:selected="${room.city == 'Thái Nguyên'}">Thái Nguyên
+								</option>
 								<option value="Bắc Ninh" th:selected="${room.city == 'Bắc Ninh'}">Bắc Ninh</option>
 								<option value="Vĩnh Phúc" th:selected="${room.city == 'Vĩnh Phúc'}">Vĩnh Phúc</option>
 								<option value="Hưng Yên" th:selected="${room.city == 'Hưng Yên'}">Hưng Yên</option>
@@ -109,20 +114,34 @@
 						</div>
 
 						<div class="row">
+							<div class="col-12 mb-3">
+								<label class="form-label"><i class="fas fa-map-marked-alt"></i> Vị trí trên bản
+									đồ</label>
+								<div class="input-group mb-2">
+									<button type="button" class="btn btn-outline-primary" id="btnSearchMap">
+										<i class="fas fa-search-location"></i> Tìm theo địa chỉ
+									</button>
+									<span class="input-group-text text-muted">hoặc click trực tiếp vào bản đồ</span>
+								</div>
+								<div id="map" style="height: 300px; border-radius: 8px; border: 1px solid #ced4da;">
+								</div>
+								<small class="text-muted">Kéo thả ghim hoặc click vào bản đồ để chọn vị trí chính
+									xác.</small>
+							</div>
 							<div class="col-6">
 								<div class="mb-3">
-									<label class="form-label"><i class="fas fa-map-marker-alt"></i> Vĩ độ (Latitude)</label>
-									<input type="number" name="latitude" th:value="${room.latitude}"
-										   class="form-control" placeholder="VD: 21.0285" step="0.000001">
-									<small class="text-muted">Tọa độ vĩ độ để hiển thị trên bản đồ</small>
+									<label class="form-label"><i class="fas fa-map-marker-alt"></i> Vĩ độ
+										(Latitude)</label>
+									<input type="number" name="latitude" id="latitude" th:value="${room.latitude}"
+										class="form-control" placeholder="VD: 21.0285" step="0.000001" readonly>
 								</div>
 							</div>
 							<div class="col-6">
 								<div class="mb-3">
-									<label class="form-label"><i class="fas fa-map-marker-alt"></i> Kinh độ (Longitude)</label>
-									<input type="number" name="longitude" th:value="${room.longitude}"
-										   class="form-control" placeholder="VD: 105.8542" step="0.000001">
-									<small class="text-muted">Tọa độ kinh độ để hiển thị trên bản đồ</small>
+									<label class="form-label"><i class="fas fa-map-marker-alt"></i> Kinh độ
+										(Longitude)</label>
+									<input type="number" name="longitude" id="longitude" th:value="${room.longitude}"
+										class="form-control" placeholder="VD: 105.8542" step="0.000001" readonly>
 								</div>
 							</div>
 						</div>
@@ -133,13 +152,14 @@
 							<small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
 							<div class="mt-2" th:if="${room.image}">
 								<img th:src="@{'/uploads/room_img/'+${room.image}}"
-									 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+									style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
 							</div>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-info-circle"></i> Mô tả</label>
-							<textarea name="description" class="form-control" rows="3" th:text="${room.description}"></textarea>
+							<textarea name="description" class="form-control" rows="3"
+								th:text="${room.description}"></textarea>
 						</div>
 					</div>
 
@@ -151,7 +171,7 @@
 							<div class="col-md-6">
 								<div class="form-check form-switch">
 									<input class="form-check-input" type="checkbox" name="isActive"
-										   th:checked="${room.isActive}" id="isActive">
+										th:checked="${room.isActive}" id="isActive">
 									<label class="form-check-label" for="isActive">
 										<i class="fas fa-eye"></i> Hiển thị phòng trên trang web
 									</label>
@@ -160,7 +180,7 @@
 							<div class="col-md-6">
 								<div class="form-check form-switch">
 									<input class="form-check-input" type="checkbox" name="isAvailable"
-										   th:checked="${room.isAvailable}" id="isAvailable">
+										th:checked="${room.isAvailable}" id="isAvailable">
 									<label class="form-check-label" for="isAvailable">
 										<i class="fas fa-check-circle"></i> Phòng còn trống
 									</label>
@@ -184,6 +204,89 @@
 				</div>
 			</form>
 		</div>
+
+		<!-- Leaflet CSS & JS -->
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+			integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+			integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+		<script th:inline="javascript">
+			document.addEventListener('DOMContentLoaded', function () {
+				// Get existing coordinates or default to Hanoi
+				var existingLat = /*[[${room.latitude}]]*/ null;
+				var existingLng = /*[[${room.longitude}]]*/ null;
+
+				var defaultLat = existingLat ? parseFloat(existingLat) : 21.028511;
+				var defaultLng = existingLng ? parseFloat(existingLng) : 105.804817;
+
+				// If coordinates are invalid (e.g. 0 or null), fallback to default
+				if (!defaultLat || !defaultLng) {
+					defaultLat = 21.028511;
+					defaultLng = 105.804817;
+				}
+
+				var map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+				L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 19,
+					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+				}).addTo(map);
+
+				var marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+				// Update inputs when marker is dragged
+				marker.on('dragend', function (event) {
+					var position = marker.getLatLng();
+					updateInputs(position.lat, position.lng);
+				});
+
+				// Move marker on map click
+				map.on('click', function (e) {
+					marker.setLatLng(e.latlng);
+					updateInputs(e.latlng.lat, e.latlng.lng);
+				});
+
+				function updateInputs(lat, lng) {
+					document.getElementById('latitude').value = lat.toFixed(6);
+					document.getElementById('longitude').value = lng.toFixed(6);
+				}
+
+				// Search address function
+				document.getElementById('btnSearchMap').addEventListener('click', function () {
+					var address = document.querySelector('input[name="address"]').value;
+					var city = document.querySelector('select[name="city"]').value;
+
+					if (!address || !city) {
+						alert('Vui lòng nhập địa chỉ và chọn thành phố trước khi tìm kiếm.');
+						return;
+					}
+
+					var query = address + ', ' + city;
+					var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query);
+
+					fetch(url)
+						.then(response => response.json())
+						.then(data => {
+							if (data && data.length > 0) {
+								var lat = parseFloat(data[0].lat);
+								var lon = parseFloat(data[0].lon);
+
+								map.setView([lat, lon], 16);
+								marker.setLatLng([lat, lon]);
+								updateInputs(lat, lon);
+							} else {
+								alert('Không tìm thấy địa điểm. Vui lòng kiểm tra lại địa chỉ hoặc chọn thủ công trên bản đồ.');
+							}
+						})
+						.catch(error => {
+							console.error('Error:', error);
+							alert('Có lỗi xảy ra khi tìm kiếm địa điểm.');
+						});
+				});
+			});
+		</script>
 	</section>
 </body>
+
 </html>
