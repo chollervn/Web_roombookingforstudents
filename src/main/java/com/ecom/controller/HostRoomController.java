@@ -27,9 +27,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ecom.model.RoomType;
 import com.ecom.model.Room;
 import com.ecom.model.RoomOrder;
+import com.ecom.model.RoomStatus;
 import com.ecom.model.UserDtls;
 import com.ecom.service.CartService;
 import com.ecom.service.DepositService;
+import com.ecom.service.MonthlyPaymentService;
 import com.ecom.service.RoomTypeService;
 import com.ecom.service.OrderService;
 import com.ecom.service.RoomBookingService;
@@ -42,7 +44,7 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
-public class AdminController {
+public class HostRoomController {
 
 	// ==================== CONSTANTS ====================
 	private static class Routes {
@@ -116,10 +118,10 @@ public class AdminController {
 	private RoomBookingService roomBookingService;
 
 	@Autowired
-	private com.ecom.service.ReviewService reviewService;
+	private MonthlyPaymentService monthlyPaymentService;
 
 	@Autowired
-	private com.ecom.service.MonthlyPaymentService monthlyPaymentService;
+	private com.ecom.service.ReviewService reviewService;
 
 	@Autowired
 	private com.ecom.service.PaymentNotificationService paymentNotificationService;
@@ -411,6 +413,45 @@ public class AdminController {
 					.toList();
 		}
 
+		// Populate transient fields for each room
+		java.time.LocalDate today = java.time.LocalDate.now();
+		for (Room room : ownerRooms) {
+			// Get active bookings for this room
+			List<com.ecom.model.RoomBooking> roomBookings = roomBookingService.getBookingsByRoom(room.getId());
+			List<com.ecom.model.RoomBooking> activeBookings = roomBookings.stream()
+					.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+					.toList();
+
+			room.setCurrentBookings(activeBookings);
+			room.setOccupancyCount(activeBookings.size());
+
+			// Auto-update room status based on actual occupancy
+			if (activeBookings.isEmpty()) {
+				// No active bookings = room is available
+				room.setRoomStatus(RoomStatus.AVAILABLE);
+				room.setIsAvailable(true);
+			} else {
+				// Has active bookings = room is occupied
+				room.setRoomStatus(RoomStatus.OCCUPIED);
+				room.setIsAvailable(false);
+
+				// Set room leader (first active booking's user)
+				room.setRoomLeader(activeBookings.get(0).getUser());
+			}
+
+			// Check for overdue payments
+			boolean hasOverdue = false;
+			for (com.ecom.model.RoomBooking booking : activeBookings) {
+				List<com.ecom.model.MonthlyPayment> payments = monthlyPaymentService
+						.getPaymentsByBookingId(booking.getId());
+				if (payments.stream().anyMatch(pay -> "OVERDUE".equals(pay.getStatus()))) {
+					hasOverdue = true;
+					break;
+				}
+			}
+			room.setHasOverduePayments(hasOverdue);
+		}
+
 		m.addAttribute("rooms", ownerRooms);
 		m.addAttribute("pageNo", 0);
 		m.addAttribute("pageSize", ownerRooms.size());
@@ -491,29 +532,46 @@ public class AdminController {
 	}
 
 	@GetMapping("/orders")
-	public String getAllOrders(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+	public String manageTenants(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
 			Principal p) {
 
 		// Get current logged-in owner
 		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
 
-		// Only get orders for rooms belonging to this owner
-		List<RoomOrder> ownerOrders = orderService.getOrdersByOwnerId(loggedInUser.getId());
-
-		// Lấy thông tin booking để hiển thị
+		// Get all bookings for rooms belonging to this owner
 		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByOwner(loggedInUser.getId());
-		List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
-				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
-				.toList();
 
-		m.addAttribute("orders", ownerOrders);
-		m.addAttribute("bookings", activeBookings);
+		// Calculate status for each booking
+		java.time.LocalDate today = java.time.LocalDate.now();
+		for (com.ecom.model.RoomBooking b : bookings) {
+			if ("CANCELLED".equalsIgnoreCase(b.getStatus()) || "EXPIRED".equalsIgnoreCase(b.getStatus())) {
+				b.setRentalStatus("Terminated");
+			} else if ("ACTIVE".equalsIgnoreCase(b.getStatus())) {
+				// Check for pending payments
+				List<com.ecom.model.MonthlyPayment> payments = monthlyPaymentService.getPaymentsByBookingId(b.getId());
+				boolean hasPending = payments.stream()
+						.anyMatch(pay -> "PENDING".equals(pay.getStatus()) || "OVERDUE".equals(pay.getStatus()));
+
+				if (hasPending) {
+					b.setRentalStatus("Pending Payment");
+				} else if (b.getEndDate() != null && b.getEndDate().minusDays(7).isBefore(today)) {
+					b.setRentalStatus("Expiring");
+				} else {
+					b.setRentalStatus("Active");
+				}
+			} else {
+				b.setRentalStatus(b.getStatus());
+			}
+		}
+
+		m.addAttribute("bookings", bookings);
 		m.addAttribute("srch", false);
 
+		// Pagination logic (simplified for now as we are fetching all bookings)
 		m.addAttribute("pageNo", 0);
-		m.addAttribute("pageSize", ownerOrders.size());
-		m.addAttribute("totalElements", ownerOrders.size());
+		m.addAttribute("pageSize", bookings.size() > 0 ? bookings.size() : 10);
+		m.addAttribute("totalElements", bookings.size());
 		m.addAttribute("totalPages", 1);
 		m.addAttribute("isFirst", true);
 		m.addAttribute("isLast", true);
@@ -709,15 +767,18 @@ public class AdminController {
 	}
 
 	@PostMapping("/cancel-rent")
-	public String cancelRent(@RequestParam Integer orderId, HttpSession session) {
-		RoomOrder order = orderService.updateOrderStatus(orderId, "CANCELLED");
-		if (order != null && order.getRoom() != null) {
-			order.getRoom().setStatus("ACTIVE");
-			order.getRoom().setIsAvailable(true);
-			roomService.updateRoomStatus(order.getRoom().getId(), "ACTIVE");
+	public String terminateRental(@RequestParam Integer bookingId, HttpSession session) {
+		com.ecom.model.RoomBooking booking = roomBookingService.updateBookingStatus(bookingId, "CANCELLED");
+
+		if (booking != null && booking.getRoom() != null) {
+			// Update room status to AVAILABLE
+			Room room = booking.getRoom();
+			room.setIsAvailable(true);
+			room.setRoomStatus(RoomStatus.AVAILABLE);
+			roomService.saveRoom(room);
 		}
-		session.setAttribute("succMsg", "Đã hủy cho thuê thành công!");
-		return "redirect:/admin/orders";
+		session.setAttribute("succMsg", "Đã kết thúc hợp đồng thuê thành công!");
+		return "redirect:/admin/rooms";
 	}
 
 	// ==================== PAYMENT MANAGEMENT ====================

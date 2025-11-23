@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/admin_base::adminLayout(~{::section})}">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Danh sách phòng trọ</title>
+</head>
+
+<body>
+	<section th:with="currentPage='rooms'">
+		<style>
+			.page-header {
+				margin-bottom: 30px;
+			}
+
+			.page-header h2 {
+				font-size: 28px;
+				color: #2c3e50;
+				margin-bottom: 10px;
+			}
+
+			.search-box {
+				background: white;
+				padding: 20px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+				margin-bottom: 20px;
+			}
+
+			.table-container {
+				background: white;
+				padding: 25px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+			}
+
+			<input type="text" class="form-control" name="ch"
+
+			placeholder="Tìm kiếm phòng trọ theo tên hoặc loại phòng..."></div><div class="col-md-2"><button class="btn btn-primary w-100"><i class="fas fa-search"></i>Tìm kiếm</button></div></div></form></div><div class="table-container"><table class="table table-hover table-bordered align-middle"><thead class="table-light"><tr><th scope="col">STT</th><th scope="col">Thông tin phòng</th><th scope="col">Giá thuê</th><th scope="col">Trạng thái</th><th scope="col">Người thuê</th><th scope="col">Hành động</th></tr></thead><tbody><tr th:each="room,c:${rooms}"><th scope="row">[[$ {
+				c.count
+			}
+
+			]]</th><td><div class="d-flex align-items-center"><img th:src="@{'/uploads/room_img/'+${room.image}}" width="80px" height="80px"
+
+			style="object-fit: cover; border-radius: 8px; margin-right: 15px;"><div><h6 class="mb-1">[[$ {
+				room.roomName
+			}
+
+			]]</h6><small class="text-muted">[[$ {
+				room.roomType
+			}
+
+			]] - [[$ {
+				room.area
+			}
+
+			]] m²</small><br><small class="text-muted"><i class="fas fa-map-marker-alt"></i>[[$ {
+				room.address
+			}
+
+			]]</small></div></div></td><td>[[$ {
+				#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0,
+					'POINT')
+			}
+
+			]] VNĐ</td><td><div class="d-flex flex-column gap-1"><span th:if="${room.isAvailable}" class="badge bg-primary">Còn trống</span><span th:unless="${room.isAvailable}" class="badge bg-warning text-dark">Đã cho thuê</span><span th:if="${room.rentalStatusDisplay == 'Active'}" class="badge bg-success">Đang hoạt động</span><span th:if="${room.rentalStatusDisplay == 'Expiring'}"
+			class="badge bg-warning text-dark">Sắp hết hạn</span><span th:if="${room.rentalStatusDisplay == 'Pending Payment'}"
+
+			class="badge bg-danger">Nợ tiền</span></div></td><td><div th:if="${room.occupancyCount > 0}"><strong>[[$ {
+				room.occupancyCount
+			}
+
+			]] người</strong><button type="button" class="btn btn-sm btn-outline-info mt-1" data-bs-toggle="modal"
+			th:data-bs-target="'#tenantModal' + ${room.id}"><i class="fas fa-users"></i>Xem chi tiết </button>< !-- Tenant Modal --><div class="modal fade" th:id="'tenantModal' + ${room.id}" tabindex="-1"
+
+			aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Danh sách người thuê - [[$ {
+				room.roomName
+			}
+
+			]]</h5><button type="button" class="btn-close" data-bs-dismiss="modal"
+			aria-label="Close"></button></div><div class="modal-body"><table class="table table-sm"><thead><tr><th>Tên</th><th>Liên hệ</th><th>Thời hạn thuê</th><th>Hành động</th></tr></thead><tbody><tr th:each="booking : ${room.currentBookings}"><td><div class="d-flex align-items-center"><img th:src="@{'/img/profile_img/'+${booking.user.profileImage}}"
+			class="rounded-circle me-2" width="30"
+
+			height="30"><span>[[$ {
+				booking.user.name
+			}
+
+			]]</span></div></td><td><small><i class="fas fa-phone"></i>[[$ {
+				booking.user.mobileNumber
+			}
+
+			]]<br><i class="fas fa-envelope"></i>[[$ {
+				booking.user.email
+			}
+
+			]] </small></td><td><small>[[$ {
+				#temporals.format(booking.startDate,
+					'dd/MM/yyyy')
+			}
+
+			]] - [[$ {
+				#temporals.format(booking.endDate,
+					'dd/MM/yyyy')
+			}
+
+			]] </small></td><td><form th:action="@{/admin/cancel-rent}" method="post"
+			style="display:inline;"><input type="hidden" name="bookingId"
+			th:value="${booking.id}"><button type="submit" class="btn btn-sm btn-danger"
+			onclick="return confirm('Kết thúc hợp đồng thuê này?')">Kết thúc </button></form></td></tr></tbody></table></div></div></div></div></div><span th:if="${room.occupancyCount == 0}" class="text-muted">Chưa có người thuê</span></td><td><div class="btn-group"><a th:href="@{'/admin/editRoom/'+${room.id}}" class="btn btn-sm btn-primary"
+			title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a><a th:href="@{'/admin/deleteRoom/'+${room.id}}" class="btn btn-sm btn-danger"
+			onclick="return confirm('Bạn có chắc muốn xóa phòng này?')" title="Xóa"><i class="fa-solid fa-trash"></i></a></div></td></tr><tr th:if="${#lists.isEmpty(rooms)}"><td colspan="6" class="text-center text-muted py-5"><i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i><p>Chưa có phòng trọ nào</p></td></tr></tbody></table></div></section></body></html>

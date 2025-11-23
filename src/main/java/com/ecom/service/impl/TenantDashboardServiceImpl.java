@@ -177,7 +177,7 @@ public class TenantDashboardServiceImpl implements TenantDashboardService {
                 .contactName(room.getContactName())
                 .latitude(room.getLatitude())
                 .longitude(room.getLongitude())
-                .status(room.getStatus())
+                .status(room.getRoomStatus() != null ? room.getRoomStatus().getDisplayName() : null)
                 .isAvailable(room.getIsAvailable())
                 .build();
     }

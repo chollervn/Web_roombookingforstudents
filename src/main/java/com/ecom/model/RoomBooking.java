@@ -43,5 +43,7 @@ public class RoomBooking {
 	private Double depositAmount; // Số tiền đã đặt cọc
 
 	private String note; // Ghi chú
-}
 
+	@jakarta.persistence.Transient
+	private String rentalStatus; // Trạng thái hiển thị (Active, Expiring, Terminated, Pending Payment)
+}

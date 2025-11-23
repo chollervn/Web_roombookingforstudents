@@ -127,21 +127,11 @@
 
             <div class="menu-section">
                 <div class="menu-section-title">Theo dõi & Quản lý</div>
-                <a href="/admin/orders" class="menu-item"
-                    th:classappend="${#strings.equals(currentPage, 'orders')} ? 'active' : ''">
-                    <i class="fas fa-file-contract"></i>
-                    <span>Đơn thuê trọ</span>
-                </a>
                 <a href="/admin/deposits" class="menu-item"
                     th:classappend="${#strings.equals(currentPage, 'deposits')} ? 'active' : ''">
                     <i class="fas fa-money-check-dollar"></i>
                     <span>Yêu cầu đặt cọc</span>
                     <span class="badge" th:if="${pendingDepositCount > 0}" th:text="${pendingDepositCount}">0</span>
-                </a>
-                <a href="/admin/users?type=1" class="menu-item"
-                    th:classappend="${#strings.equals(currentPage, 'users')} ? 'active' : ''">
-                    <i class="fas fa-users"></i>
-                    <span>Người thuê trọ</span>
                 </a>
                 <a href="/admin/reviews" class="menu-item"
                     th:classappend="${#strings.equals(currentPage, 'reviews')} ? 'active' : ''">

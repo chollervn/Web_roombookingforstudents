@@ -17,6 +17,7 @@ import com.ecom.model.OrderAddress;
 import com.ecom.model.OrderRequest;
 import com.ecom.model.RoomBooking;
 import com.ecom.model.RoomOrder;
+import com.ecom.model.RoomStatus;
 import com.ecom.model.UserDtls;
 import com.ecom.repository.CartRepository;
 import com.ecom.repository.RoomBookingRepository;
@@ -71,15 +72,12 @@ public class OrderServiceImpl implements OrderService {
 			address.setMobileNo(orderRequest.getMobileNo());
 			address.setAddress(orderRequest.getAddress());
 
-
 			order.setOrderAddress(address);
 
 			RoomOrder saveOrder = orderRepository.save(order);
 
 			// Clear cart after saving order
 			resetCart(cart.getUser());
-
-
 
 		}
 	}
@@ -102,16 +100,16 @@ public class OrderServiceImpl implements OrderService {
 			order.setStatus(status);
 
 			if ("CANCELLED".equals(status)) {
-				// Khi user hủy thuê, phòng chuyển ACTIVE
+				// Khi user hủy thuê, phòng chuyển AVAILABLE
 				if (order.getRoom() != null) {
-					order.getRoom().setStatus("ACTIVE");
+					order.getRoom().setRoomStatus(RoomStatus.AVAILABLE);
 					order.getRoom().setIsAvailable(true);
 					roomRepository.save(order.getRoom());
 				}
 
 				// Đồng bộ với RoomBooking
 				RoomBooking booking = roomBookingRepository.findByUserIdAndRoomId(
-					order.getUser().getId(), order.getRoom().getId());
+						order.getUser().getId(), order.getRoom().getId());
 				if (booking != null) {
 					booking.setStatus("CANCELLED");
 					roomBookingRepository.save(booking);

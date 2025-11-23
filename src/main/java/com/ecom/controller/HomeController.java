@@ -9,10 +9,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -48,6 +48,8 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class HomeController {
+
+	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
 	@Autowired
 	private RoomTypeService roomTypeService;
@@ -92,10 +94,10 @@ public class HomeController {
 					List<Deposit> userDeposits = depositService.getDepositsByUser(userDtls.getId());
 					java.time.LocalDate today = java.time.LocalDate.now();
 					long unreadDepositNotifications = userDeposits.stream()
-						.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
-							&& d.getApprovedDate() != null
-							&& d.getApprovedDate().equals(today))
-						.count();
+							.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
+									&& d.getApprovedDate() != null
+									&& d.getApprovedDate().equals(today))
+							.count();
 					m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
 				} else {
 					// Đã xem rồi, không hiển thị badge
@@ -107,8 +109,8 @@ public class HomeController {
 			if ("ROLE_ADMIN".equals(userDtls.getRole()) || "ROLE_OWNER".equals(userDtls.getRole())) {
 				List<Deposit> deposits = depositService.getDepositsByOwner(userDtls.getId());
 				long pendingDepositCount = deposits.stream()
-					.filter(d -> "PENDING".equals(d.getStatus()))
-					.count();
+						.filter(d -> "PENDING".equals(d.getStatus()))
+						.count();
 				m.addAttribute("pendingDepositCount", pendingDepositCount);
 			}
 		}
@@ -175,7 +177,8 @@ public class HomeController {
 		if (StringUtils.isEmpty(ch)) {
 			page = roomService.getAllActiveRoomPagination(pageNo, pageSize, roomType, sortBy, city, minPrice, maxPrice);
 		} else {
-			page = roomService.searchActiveRoomPagination(pageNo, pageSize, roomType, ch, sortBy, city, minPrice, maxPrice);
+			page = roomService.searchActiveRoomPagination(pageNo, pageSize, roomType, ch, sortBy, city, minPrice,
+					maxPrice);
 		}
 
 		List<Room> rooms = page.getContent();
@@ -235,9 +238,9 @@ public class HomeController {
 		} else {
 			// Kiểm tra APPROVED deposit
 			Deposit approvedDeposit = roomDeposits.stream()
-				.filter(d -> "APPROVED".equals(d.getStatus()))
-				.findFirst()
-				.orElse(null);
+					.filter(d -> "APPROVED".equals(d.getStatus()))
+					.findFirst()
+					.orElse(null);
 
 			if (approvedDeposit != null) {
 				// Trạng thái 2: Đã có người đặt cọc được duyệt
@@ -252,9 +255,9 @@ public class HomeController {
 			} else {
 				// Kiểm tra PENDING deposit
 				Deposit pendingDeposit = roomDeposits.stream()
-					.filter(d -> "PENDING".equals(d.getStatus()))
-					.findFirst()
-					.orElse(null);
+						.filter(d -> "PENDING".equals(d.getStatus()))
+						.findFirst()
+						.orElse(null);
 
 				if (pendingDeposit != null) {
 					// Trạng thái 3: Đang chờ duyệt đặt cọc
@@ -297,7 +300,8 @@ public class HomeController {
 	}
 
 	@PostMapping("/saveUser")
-	public String saveUser(@ModelAttribute UserDtls user, @RequestParam(value = "img", required = false) MultipartFile file, Model model, HttpSession session)
+	public String saveUser(@ModelAttribute UserDtls user,
+			@RequestParam(value = "img", required = false) MultipartFile file, Model model, HttpSession session)
 			throws IOException {
 		Boolean existsEmail = userService.existsEmail(user.getEmail());
 		if (existsEmail) {
@@ -317,12 +321,13 @@ public class HomeController {
 				if (file != null && !file.isEmpty()) {
 					try {
 						File saveFile = new ClassPathResource("static/img").getFile();
-						Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-								+ file.getOriginalFilename());
+						Path path = Paths
+								.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
+										+ file.getOriginalFilename());
 						Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 					} catch (Exception e) {
 						// Log error but don't fail registration
-						System.out.println("Could not save profile image: " + e.getMessage());
+						logger.error("Could not save profile image: ", e);
 					}
 				}
 
@@ -354,8 +359,9 @@ public class HomeController {
 			String resetToken = UUID.randomUUID().toString();
 			userService.updateUserResetToken(email, resetToken);
 
-			String url = CommonUtil.generateUrl(request) + "/reset-password?token=" + resetToken;
-
+			// String url = CommonUtil.generateUrl(request) + "/reset-password?token=" +
+			// resetToken;
+			// TODO: Send email with url
 
 		}
 

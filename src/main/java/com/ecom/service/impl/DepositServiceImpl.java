@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.ecom.model.Deposit;
 import com.ecom.model.Room;
 import com.ecom.model.RoomBooking;
+import com.ecom.model.RoomStatus;
 import com.ecom.repository.DepositRepository;
 import com.ecom.repository.RoomBookingRepository;
 import com.ecom.repository.RoomRepository;
@@ -36,11 +37,12 @@ public class DepositServiceImpl implements DepositService {
 		Deposit savedDeposit = depositRepository.save(deposit);
 		Room room = savedDeposit.getRoom();
 		if (room != null) {
-			room.setStatus("PENDING"); // Khi user đặt cọc, phòng chuyển sang PENDING
+			room.setRoomStatus(RoomStatus.RESERVED); // Khi user đặt cọc, phòng chuyển sang RESERVED
 			roomRepository.save(room);
 		}
 		// Tối ưu: Tạo RoomOrder nếu chưa có cho user/phòng này
-		com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(deposit.getUser().getId(), room.getId());
+		com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(deposit.getUser().getId(),
+				room.getId());
 		if (order == null) {
 			order = new com.ecom.model.RoomOrder();
 			order.setUser(deposit.getUser());
@@ -90,14 +92,14 @@ public class DepositServiceImpl implements DepositService {
 
 				// Cập nhật trạng thái phòng
 				if (room != null) {
-					room.setStatus("RENTED");
+					room.setRoomStatus(RoomStatus.OCCUPIED);
 					room.setIsAvailable(false);
 					roomRepository.save(room);
 				}
 
 				// Tạo hoặc cập nhật RoomOrder
 				com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(
-					deposit.getUser().getId(), room.getId());
+						deposit.getUser().getId(), room.getId());
 
 				if (order == null) {
 					order = new com.ecom.model.RoomOrder();
@@ -114,7 +116,7 @@ public class DepositServiceImpl implements DepositService {
 
 				// Tạo hoặc cập nhật RoomBooking
 				RoomBooking booking = roomBookingRepository.findByUserIdAndRoomId(
-					deposit.getUser().getId(), room.getId());
+						deposit.getUser().getId(), room.getId());
 
 				if (booking == null) {
 					booking = new RoomBooking();
@@ -131,16 +133,16 @@ public class DepositServiceImpl implements DepositService {
 				roomBookingRepository.save(booking);
 
 			} else if ("REJECTED".equals(status)) {
-				// Reset trạng thái phòng về ACTIVE
+				// Reset trạng thái phòng về AVAILABLE
 				if (room != null) {
-					room.setStatus("ACTIVE");
+					room.setRoomStatus(RoomStatus.AVAILABLE);
 					room.setIsAvailable(true);
 					roomRepository.save(room);
 				}
 
 				// Hủy RoomOrder nếu có
 				com.ecom.model.RoomOrder order = roomOrderRepository.findByUserIdAndRoomId(
-					deposit.getUser().getId(), room.getId());
+						deposit.getUser().getId(), room.getId());
 				if (order != null) {
 					order.setStatus("CANCELLED");
 					roomOrderRepository.save(order);
@@ -148,7 +150,7 @@ public class DepositServiceImpl implements DepositService {
 
 				// Hủy RoomBooking nếu có
 				RoomBooking booking = roomBookingRepository.findByUserIdAndRoomId(
-					deposit.getUser().getId(), room.getId());
+						deposit.getUser().getId(), room.getId());
 				if (booking != null) {
 					booking.setStatus("CANCELLED");
 					roomBookingRepository.save(booking);

@@ -2,6 +2,8 @@ package com.ecom.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -58,7 +60,10 @@ public class Room {
 
 	private Double deposit; // Tiền cọc
 
-	private String status; // ACTIVE, PENDING, RENTED
+	@Enumerated(EnumType.STRING)
+	private RoomStatus roomStatus; // Room rental status
+
+	private Integer roomLeaderId; // ID of primary tenant who signed contract
 
 	private Double electricityCost; // Giá điện (VND/kWh)
 	private Double waterCost; // Giá nước (VND/m3)
@@ -70,11 +75,28 @@ public class Room {
 	private Boolean isAvailable;
 
 	private Boolean isActive;
-	
+
 	private Integer ownerId; // ID của chủ trọ
 
 	private Double latitude; // Vĩ độ (latitude) để hiển thị trên Google Maps
 
 	private Double longitude; // Kinh độ (longitude) để hiển thị trên Google Maps
 
+	@jakarta.persistence.Transient
+	private java.util.List<RoomBooking> currentBookings;
+
+	@jakarta.persistence.Transient
+	private Integer occupancyCount;
+
+	@jakarta.persistence.Transient
+	private java.time.LocalDate nextPaymentDate;
+
+	@jakarta.persistence.Transient
+	private String rentalStatusDisplay;
+
+	@jakarta.persistence.Transient
+	private UserDtls roomLeader; // Primary tenant object
+
+	@jakarta.persistence.Transient
+	private Boolean hasOverduePayments; // Has unpaid bills
 }

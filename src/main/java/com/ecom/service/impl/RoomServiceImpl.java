@@ -18,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.Room;
+import com.ecom.model.RoomStatus;
 import com.ecom.repository.RoomRepository;
 import com.ecom.service.RoomService;
 
@@ -226,7 +227,14 @@ public class RoomServiceImpl implements RoomService {
 	public Room updateRoomStatus(Integer roomId, String status) {
 		Room room = roomRepository.findById(roomId).orElse(null);
 		if (room != null) {
-			room.setStatus(status);
+			// Convert String to RoomStatus enum - for backward compatibility
+			try {
+				RoomStatus roomStatus = RoomStatus.valueOf(status);
+				room.setRoomStatus(roomStatus);
+			} catch (IllegalArgumentException e) {
+				// Fall back to AVAILABLE if invalid status
+				room.setRoomStatus(RoomStatus.AVAILABLE);
+			}
 			return roomRepository.save(room);
 		}
 		return null;
