@@ -75,6 +75,12 @@ public class HomeController {
 	@Autowired
 	private ReviewService reviewService;
 
+	@Autowired
+	private com.ecom.service.VoucherService voucherService;
+
+	@Autowired
+	private com.ecom.service.GameService gameService;
+
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m, HttpSession session) {
 		if (p != null) {
@@ -424,6 +430,54 @@ public class HomeController {
 		model.addAttribute("accountType", accountType);
 
 		return "register_success";
+	}
+
+	// Duck Race Minigame endpoints
+	@GetMapping("/minigame/duck-race")
+	public String showDuckRace(Model m, Principal p) {
+		if (p != null) {
+			String email = p.getName();
+			UserDtls user = userService.getUserByEmail(email);
+			m.addAttribute("user", user);
+		}
+		return "minigame/duck_race";
+	}
+
+	@PostMapping("/minigame/duck-race/play")
+	@org.springframework.web.bind.annotation.ResponseBody
+	public java.util.Map<String, Object> playDuckRace(
+			@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, Integer> request,
+			Principal p) {
+
+		java.util.Map<String, Object> response = new java.util.HashMap<>();
+
+		if (p == null) {
+			response.put("success", false);
+			response.put("message", "Vui lòng đăng nhập");
+			return response;
+		}
+
+		Integer selectedDuck = request.get("selectedDuck");
+		Integer winningDuck = new java.util.Random().nextInt(6) + 1; // Random 1-6
+
+		String email = p.getName();
+		UserDtls user = userService.getUserByEmail(email);
+
+		com.ecom.model.GameRecord record = gameService.recordGamePlay(
+				Long.valueOf(user.getId()), selectedDuck, winningDuck);
+
+		response.put("success", true);
+		response.put("won", selectedDuck.equals(winningDuck));
+		response.put("winningDuck", winningDuck);
+
+		if (selectedDuck.equals(winningDuck)) {
+			com.ecom.model.Voucher voucher = record.getVoucher();
+			response.put("voucher", java.util.Map.of(
+					"code", voucher.getCode(),
+					"discount", voucher.getDiscountPercent()));
+		}
+
+		return response;
 	}
 
 }

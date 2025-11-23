@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{base::layout(~{::section})}">
+
+<head>
+    <title>Đua Vịt Nhận Ưu Đãi</title>
+    <style>
+        .duck-race-container {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 20px;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-header h1 {
+            color: #007bff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        #raceCanvas {
+            border: 3px solid #007bff;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto 30px;
+            max-width: 100%;
+            background: #87CEEB;
+        }
+
+        .duck-selection {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .duck-btn {
+            padding: 8px;
+            font-size: 0.85rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 90px;
+            position: relative;
+        }
+
+        .duck-btn img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .duck-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .duck-btn.selected {
+            border-color: #007bff;
+            border-width: 4px;
+            background: #e7f3ff;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.6);
+            transform: scale(1.1);
+        }
+
+        .duck-btn.selected::after {
+            content: "✓";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #28a745;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-buttons {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .control-buttons button {
+            margin: 0 10px;
+            padding: 12px 40px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .instructions h4 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .instructions li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .instructions li:last-child {
+            border-bottom: none;
+        }
+
+        .instructions li::before {
+            content: "🦆 ";
+            margin-right: 8px;
+        }
+
+        #loadingText {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #007bff;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <section>
+        <div class="duck-race-container">
+            <div class="game-header">
+                <h1>🎮 Đua Vịt Nhận Ưu Đãi 🎮</h1>
+                <p class="text-muted">Chọn vịt của bạn và cùng tham gia cuộc đua để giành mã giảm giá!</p>
+            </div>
+
+            <div id="loadingText">Đang tải assets...</div>
+
+            <canvas id="raceCanvas" width="1200" height="540" style="display:none;"></canvas>
+
+            <div class="duck-selection" id="duckSelection" style="display:none;">
+                <button class="duck-btn" onclick="selectDuck(1)" id="duck-btn-1">
+                    <img src="/images/duck-1.png" alt="Duck 1">
+                    <span>Vịt 1</span>
+                </button>
+                <button class="duck-btn" onclick="selectDuck(2)" id="duck-btn-2">
+                    <img src="/images/duck-2.png" alt="Duck 2">
+                    <span>Vịt 2</span>
+                </button>
+                <button class="duck-btn" onclick="selectDuck(3)" id="duck-btn-3">
+                    <img src="/images/duck-3.png" alt="Duck 3">
+                    <span>Vịt 3</span>
+                </button>
+                <button class="duck-btn" onclick="selectDuck(4)" id="duck-btn-4">
+                    <img src="/images/duck-4.png" alt="Duck 4">
+                    <span>Vịt 4</span>
+                </button>
+                <button class="duck-btn" onclick="selectDuck(5)" id="duck-btn-5">
+                    <img src="/images/duck-5.png" alt="Duck 5">
+                    <span>Vịt 5</span>
+                </button>
+                <button class="duck-btn" onclick="selectDuck(6)" id="duck-btn-6">
+                    <img src="/images/duck-6.png" alt="Duck 6">
+                    <span>Vịt 6</span>
+                </button>
+            </div>
+
+            <div class="control-buttons" id="controlButtons" style="display:none;">
+                <button id="startBtn" class="btn btn-success btn-lg" onclick="startRace()" disabled>
+                    🏁 Bắt đầu đua!
+                </button>
+                <button id="resetBtn" class="btn btn-secondary btn-lg" onclick="resetGame()">
+                    🔄 Chơi lại
+                </button>
+            </div>
+
+            <div class="instructions">
+                <h4>📖 Hướng dẫn chơi:</h4>
+                <ul>
+                    <li>Chọn một trong 6 con vịt bằng cách click vào nút tương ứng</li>
+                    <li>Nhấn "Bắt đầu đua" để bắt đầu cuộc đua</li>
+                    <li>Nếu vịt bạn chọn về đích đầu tiên, bạn sẽ nhận được một mã giảm giá!</li>
+                    <li>Mã giảm giá có giá trị từ 5% - 20% và có thời hạn 30 ngày</li>
+                    <li>Kiểm tra voucher của bạn trong trang Hồ sơ</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="modal fade" id="resultModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Kết quả</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div id="resultContent"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary"
+                            onclick="resetGame();$('#resultModal').modal('hide');">Chơi lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            const canvas = document.getElementById('raceCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const DUCKS = 6;
+            const DUCK_SIZE = 60;
+            const duckPositions = [];
+            const duckSpeeds = [];
+            const duckImages = [];
+
+            let selectedDuck = null;
+            let isRacing = false;
+            let winnerDuck = null;
+            let imagesLoaded = 0;
+
+            function loadImages() {
+                for (let i = 1; i <= DUCKS; i++) {
+                    const img = new Image();
+                    img.onload = () => {
+                        imagesLoaded++;
+                        if (imagesLoaded === DUCKS) {
+                            onImagesLoaded();
+                        }
+                    };
+                    img.src = '/images/duck-' + i + '.png';
+                    duckImages.push(img);
+                }
+            }
+
+            function onImagesLoaded() {
+                document.getElementById('loadingText').style.display = 'none';
+                document.getElementById('raceCanvas').style.display = 'block';
+                document.getElementById('duckSelection').style.display = 'flex';
+                document.getElementById('controlButtons').style.display = 'block';
+                initDucks();
+                resetGame();
+            }
+
+            function initDucks() {
+                for (let i = 0; i < DUCKS; i++) {
+                    duckPositions[i] = 50;
+                    duckSpeeds[i] = 0;
+                }
+            }
+
+            function selectDuck(duckNum) {
+                if (isRacing) return;
+                selectedDuck = duckNum;
+
+                for (let i = 1; i <= DUCKS; i++) {
+                    const btn = document.getElementById('duck-btn-' + i);
+                    if (i === duckNum) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.classList.remove('selected');
+                    }
+                }
+
+                document.getElementById('startBtn').disabled = false;
+            }
+
+            function startRace() {
+                if (!selectedDuck) {
+                    alert('Vui lòng chọn vịt!');
+                    return;
+                }
+
+                if (isRacing) return;
+
+                isRacing = true;
+                winnerDuck = null;
+                document.getElementById('startBtn').disabled = true;
+
+                for (let i = 0; i < DUCKS; i++) {
+                    duckSpeeds[i] = Math.random() * 3 + 2;
+                }
+
+                animate();
+            }
+
+            function animate() {
+                if (!isRacing) return;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(1, '#E0F6FF');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < DUCKS; i++) {
+                    const y = 50 + i * 80;
+                    ctx.strokeStyle = '#ddd';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(0, y, canvas.width, 70);
+
+                    ctx.fillStyle = '#999';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillText('Lane ' + (i + 1), 10, y + 40);
+                }
+
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 5;
+                ctx.setLineDash([15, 15]);
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - 100, 0);
+                ctx.lineTo(canvas.width - 100, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#FF0000';
+                ctx.font = 'bold 24px Arial';
+                ctx.fillText('FINISH', canvas.width - 95, 30);
+
+                let raceFinished = false;
+
+                for (let i = 0; i < DUCKS; i++) {
+                    const y = 50 + i * 80 + 35;
+
+                    duckPositions[i] += duckSpeeds[i];
+
+                    if (duckPositions[i] >= canvas.width - 150 && !winnerDuck) {
+                        winnerDuck = i + 1;
+                        isRacing = false;
+                        raceFinished = true;
+                    }
+
+                    ctx.drawImage(
+                        duckImages[i],
+                        duckPositions[i] - DUCK_SIZE / 2,
+                        y - DUCK_SIZE / 2,
+                        DUCK_SIZE,
+                        DUCK_SIZE
+                    );
+
+                    if (i + 1 === selectedDuck) {
+                        ctx.strokeStyle = '#FFD700';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(duckPositions[i], y, DUCK_SIZE / 2 + 5, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(duckPositions[i], y + 25, 12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#FFF';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(i + 1, duckPositions[i], y + 25);
+                }
+
+                if (raceFinished) {
+                    showResult();
+                } else {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            function showResult() {
+                fetch('/minigame/duck-race/play', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ selectedDuck: selectedDuck })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert(data.message || 'Có lỗi xảy ra');
+                            return;
+                        }
+
+                        let html = '';
+                        if (data.won) {
+                            html = '<div class="alert alert-success">' +
+                                '<h3>🎉 Chúc mừng! Bạn đã thắng! 🎉</h3>' +
+                                '<p class="mb-0">Vịt số ' + winnerDuck + ' về đích đầu tiên!</p>' +
+                                '</div>' +
+                                '<div class="card mt-3">' +
+                                '<div class="card-body">' +
+                                '<h5>Bạn đã nhận được mã giảm giá:</h5>' +
+                                '<div class="alert alert-warning mt-2">' +
+                                '<h4><code>' + data.voucher.code + '</code></h4>' +
+                                '<p class="mb-0">Giảm <strong>' + data.voucher.discount + '%</strong> - Có hiệu lực 30 ngày</p>' +
+                                '</div>' +
+                                '<button class="btn btn-sm btn-primary" onclick="copyCode(\'' + data.voucher.code + '\')">' +
+                                '<i class="fa fa-copy"></i> Sao chép mã' +
+                                '</button>' +
+                                '</div>' +
+                                '</div>' +
+                                '<p class="text-muted mt-3">Kiểm tra voucher của bạn trong trang Hồ sơ</p>';
+                        } else {
+                            html = '<div class="alert alert-danger">' +
+                                '<h3>😢 Rất tiếc!</h3>' +
+                                '<p class="mb-0">Vịt số ' + winnerDuck + ' về đích đầu tiên.</p>' +
+                                '<p class="mb-0">Vịt số ' + selectedDuck + ' của bạn không về đích kịp.</p>' +
+                                '</div>' +
+                                '<p class="text-muted mt-3">Đừng bỏ cuộc! Chơi lại để có cơ hội nhận voucher!</p>';
+                        }
+
+                        document.getElementById('resultContent').innerHTML = html;
+                        $('#resultModal').modal('show');
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                        alert('Có lỗi xảy ra khi kết nối server');
+                    });
+            }
+
+            function resetGame() {
+                selectedDuck = null;
+                isRacing = false;
+                winnerDuck = null;
+                initDucks();
+
+                for (let i = 1; i <= DUCKS; i++) {
+                    document.getElementById('duck-btn-' + i).classList.remove('selected');
+                }
+
+                document.getElementById('startBtn').disabled = true;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(1, '#E0F6FF');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < DUCKS; i++) {
+                    const y = 50 + i * 80;
+                    ctx.strokeStyle = '#ddd';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(0, y, canvas.width, 70);
+
+                    ctx.fillStyle = '#999';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillText('Lane ' + (i + 1), 10, y + 40);
+
+                    ctx.drawImage(
+                        duckImages[i],
+                        50 - DUCK_SIZE / 2,
+                        y + 35 - DUCK_SIZE / 2,
+                        DUCK_SIZE,
+                        DUCK_SIZE
+                    );
+
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(50, y + 60, 12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#FFF';
+                    ctx.font = 'bold 14px';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(i + 1, 50, y + 60);
+                }
+
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 5;
+                ctx.setLineDash([15, 15]);
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - 100, 0);
+                ctx.lineTo(canvas.width - 100, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#FF0000';
+                ctx.font = 'bold 24px Arial';
+                ctx.fillText('FINISH', canvas.width - 95, 30);
+            }
+
+            function copyCode(code) {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('Đã sao chép mã: ' + code);
+                });
+            }
+
+            loadImages();
+        </script>
+    </section>
+</body>
+
+</html>
