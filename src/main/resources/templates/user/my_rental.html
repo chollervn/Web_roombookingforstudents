@@ -94,315 +94,557 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Rental Status Card -->
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-calendar-check"></i> Tình trạng thuê
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <p><strong>Trạng thái:</strong></p>
-                                <span th:if="${dashboard.rentalStatus.status == 'ACTIVE'}"
-                                    class="badge bg-success fs-6">
-                                    <i class="fas fa-check-circle"></i> Đang thuê
-                                </span>
-                                <span th:if="${dashboard.rentalStatus.status != 'ACTIVE'}"
-                                    class="badge bg-warning fs-6">
-                                    <i class="fas fa-clock"></i> [[${dashboard.rentalStatus.status}]]
-                                </span>
+
+
+                        <!-- Rental Status Card -->
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-calendar-check"></i> Tình trạng thuê
+                                </h5>
                             </div>
-                            <div class="col-md-3">
-                                <p><strong>Ngày bắt đầu:</strong></p>
-                                <p th:text="${#temporals.format(dashboard.rentalStatus.startDate, 'dd/MM/yyyy')}">
-                                    01/01/2024</p>
-                            </div>
-                            <div class="col-md-3">
-                                <p><strong>Ngày kết thúc:</strong></p>
-                                <p th:text="${#temporals.format(dashboard.rentalStatus.endDate, 'dd/MM/yyyy')}">
-                                    31/12/2024</p>
-                            </div>
-                            <div class="col-md-3">
-                                <p><strong>Thời hạn:</strong></p>
-                                <p><span th:text="${dashboard.rentalStatus.durationMonths}">12</span> tháng</p>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p><strong>Trạng thái:</strong></p>
+                                        <span th:if="${dashboard.rentalStatus.status == 'ACTIVE'}"
+                                            class="badge bg-success fs-6">
+                                            <i class="fas fa-check-circle"></i> Đang thuê
+                                        </span>
+                                        <span th:if="${dashboard.rentalStatus.status != 'ACTIVE'}"
+                                            class="badge bg-warning fs-6">
+                                            <i class="fas fa-clock"></i> [[${dashboard.rentalStatus.status}]]
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p><strong>Ngày bắt đầu:</strong></p>
+                                        <p
+                                            th:text="${#temporals.format(dashboard.rentalStatus.startDate, 'dd/MM/yyyy')}">
+                                            01/01/2024</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p><strong>Ngày kết thúc:</strong></p>
+                                        <p th:text="${#temporals.format(dashboard.rentalStatus.endDate, 'dd/MM/yyyy')}">
+                                            31/12/2024</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p><strong>Thời hạn:</strong></p>
+                                        <p><span th:text="${dashboard.rentalStatus.durationMonths}">12</span> tháng</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Payment Information Tabs -->
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0">
-                            <i class="fas fa-money-bill-wave"></i> Thông tin thanh toán
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Nav tabs -->
-                        <ul class="nav nav-tabs mb-3" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#next-payment"
-                                    type="button">
-                                    <i class="fas fa-calendar-day"></i> Thanh toán tiếp theo
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#upcoming" type="button">
-                                    <i class="fas fa-calendar-alt"></i> Sắp tới
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history" type="button">
-                                    <i class="fas fa-history"></i> Lịch sử
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#summary" type="button">
-                                    <i class="fas fa-chart-pie"></i> Tổng kết
-                                </button>
-                            </li>
-                        </ul>
+                        <!-- Payment Information Tabs -->
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-money-bill-wave"></i> Thông tin thanh toán
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Nav tabs -->
+                                <ul class="nav nav-tabs mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" data-bs-toggle="tab"
+                                            data-bs-target="#next-payment" type="button">
+                                            <i class="fas fa-calendar-day"></i> Thanh toán tiếp theo
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#upcoming"
+                                            type="button">
+                                            <i class="fas fa-calendar-alt"></i> Sắp tới
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history"
+                                            type="button">
+                                            <i class="fas fa-history"></i> Lịch sử
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#summary"
+                                            type="button">
+                                            <i class="fas fa-chart-pie"></i> Tổng kết
+                                        </button>
+                                    </li>
+                                </ul>
 
-                        <!-- Tab content -->
-                        <div class="tab-content">
-                            <!-- Next Payment Tab -->
-                            <div class="tab-pane fade show active" id="next-payment">
-                                <div th:if="${dashboard.nextPayment != null}" class="alert alert-warning">
-                                    <h5>
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        Kỳ thanh toán: Tháng <span
-                                            th:text="${dashboard.nextPayment.month}">1</span>/<span
-                                            th:text="${dashboard.nextPayment.year}">2024</span>
-                                    </h5>
-                                    <hr>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <table class="table table-sm table-borderless">
-                                                <tr>
-                                                    <td><strong>Tiền nhà:</strong></td>
-                                                    <td class="text-end"
-                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.rentAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                                        5,000,000 VNĐ</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><strong>Điện:</strong></td>
-                                                    <td class="text-end">
-                                                        <span
-                                                            th:text="${dashboard.nextPayment.electricityUsage}">100</span>
-                                                        kWh ×
-                                                        <span
-                                                            th:text="${#numbers.formatDecimal(dashboard.nextPayment.electricityCost, 0, 'COMMA', 0, 'POINT')}">3,500</span>
-                                                        =
-                                                        <span
-                                                            th:text="${#numbers.formatDecimal(dashboard.nextPayment.electricityAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">350,000
-                                                            VNĐ</span>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td><strong>Nước:</strong></td>
-                                                    <td class="text-end">
-                                                        <span th:text="${dashboard.nextPayment.waterUsage}">5</span>
-                                                        m³ ×
-                                                        <span
-                                                            th:text="${#numbers.formatDecimal(dashboard.nextPayment.waterCost, 0, 'COMMA', 0, 'POINT')}">20,000</span>
-                                                        =
-                                                        <span
-                                                            th:text="${#numbers.formatDecimal(dashboard.nextPayment.waterAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">100,000
-                                                            VNĐ</span>
-                                                    </td>
-                                                </tr>
-                                                <tr
-                                                    th:if="${dashboard.nextPayment.additionalFees != null && dashboard.nextPayment.additionalFees > 0}">
-                                                    <td><strong>Phí khác:</strong></td>
-                                                    <td class="text-end"
-                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.additionalFees, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                                        0 VNĐ</td>
-                                                </tr>
-                                                <tr class="table-active">
-                                                    <td><strong>TỔNG CỘNG:</strong></td>
-                                                    <td class="text-end"><strong class="text-danger fs-5"
-                                                            th:text="${#numbers.formatDecimal(dashboard.nextPayment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">5,450,000
-                                                            VNĐ</strong></td>
-                                                </tr>
+                                <!-- Tab content -->
+                                <div class="tab-content">
+                                    <!-- Next Payment Tab -->
+                                    <div class="tab-pane fade show active" id="next-payment">
+                                        <div th:if="${dashboard.nextPayment != null}" class="alert alert-warning">
+                                            <h5>
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                Kỳ thanh toán: Tháng <span
+                                                    th:text="${dashboard.nextPayment.month}">1</span>/<span
+                                                    th:text="${dashboard.nextPayment.year}">2024</span>
+                                            </h5>
+                                            <hr>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <table class="table table-sm table-borderless">
+                                                        <tr>
+                                                            <td><strong>Tiền nhà:</strong></td>
+                                                            <td class="text-end"
+                                                                th:text="${#numbers.formatDecimal(dashboard.nextPayment.rentAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                5,000,000 VNĐ</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Điện:</strong></td>
+                                                            <td class="text-end">
+                                                                <span
+                                                                    th:text="${dashboard.nextPayment.electricityUsage}">100</span>
+                                                                kWh ×
+                                                                <span
+                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.electricityCost, 0, 'COMMA', 0, 'POINT')}">3,500</span>
+                                                                =
+                                                                <span
+                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.electricityAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">350,000
+                                                                    VNĐ</span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Nước:</strong></td>
+                                                            <td class="text-end">
+                                                                <span
+                                                                    th:text="${dashboard.nextPayment.waterUsage}">5</span>
+                                                                m³ ×
+                                                                <span
+                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.waterCost, 0, 'COMMA', 0, 'POINT')}">20,000</span>
+                                                                =
+                                                                <span
+                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.waterAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">100,000
+                                                                    VNĐ</span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr
+                                                            th:if="${dashboard.nextPayment.additionalFees != null && dashboard.nextPayment.additionalFees > 0}">
+                                                            <td><strong>Phí khác:</strong></td>
+                                                            <td class="text-end"
+                                                                th:text="${#numbers.formatDecimal(dashboard.nextPayment.additionalFees, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                0 VNĐ</td>
+                                                        </tr>
+                                                        <tr class="table-active">
+                                                            <td><strong>TỔNG CỘNG:</strong></td>
+                                                            <td class="text-end"><strong class="text-danger fs-5"
+                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">5,450,000
+                                                                    VNĐ</strong></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p><strong>Ngày đến hạn:</strong>
+                                                        <span class="text-danger fs-5"
+                                                            th:text="${#temporals.format(dashboard.nextPayment.dueDate, 'dd/MM/yyyy')}">05/01/2024</span>
+                                                    </p>
+                                                    <p><strong>Trạng thái:</strong>
+                                                        <span th:if="${dashboard.nextPayment.status == 'PAID'}"
+                                                            class="badge bg-success">Đã thanh toán</span>
+                                                        <span th:if="${dashboard.nextPayment.status == 'PENDING'}"
+                                                            class="badge bg-warning">Chờ thanh toán</span>
+                                                        <span th:if="${dashboard.nextPayment.status == 'OVERDUE'}"
+                                                            class="badge bg-danger">Quá hạn</span>
+                                                    </p>
+                                                    <div class="mt-3">
+                                                        <a href="#" class="btn btn-primary btn-lg w-100 mb-2">
+                                                            <i class="fas fa-credit-card"></i> Thanh toán ngay
+                                                        </a>
+                                                        <p class="text-muted small mb-0">
+                                                            <i class="fas fa-info-circle"></i>
+                                                            Liên hệ chủ trọ để thanh toán hoặc sử dụng các phương thức
+                                                            thanh toán online
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div th:if="${dashboard.nextPayment == null}" class="alert alert-success">
+                                            <i class="fas fa-check-circle"></i> Không có khoản thanh toán nào đang chờ
+                                        </div>
+                                    </div>
+
+                                    <!-- Upcoming Payments Tab -->
+                                    <div class="tab-pane fade" id="upcoming">
+                                        <div
+                                            th:if="${dashboard.upcomingPayments != null && !dashboard.upcomingPayments.isEmpty()}">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Kỳ</th>
+                                                        <th>Ngày đến hạn</th>
+                                                        <th class="text-end">Số tiền</th>
+                                                        <th>Trạng thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr th:each="payment : ${dashboard.upcomingPayments}">
+                                                        <td th:text="${payment.month} + '/' + ${payment.year}">1/2024
+                                                        </td>
+                                                        <td
+                                                            th:text="${#temporals.format(payment.dueDate, 'dd/MM/yyyy')}">
+                                                            05/01/2024</td>
+                                                        <td class="text-end"
+                                                            th:text="${#numbers.formatDecimal(payment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                            5,450,000 VNĐ</td>
+                                                        <td>
+                                                            <span th:if="${payment.status == 'PENDING'}"
+                                                                class="badge bg-warning">Chờ thanh toán</span>
+                                                            <span th:if="${payment.status == 'OVERDUE'}"
+                                                                class="badge bg-danger">Quá hạn</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
                                             </table>
                                         </div>
-                                        <div class="col-md-6">
-                                            <p><strong>Ngày đến hạn:</strong>
-                                                <span class="text-danger fs-5"
-                                                    th:text="${#temporals.format(dashboard.nextPayment.dueDate, 'dd/MM/yyyy')}">05/01/2024</span>
-                                            </p>
-                                            <p><strong>Trạng thái:</strong>
-                                                <span th:if="${dashboard.nextPayment.status == 'PAID'}"
-                                                    class="badge bg-success">Đã thanh toán</span>
-                                                <span th:if="${dashboard.nextPayment.status == 'PENDING'}"
-                                                    class="badge bg-warning">Chờ thanh toán</span>
-                                                <span th:if="${dashboard.nextPayment.status == 'OVERDUE'}"
-                                                    class="badge bg-danger">Quá hạn</span>
-                                            </p>
-                                            <div class="mt-3">
-                                                <a href="#" class="btn btn-primary btn-lg w-100 mb-2">
-                                                    <i class="fas fa-credit-card"></i> Thanh toán ngay
-                                                </a>
-                                                <p class="text-muted small mb-0">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    Liên hệ chủ trọ để thanh toán hoặc sử dụng các phương thức
-                                                    thanh toán online
-                                                </p>
+                                        <div th:if="${dashboard.upcomingPayments == null || dashboard.upcomingPayments.isEmpty()}"
+                                            class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> Không có khoản thanh toán sắp tới
+                                        </div>
+                                    </div>
+
+                                    <!-- Payment History Tab -->
+                                    <div class="tab-pane fade" id="history">
+                                        <div
+                                            th:if="${dashboard.paymentHistory != null && !dashboard.paymentHistory.isEmpty()}">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Kỳ</th>
+                                                        <th>Ngày thanh toán</th>
+                                                        <th class="text-end">Số tiền</th>
+                                                        <th>Trạng thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr th:each="payment : ${dashboard.paymentHistory}">
+                                                        <td th:text="${payment.month} + '/' + ${payment.year}">1/2024
+                                                        </td>
+                                                        <td
+                                                            th:text="${#temporals.format(payment.paidDate, 'dd/MM/yyyy')}">
+                                                            03/01/2024</td>
+                                                        <td class="text-end"
+                                                            th:text="${#numbers.formatDecimal(payment.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                            5,450,000 VNĐ</td>
+                                                        <td><span class="badge bg-success">Đã thanh toán</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div th:if="${dashboard.paymentHistory == null || dashboard.paymentHistory.isEmpty()}"
+                                            class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> Chưa có lịch sử thanh toán
+                                        </div>
+                                    </div>
+
+                                    <!-- Summary Tab -->
+                                    <div class="tab-pane fade" id="summary">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card bg-success text-white mb-3">
+                                                    <div class="card-body">
+                                                        <h6>Tổng đã thanh toán</h6>
+                                                        <h3
+                                                            th:text="${#numbers.formatDecimal(dashboard.totalPaid, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                            0 VNĐ</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card bg-warning text-dark mb-3">
+                                                    <div class="card-body">
+                                                        <h6>Tổng còn phải trả</h6>
+                                                        <h3
+                                                            th:text="${#numbers.formatDecimal(dashboard.totalPending, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                            0 VNĐ</h3>
+                                                    </div>
+                                                    type="button">
+                                                    <i class="fas fa-chart-pie"></i> Tổng kết
+                                                    </button>
+                                                    </li>
+                                                    </ul>
+
+                                                    <!-- Tab content -->
+                                                    <div class="tab-content">
+                                                        <!-- Next Payment Tab -->
+                                                        <div class="tab-pane fade show active" id="next-payment">
+                                                            <div th:if="${dashboard.nextPayment != null}"
+                                                                class="alert alert-warning">
+                                                                <h5>
+                                                                    <i class="fas fa-exclamation-circle"></i>
+                                                                    Kỳ thanh toán: Tháng <span
+                                                                        th:text="${dashboard.nextPayment.month}">1</span>/<span
+                                                                        th:text="${dashboard.nextPayment.year}">2024</span>
+                                                                </h5>
+                                                                <hr>
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <table class="table table-sm table-borderless">
+                                                                            <tr>
+                                                                                <td><strong>Tiền nhà:</strong></td>
+                                                                                <td class="text-end"
+                                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.rentAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                                    5,000,000 VNĐ</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td><strong>Điện:</strong></td>
+                                                                                <td class="text-end">
+                                                                                    <span
+                                                                                        th:text="${dashboard.nextPayment.electricityUsage}">100</span>
+                                                                                    kWh ×
+                                                                                    <span
+                                                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.electricityCost, 0, 'COMMA', 0, 'POINT')}">3,500</span>
+                                                                                    =
+                                                                                    <span
+                                                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.electricityAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">350,000
+                                                                                        VNĐ</span>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td><strong>Nước:</strong></td>
+                                                                                <td class="text-end">
+                                                                                    <span
+                                                                                        th:text="${dashboard.nextPayment.waterUsage}">5</span>
+                                                                                    m³ ×
+                                                                                    <span
+                                                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.waterCost, 0, 'COMMA', 0, 'POINT')}">20,000</span>
+                                                                                    =
+                                                                                    <span
+                                                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.waterAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">100,000
+                                                                                        VNĐ</span>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr
+                                                                                th:if="${dashboard.nextPayment.additionalFees != null && dashboard.nextPayment.additionalFees > 0}">
+                                                                                <td><strong>Phí khác:</strong></td>
+                                                                                <td class="text-end"
+                                                                                    th:text="${#numbers.formatDecimal(dashboard.nextPayment.additionalFees, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                                    0 VNĐ</td>
+                                                                            </tr>
+                                                                            <tr class="table-active">
+                                                                                <td><strong>TỔNG CỘNG:</strong></td>
+                                                                                <td class="text-end"><strong
+                                                                                        class="text-danger fs-5"
+                                                                                        th:text="${#numbers.formatDecimal(dashboard.nextPayment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">5,450,000
+                                                                                        VNĐ</strong></td>
+                                                                            </tr>
+                                                                        </table>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <p><strong>Ngày đến hạn:</strong>
+                                                                            <span class="text-danger fs-5"
+                                                                                th:text="${#temporals.format(dashboard.nextPayment.dueDate, 'dd/MM/yyyy')}">05/01/2024</span>
+                                                                        </p>
+                                                                        <p><strong>Trạng thái:</strong>
+                                                                            <span
+                                                                                th:if="${dashboard.nextPayment.status == 'PAID'}"
+                                                                                class="badge bg-success">Đã thanh
+                                                                                toán</span>
+                                                                            <span
+                                                                                th:if="${dashboard.nextPayment.status == 'PENDING'}"
+                                                                                class="badge bg-warning">Chờ thanh
+                                                                                toán</span>
+                                                                            <span
+                                                                                th:if="${dashboard.nextPayment.status == 'OVERDUE'}"
+                                                                                class="badge bg-danger">Quá hạn</span>
+                                                                        </p>
+                                                                        <div class="mt-3">
+                                                                            <a href="#"
+                                                                                class="btn btn-primary btn-lg w-100 mb-2">
+                                                                                <i class="fas fa-credit-card"></i> Thanh
+                                                                                toán ngay
+                                                                            </a>
+                                                                            <p class="text-muted small mb-0">
+                                                                                <i class="fas fa-info-circle"></i>
+                                                                                Liên hệ chủ trọ để thanh toán hoặc sử
+                                                                                dụng các phương thức
+                                                                                thanh toán online
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div th:if="${dashboard.nextPayment == null}"
+                                                                class="alert alert-success">
+                                                                <i class="fas fa-check-circle"></i> Không có khoản thanh
+                                                                toán nào đang chờ
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Upcoming Payments Tab -->
+                                                        <div class="tab-pane fade" id="upcoming">
+                                                            <div
+                                                                th:if="${dashboard.upcomingPayments != null && !dashboard.upcomingPayments.isEmpty()}">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Kỳ</th>
+                                                                            <th>Ngày đến hạn</th>
+                                                                            <th class="text-end">Số tiền</th>
+                                                                            <th>Trạng thái</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr
+                                                                            th:each="payment : ${dashboard.upcomingPayments}">
+                                                                            <td
+                                                                                th:text="${payment.month} + '/' + ${payment.year}">
+                                                                                1/2024
+                                                                            </td>
+                                                                            <td
+                                                                                th:text="${#temporals.format(payment.dueDate, 'dd/MM/yyyy')}">
+                                                                                05/01/2024</td>
+                                                                            <td class="text-end"
+                                                                                th:text="${#numbers.formatDecimal(payment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                                5,450,000 VNĐ</td>
+                                                                            <td>
+                                                                                <span
+                                                                                    th:if="${payment.status == 'PENDING'}"
+                                                                                    class="badge bg-warning">Chờ thanh
+                                                                                    toán</span>
+                                                                                <span
+                                                                                    th:if="${payment.status == 'OVERDUE'}"
+                                                                                    class="badge bg-danger">Quá
+                                                                                    hạn</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <div th:if="${dashboard.upcomingPayments == null || dashboard.upcomingPayments.isEmpty()}"
+                                                                class="alert alert-info">
+                                                                <i class="fas fa-info-circle"></i> Không có khoản thanh
+                                                                toán sắp tới
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Payment History Tab -->
+                                                        <div class="tab-pane fade" id="history">
+                                                            <div
+                                                                th:if="${dashboard.paymentHistory != null && !dashboard.paymentHistory.isEmpty()}">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Kỳ</th>
+                                                                            <th>Ngày thanh toán</th>
+                                                                            <th class="text-end">Số tiền</th>
+                                                                            <th>Trạng thái</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr
+                                                                            th:each="payment : ${dashboard.paymentHistory}">
+                                                                            <td
+                                                                                th:text="${payment.month} + '/' + ${payment.year}">
+                                                                                1/2024
+                                                                            </td>
+                                                                            <td
+                                                                                th:text="${#temporals.format(payment.paidDate, 'dd/MM/yyyy')}">
+                                                                                03/01/2024</td>
+                                                                            <td class="text-end"
+                                                                                th:text="${#numbers.formatDecimal(payment.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                                5,450,000 VNĐ</td>
+                                                                            <td><span class="badge bg-success">Đã thanh
+                                                                                    toán</span></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <div th:if="${dashboard.paymentHistory == null || dashboard.paymentHistory.isEmpty()}"
+                                                                class="alert alert-info">
+                                                                <i class="fas fa-info-circle"></i> Chưa có lịch sử thanh
+                                                                toán
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Summary Tab -->
+                                                        <div class="tab-pane fade" id="summary">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="card bg-success text-white mb-3">
+                                                                        <div class="card-body">
+                                                                            <h6>Tổng đã thanh toán</h6>
+                                                                            <h3
+                                                                                th:text="${#numbers.formatDecimal(dashboard.totalPaid, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                                0 VNĐ</h3>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="card bg-warning text-dark mb-3">
+                                                                        <div class="card-body">
+                                                                            <h6>Tổng còn phải trả</h6>
+                                                                            <h3
+                                                                                th:text="${#numbers.formatDecimal(dashboard.totalPending, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                                                                0 VNĐ</h3>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Landlord Contact & Chat Card -->
+                                            <div class="card mb-4 shadow-sm">
+                                                <div class="card-header bg-info text-white">
+                                                    <h5 class="mb-0">
+                                                        <i class="fas fa-user-tie"></i> Liên hệ chủ trọ
+                                                    </h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-8"
+                                                            th:if="${dashboard.landlordContact != null}">
+                                                            <p class="mb-2">
+                                                                <strong><i class="fas fa-user"></i> Họ tên:</strong>
+                                                                <span th:text="${dashboard.landlordContact.name}">Chủ
+                                                                    trọ</span>
+                                                            </p>
+                                                            <p class="mb-2">
+                                                                <strong><i class="fas fa-envelope"></i> Email:</strong>
+                                                                <span
+                                                                    th:text="${dashboard.landlordContact.email}">email@example.com</span>
+                                                            </p>
+                                                            <p class="mb-2">
+                                                                <strong><i class="fas fa-phone"></i> Số điện
+                                                                    thoại:</strong>
+                                                                <span
+                                                                    th:text="${dashboard.landlordContact.mobileNumber}">0900000000</span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-8"
+                                                            th:if="${dashboard.landlordContact == null}">
+                                                            <p class="text-muted">
+                                                                <i class="fas fa-info-circle"></i> Không có thông tin
+                                                                liên hệ của chủ trọ
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-4 text-center">
+                                                            <a th:href="@{'/user/chat/' + ${dashboard.conversationId}}"
+                                                                th:if="${dashboard.conversationId != null}"
+                                                                class="btn btn-primary btn-lg w-100">
+                                                                <i class="fas fa-comments"></i> Chat với chủ trọ
+                                                                <span th:if="${dashboard.unreadMessages > 0}"
+                                                                    class="badge bg-danger ms-2"
+                                                                    th:text="${dashboard.unreadMessages}">0</span>
+                                                            </a>
+                                                            <button th:if="${dashboard.conversationId == null}"
+                                                                class="btn btn-secondary btn-lg w-100" disabled>
+                                                                <i class="fas fa-comments"></i> Chat chưa khả dụng
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div th:if="${dashboard.nextPayment == null}" class="alert alert-success">
-                                    <i class="fas fa-check-circle"></i> Không có khoản thanh toán nào đang chờ
-                                </div>
                             </div>
-
-                            <!-- Upcoming Payments Tab -->
-                            <div class="tab-pane fade" id="upcoming">
-                                <div
-                                    th:if="${dashboard.upcomingPayments != null && !dashboard.upcomingPayments.isEmpty()}">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Kỳ</th>
-                                                <th>Ngày đến hạn</th>
-                                                <th class="text-end">Số tiền</th>
-                                                <th>Trạng thái</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="payment : ${dashboard.upcomingPayments}">
-                                                <td th:text="${payment.month} + '/' + ${payment.year}">1/2024
-                                                </td>
-                                                <td th:text="${#temporals.format(payment.dueDate, 'dd/MM/yyyy')}">
-                                                    05/01/2024</td>
-                                                <td class="text-end"
-                                                    th:text="${#numbers.formatDecimal(payment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                                    5,450,000 VNĐ</td>
-                                                <td>
-                                                    <span th:if="${payment.status == 'PENDING'}"
-                                                        class="badge bg-warning">Chờ thanh toán</span>
-                                                    <span th:if="${payment.status == 'OVERDUE'}"
-                                                        class="badge bg-danger">Quá hạn</span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div th:if="${dashboard.upcomingPayments == null || dashboard.upcomingPayments.isEmpty()}"
-                                    class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> Không có khoản thanh toán sắp tới
-                                </div>
-                            </div>
-
-                            <!-- Payment History Tab -->
-                            <div class="tab-pane fade" id="history">
-                                <div th:if="${dashboard.paymentHistory != null && !dashboard.paymentHistory.isEmpty()}">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Kỳ</th>
-                                                <th>Ngày thanh toán</th>
-                                                <th class="text-end">Số tiền</th>
-                                                <th>Trạng thái</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="payment : ${dashboard.paymentHistory}">
-                                                <td th:text="${payment.month} + '/' + ${payment.year}">1/2024
-                                                </td>
-                                                <td th:text="${#temporals.format(payment.paidDate, 'dd/MM/yyyy')}">
-                                                    03/01/2024</td>
-                                                <td class="text-end"
-                                                    th:text="${#numbers.formatDecimal(payment.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                                    5,450,000 VNĐ</td>
-                                                <td><span class="badge bg-success">Đã thanh toán</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div th:if="${dashboard.paymentHistory == null || dashboard.paymentHistory.isEmpty()}"
-                                    class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> Chưa có lịch sử thanh toán
-                                </div>
-                            </div>
-
-                            <!-- Summary Tab -->
-                            <div class="tab-pane fade" id="summary">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="card bg-success text-white mb-3">
-                                            <div class="card-body">
-                                                <h6>Tổng đã thanh toán</h6>
-                                                <h3
-                                                    th:text="${#numbers.formatDecimal(dashboard.totalPaid, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                                    0 VNĐ</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-warning text-dark mb-3">
-                                            <div class="card-body">
-                                                <h6>Tổng còn phải trả</h6>
-                                                <h3
-                                                    th:text="${#numbers.formatDecimal(dashboard.totalPending, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                                    0 VNĐ</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Landlord Contact & Chat Card -->
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-user-tie"></i> Liên hệ chủ trọ
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <p class="mb-2">
-                                    <strong><i class="fas fa-user"></i> Họ tên:</strong>
-                                    <span th:text="${dashboard.landlordContact.name}">Chủ trọ</span>
-                                </p>
-                                <p class="mb-2">
-                                    <strong><i class="fas fa-envelope"></i> Email:</strong>
-                                    <span th:text="${dashboard.landlordContact.email}">email@example.com</span>
-                                </p>
-                                <p class="mb-2">
-                                    <strong><i class="fas fa-phone"></i> Số điện thoại:</strong>
-                                    <span th:text="${dashboard.landlordContact.mobileNumber}">0900000000</span>
-                                </p>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <a th:href="@{'/user/chat/' + ${dashboard.conversationId}}"
-                                    th:if="${dashboard.conversationId != null}" class="btn btn-primary btn-lg w-100">
-                                    <i class="fas fa-comments"></i> Chat với chủ trọ
-                                    <span th:if="${dashboard.unreadMessages > 0}" class="badge bg-danger ms-2"
-                                        th:text="${dashboard.unreadMessages}">0</span>
-                                </a>
-                                <button th:if="${dashboard.conversationId == null}"
-                                    class="btn btn-secondary btn-lg w-100" disabled>
-                                    <i class="fas fa-comments"></i> Chat chưa khả dụng
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </div>
-        </div>
     </section>
 </body>
 

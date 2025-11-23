@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/admin_base::adminLayout(~{::section})}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết thanh toán</title>
+</head>
+
+<body>
+    <section>
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-file-invoice-dollar"></i> Quản lý thanh toán</h3>
+                <a th:href="@{/admin/orders}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+
+            <th:block th:if="${session.succMsg}">
+                <div class="alert alert-success alert-dismissible fade show">
+                    [[${session.succMsg}]]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+            </th:block>
+
+            <th:block th:if="${session.errorMsg}">
+                <div class="alert alert-danger alert-dismissible fade show">
+                    [[${session.errorMsg}]]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+            </th:block>
+
+            <!-- Booking Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông tin hợp đồng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Phòng:</strong> [[${booking.room.roomName}]]</p>
+                            <p><strong>Người thuê:</strong> [[${booking.user.name}]]</p>
+                            <p><strong>Điện thoại:</strong> [[${booking.user.mobileNumber}]]</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Thời hạn:</strong>
+                                [[${#temporals.format(booking.startDate, 'dd/MM/yyyy')}]] -
+                                [[${#temporals.format(booking.endDate, 'dd/MM/yyyy')}]]
+                            </p>
+                            <p><strong>Giá thuê:</strong>
+                                <span class="text-danger fw-bold">[[${#numbers.formatDecimal(booking.monthlyRent, 0,
+                                    'COMMA', 0, 'POINT')}]] VNĐ/tháng</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create New Invoice Form -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Tạo hóa đơn mới</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/payment/create" method="post" class="row g-3 align-items-end">
+                        <input type="hidden" name="bookingId" th:value="${booking.id}">
+                        <div class="col-md-4">
+                            <label class="form-label">Tháng</label>
+                            <select name="month" class="form-select" required>
+                                <option th:each="i : ${#numbers.sequence(1, 12)}" th:value="${i}"
+                                    th:text="'Tháng ' + ${i}"
+                                    th:selected="${i == #temporals.month(#temporals.createNow())}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Năm</label>
+                            <select name="year" class="form-select" required>
+                                <option th:each="i : ${#numbers.sequence(2023, 2030)}" th:value="${i}" th:text="${i}"
+                                    th:selected="${i == #temporals.year(#temporals.createNow())}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save"></i> Tạo hóa đơn
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Payments List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Danh sách hóa đơn</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kỳ</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Điện/Nước</th>
+                                    <th>Đã trả</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="payment : ${payments}">
+                                    <td>
+                                        <strong>[[${payment.month}]]/[[${payment.year}]]</strong><br>
+                                        <small class="text-muted">Hạn: [[${#temporals.format(payment.dueDate,
+                                            'dd/MM/yyyy')}]]</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="text-primary">[[${#numbers.formatDecimal(payment.amount, 0,
+                                            'COMMA', 0, 'POINT')}]] VNĐ</strong>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            <i class="fas fa-bolt text-warning"></i> [[${payment.electricityUsed ?: 0}]]
+                                            kWh<br>
+                                            <i class="fas fa-tint text-info"></i> [[${payment.waterUsed ?: 0}]] m³
+                                        </small>
+                                    </td>
+                                    <td class="text-end">
+                                        [[${#numbers.formatDecimal(payment.paidAmount ?: 0, 0, 'COMMA', 0, 'POINT')}]]
+                                        VNĐ
+                                    </td>
+                                    <td>
+                                        <span th:if="${payment.status == 'PAID'}" class="badge bg-success">Đã thanh
+                                            toán</span>
+                                        <span th:if="${payment.status == 'PENDING'}" class="badge bg-warning">Chờ thanh
+                                            toán</span>
+                                        <span th:if="${payment.status == 'OVERDUE'}" class="badge bg-danger">Quá
+                                            hạn</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a th:if="${payment.status != 'PAID'}"
+                                                th:href="@{'/admin/payment/' + ${payment.id} + '/record'}"
+                                                class="btn btn-primary" title="Ghi điện nước & Thu tiền">
+                                                <i class="fas fa-edit"></i> Cập nhật
+                                            </a>
+                                            <a th:href="@{'/admin/payment/' + ${payment.id} + '/send-reminder'}"
+                                                class="btn btn-warning" title="Gửi thông báo">
+                                                <i class="fas fa-bell"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(payments)}">
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        Chưa có hóa đơn nào
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

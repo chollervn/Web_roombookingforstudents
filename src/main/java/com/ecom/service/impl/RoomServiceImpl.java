@@ -44,11 +44,37 @@ public class RoomServiceImpl implements RoomService {
 		return roomRepository.findAll(pageable);
 	}
 
+	@Autowired
+	private com.ecom.repository.CartRepository cartRepository;
+
+	@Autowired
+	private com.ecom.repository.DepositRepository depositRepository;
+
+	@Autowired
+	private com.ecom.repository.RoomOrderRepository roomOrderRepository;
+
+	@Autowired
+	private com.ecom.repository.RoomBookingRepository roomBookingRepository;
+
+	@Autowired
+	private com.ecom.repository.ReviewRepository reviewRepository;
+
+	@Autowired
+	private com.ecom.repository.ExpenseRepository expenseRepository;
+
 	@Override
 	public Boolean deleteRoom(Integer id) {
 		Room room = roomRepository.findById(id).orElse(null);
 
 		if (!ObjectUtils.isEmpty(room)) {
+			// Delete associated data first to avoid foreign key constraints
+			cartRepository.deleteByRoomId(id);
+			depositRepository.deleteByRoomId(id);
+			roomOrderRepository.deleteByRoomId(id);
+			roomBookingRepository.deleteByRoomId(id);
+			reviewRepository.deleteByRoomId(id);
+			expenseRepository.deleteByRoomId(id);
+
 			roomRepository.delete(room);
 			return true;
 		}

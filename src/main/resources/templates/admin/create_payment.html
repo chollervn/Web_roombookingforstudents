@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/admin_base::adminLayout(~{::section})}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo hóa đơn mới</title>
+</head>
+
+<body>
+    <section>
+        <div class="container-fluid p-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Tạo hóa đơn thanh toán</h4>
+                        </div>
+                        <div class="card-body">
+                            <th:block th:if="${session.errorMsg}">
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    [[${session.errorMsg}]]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                                <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+                            </th:block>
+
+                            <form action="/admin/payment/save-new" method="post">
+                                <!-- Room Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Chọn phòng / Người thuê</label>
+                                    <select name="roomId" class="form-select form-select-lg" required>
+                                        <option value="" selected disabled>-- Chọn phòng cần thu tiền --</option>
+                                        <option th:each="room : ${occupiedRooms}" th:value="${room.id}"
+                                            th:text="${room.roomName} + ' - ' + ${room.roomLeader?.name} + ' (Giá: ' + ${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0, 'POINT')} + ')'">
+                                            Phòng 101 - Nguyen Van A
+                                        </option>
+                                    </select>
+                                    <div th:if="${#lists.isEmpty(occupiedRooms)}" class="form-text text-danger">
+                                        <i class="fas fa-exclamation-circle"></i> Bạn chưa có phòng nào đang cho thuê.
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tháng</label>
+                                        <select name="month" class="form-select" required>
+                                            <option th:each="i : ${#numbers.sequence(1, 12)}" th:value="${i}"
+                                                th:text="'Tháng ' + ${i}"
+                                                th:selected="${i == #temporals.month(#temporals.createNow())}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Năm</label>
+                                        <select name="year" class="form-select" required>
+                                            <option th:each="i : ${#numbers.sequence(2023, 2030)}" th:value="${i}"
+                                                th:text="${i}"
+                                                th:selected="${i == #temporals.year(#temporals.createNow())}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr>
+                                <h5 class="mb-3 text-muted">Chi phí phát sinh</h5>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Điện tiêu thụ (kWh)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i
+                                                    class="fas fa-bolt text-warning"></i></span>
+                                            <input type="number" step="0.1" name="electricityUsed" class="form-control"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nước tiêu thụ (m³)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-tint text-info"></i></span>
+                                            <input type="number" step="0.1" name="waterUsed" class="form-control"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label">Phí khác (Rác, Internet, v.v.)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">VNĐ</span>
+                                        <input type="number" name="additionalFees" class="form-control" placeholder="0">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <a href="/admin/payments" class="btn btn-secondary">Hủy bỏ</a>
+                                    <button type="submit" class="btn btn-primary px-5">
+                                        <i class="fas fa-paper-plane"></i> Tạo & Gửi hóa đơn
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

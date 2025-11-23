@@ -20,5 +20,8 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Intege
 	RoomBooking findByUserIdAndRoomId(Integer userId, Integer roomId);
 
 	List<RoomBooking> findByStatus(String status);
-}
 
+	@org.springframework.transaction.annotation.Transactional
+	@org.springframework.data.jpa.repository.Modifying
+	void deleteByRoomId(Integer roomId);
+}

@@ -19,4 +19,8 @@ public interface RoomOrderRepository extends JpaRepository<RoomOrder, Integer> {
 
 	RoomOrder findByUserIdAndRoomId(Integer userId, Integer roomId);
 
+	@org.springframework.transaction.annotation.Transactional
+	@org.springframework.data.jpa.repository.Modifying
+	void deleteByRoomId(Integer roomId);
+
 }

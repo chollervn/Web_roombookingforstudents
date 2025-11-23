@@ -163,47 +163,8 @@
 															<td>
 																<small>
 																	[[${#temporals.format(booking.startDate,
-																	'dd/MM/yyyy')}]] -
-																	[[${#temporals.format(booking.endDate,
-																	'dd/MM/yyyy')}]]
-																</small>
-															</td>
-															<td>
-																<form th:action="@{/admin/cancel-rent}" method="post"
-																	style="display:inline;">
-																	<input type="hidden" name="bookingId"
-																		th:value="${booking.id}">
-																	<button type="submit" class="btn btn-sm btn-danger"
-																		onclick="return confirm('Kết thúc hợp đồng thuê này?')">
-																		Kết thúc
-																	</button>
-																</form>
-															</td>
-														</tr>
-													</tbody>
-												</table>
 											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<span th:if="${room.occupancyCount == 0}" class="text-muted">Chưa có
-								người thuê</span>
-						</td>
-						<td>
-							<div class="btn-group">
-								<a th:href="@{'/admin/editRoom/'+${room.id}}" class="btn btn-sm btn-primary"
-									title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
-								<a th:href="@{'/admin/deleteRoom/'+${room.id}}" class="btn btn-sm btn-danger"
-									onclick="return confirm('Bạn có chắc muốn xóa phòng này?')" title="Xóa"><i
-										class="fa-solid fa-trash"></i></a>
-							</div>
-						</td>
-					</tr>
-					<tr th:if="${#lists.isEmpty(rooms)}">
-						<td colspan="6" class="text-center text-muted py-5">
-							<i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i>
-							<p>Chưa có phòng trọ nào</p>
+											<p>Chưa có phòng trọ nào</p>
 						</td>
 					</tr>
 				</tbody>

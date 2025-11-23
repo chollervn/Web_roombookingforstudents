@@ -857,6 +857,32 @@ public class HostRoomController {
 		return "/admin/booking_payments";
 	}
 
+	@GetMapping("/room/{roomId}/create-invoice")
+	public String redirectToCreateInvoice(@PathVariable Integer roomId, HttpSession session, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Check permission
+		Room room = roomService.getRoomById(roomId);
+		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền truy cập phòng này!");
+			return "redirect:/admin/rooms";
+		}
+
+		// Find active booking
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByRoom(roomId);
+		com.ecom.model.RoomBooking activeBooking = bookings.stream()
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.findFirst()
+				.orElse(null);
+
+		if (activeBooking != null) {
+			return "redirect:/admin/booking/" + activeBooking.getId() + "/payments";
+		} else {
+			session.setAttribute("errorMsg", "Phòng này hiện chưa có người thuê đang hoạt động!");
+			return "redirect:/admin/rooms";
+		}
+	}
+
 	@PostMapping("/payment/create")
 	public String createPayment(@RequestParam Integer bookingId,
 			@RequestParam Integer month,
@@ -883,6 +909,24 @@ public class HostRoomController {
 		}
 
 		return "redirect:/admin/booking/" + bookingId + "/payments";
+	}
+
+	@GetMapping("/payment/{paymentId}/record")
+	public String loadRecordPayment(@PathVariable Integer paymentId, Model m, HttpSession session, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Check permission
+		com.ecom.model.MonthlyPayment payment = monthlyPaymentService.getPaymentById(paymentId);
+		if (payment == null || payment.getRoomBooking() == null
+				|| payment.getRoomBooking().getRoom() == null
+				|| !payment.getRoomBooking().getRoom().getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền truy cập hóa đơn này!");
+			return "redirect:/admin/payments";
+		}
+
+		m.addAttribute("payment", payment);
+		m.addAttribute("room", payment.getRoomBooking().getRoom());
+		return "admin/record_payment";
 	}
 
 	@PostMapping("/payment/{paymentId}/record")
@@ -997,6 +1041,90 @@ public class HostRoomController {
 			session.setAttribute("errorMsg", "Không thể gửi nhắc nhở!");
 		}
 
+		return "redirect:/admin/payments";
+	}
+
+	@GetMapping("/payment/create-new")
+	public String loadCreatePaymentPage(Model m, Principal p) {
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// Get all rooms owned by user
+		List<Room> ownerRooms = roomService.getRoomsByOwnerId(loggedInUser.getId());
+
+		// Filter for occupied rooms only and populate transient data
+		List<Room> occupiedRooms = new java.util.ArrayList<>();
+		for (Room room : ownerRooms) {
+			List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByRoom(room.getId());
+			List<com.ecom.model.RoomBooking> activeBookings = bookings.stream()
+					.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+					.toList();
+
+			if (!activeBookings.isEmpty()) {
+				room.setOccupancyCount(activeBookings.size());
+				room.setRoomLeader(activeBookings.get(0).getUser());
+				occupiedRooms.add(room);
+			}
+		}
+
+		m.addAttribute("occupiedRooms", occupiedRooms);
+		return "admin/create_payment";
+	}
+
+	@PostMapping("/payment/save-new")
+	public String saveNewPayment(@RequestParam Integer roomId,
+			@RequestParam Integer month,
+			@RequestParam Integer year,
+			@RequestParam(required = false) Double electricityUsed,
+			@RequestParam(required = false) Double waterUsed,
+			@RequestParam(required = false) Double additionalFees,
+			HttpSession session,
+			Principal p) {
+
+		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
+
+		// 1. Validate Room Ownership
+		Room room = roomService.getRoomById(roomId);
+		if (room == null || !room.getOwnerId().equals(loggedInUser.getId())) {
+			session.setAttribute("errorMsg", "Bạn không có quyền truy cập phòng này!");
+			return "redirect:/admin/payments";
+		}
+
+		// 2. Find Active Booking
+		List<com.ecom.model.RoomBooking> bookings = roomBookingService.getBookingsByRoom(roomId);
+		com.ecom.model.RoomBooking activeBooking = bookings.stream()
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.findFirst()
+				.orElse(null);
+
+		if (activeBooking == null) {
+			session.setAttribute("errorMsg", "Phòng này hiện không có hợp đồng thuê đang hoạt động!");
+			return "redirect:/admin/payment/create-new";
+		}
+
+		// 3. Create Basic Payment
+		com.ecom.model.MonthlyPayment payment = monthlyPaymentService.createMonthlyPayment(activeBooking.getId(), month,
+				year);
+
+		if (payment == null) {
+			session.setAttribute("errorMsg", "Hóa đơn cho tháng này đã tồn tại!");
+			return "redirect:/admin/payment/create-new";
+		}
+
+		// 4. Update with Utility Usage
+		if (electricityUsed != null)
+			payment.setElectricityUsed(electricityUsed);
+		if (waterUsed != null)
+			payment.setWaterUsed(waterUsed);
+		if (additionalFees != null)
+			payment.setAdditionalFees(additionalFees);
+
+		// 5. Calculate Total
+		Double totalAmount = payment.calculateTotalAmount(room.getElectricityCost(), room.getWaterCost());
+		payment.setAmount(totalAmount);
+
+		monthlyPaymentService.savePayment(payment);
+
+		session.setAttribute("succMsg", "Đã tạo và gửi hóa đơn thành công!");
 		return "redirect:/admin/payments";
 	}
 

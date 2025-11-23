@@ -18,5 +18,8 @@ public interface DepositRepository extends JpaRepository<Deposit, Integer> {
 	List<Deposit> findByRoomOwnerId(@Param("ownerId") Integer ownerId);
 
 	List<Deposit> findByStatus(String status);
-}
 
+	@org.springframework.transaction.annotation.Transactional
+	@org.springframework.data.jpa.repository.Modifying
+	void deleteByRoomId(Integer roomId);
+}

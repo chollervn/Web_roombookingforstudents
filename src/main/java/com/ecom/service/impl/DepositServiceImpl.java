@@ -32,6 +32,9 @@ public class DepositServiceImpl implements DepositService {
 	@Autowired
 	private RoomBookingRepository roomBookingRepository;
 
+	@Autowired
+	private com.ecom.repository.CartRepository cartRepository;
+
 	@Override
 	public Deposit saveDeposit(Deposit deposit) {
 		Deposit savedDeposit = depositRepository.save(deposit);
@@ -156,9 +159,21 @@ public class DepositServiceImpl implements DepositService {
 					roomBookingRepository.save(booking);
 				}
 			}
+
+			// Tighter Interaction: Clear cart item for this room and user to reflect the
+			// finalized state
+			if (("APPROVED".equals(status) || "REJECTED".equals(status)) && room != null && deposit.getUser() != null) {
+				com.ecom.model.Cart cart = cartRepository.findByRoomIdAndUserId(room.getId(),
+						deposit.getUser().getId());
+				if (cart != null) {
+					cartRepository.delete(cart);
+				}
+			}
+
 			return depositRepository.save(deposit);
 		}
 		return null;
+
 	}
 
 	@Override
