@@ -458,7 +458,14 @@ public class HomeController {
 		}
 
 		Integer selectedDuck = request.get("selectedDuck");
-		Integer winningDuck = new java.util.Random().nextInt(6) + 1; // Random 1-6
+		Integer winningDuck;
+
+		// If frontend sends the winner (from simulation), use it. Otherwise random.
+		if (request.containsKey("winningDuck")) {
+			winningDuck = request.get("winningDuck");
+		} else {
+			winningDuck = new java.util.Random().nextInt(6) + 1; // Random 1-6
+		}
 
 		String email = p.getName();
 		UserDtls user = userService.getUserByEmail(email);

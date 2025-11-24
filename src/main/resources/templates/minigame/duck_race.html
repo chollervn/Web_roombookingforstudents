@@ -3,149 +3,164 @@
 
 <head>
     <title>Đua Vịt Nhận Ưu Đãi</title>
-    <style>
-        .duck-race-container {
-            max-width: 1200px;
-            margin: 100px auto 50px;
-            padding: 20px;
-        }
-
-        .game-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .game-header h1 {
-            color: #007bff;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        #raceCanvas {
-            border: 3px solid #007bff;
-            border-radius: 10px;
-            display: block;
-            margin: 0 auto 30px;
-            max-width: 100%;
-            background: #87CEEB;
-        }
-
-        .duck-selection {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .duck-btn {
-            padding: 8px;
-            font-size: 0.85rem;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            min-width: 90px;
-            position: relative;
-        }
-
-        .duck-btn img {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-        }
-
-        .duck-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .duck-btn.selected {
-            border-color: #007bff;
-            border-width: 4px;
-            background: #e7f3ff;
-            box-shadow: 0 0 20px rgba(0, 123, 255, 0.6);
-            transform: scale(1.1);
-        }
-
-        .duck-btn.selected::after {
-            content: "✓";
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #28a745;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .control-buttons {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .control-buttons button {
-            margin: 0 10px;
-            padding: 12px 40px;
-            font-size: 1.2rem;
-            border-radius: 8px;
-        }
-
-        .instructions {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-
-        .instructions h4 {
-            color: #007bff;
-            margin-bottom: 15px;
-        }
-
-        .instructions ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .instructions li {
-            padding: 8px 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .instructions li:last-child {
-            border-bottom: none;
-        }
-
-        .instructions li::before {
-            content: "🦆 ";
-            margin-right: 8px;
-        }
-
-        #loadingText {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #007bff;
-            margin: 20px 0;
-        }
-    </style>
 </head>
 
 <body>
     <section>
+        <style>
+            .duck-race-container {
+                max-width: 1200px;
+                margin: 100px auto 50px;
+                padding: 20px;
+            }
+
+            .game-header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .game-header h1 {
+                color: #007bff;
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+
+            #raceCanvas {
+                border: 3px solid #007bff;
+                border-radius: 10px;
+                display: block;
+                margin: 0 auto 30px;
+                max-width: 100%;
+                background: #87CEEB;
+            }
+
+            .duck-selection {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-bottom: 30px;
+                flex-wrap: wrap;
+            }
+
+            .duck-btn {
+                padding: 8px;
+                font-size: 0.85rem;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-weight: 600;
+                background: white;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 5px;
+                min-width: 90px;
+                position: relative;
+            }
+
+            .duck-btn img {
+                width: 45px;
+                height: 45px;
+                object-fit: contain;
+            }
+
+            .duck-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            }
+
+            .duck-btn.selected {
+                border-color: #ffc107;
+                border-width: 4px;
+                background: #fff3cd;
+                box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+                transform: scale(1.15);
+                animation: pulse 1.5s infinite;
+            }
+
+            .duck-btn.selected::after {
+                content: "ĐÃ CHỌN";
+                position: absolute;
+                top: -15px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #dc3545;
+                color: white;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+                white-space: nowrap;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                z-index: 10;
+            }
+
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+                }
+            }
+
+            .control-buttons {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .control-buttons button {
+                margin: 0 10px;
+                padding: 12px 40px;
+                font-size: 1.2rem;
+                border-radius: 8px;
+            }
+
+            .instructions {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                margin-top: 30px;
+            }
+
+            .instructions h4 {
+                color: #007bff;
+                margin-bottom: 15px;
+            }
+
+            .instructions ul {
+                list-style-type: none;
+                padding-left: 0;
+            }
+
+            .instructions li {
+                padding: 8px 0;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .instructions li:last-child {
+                border-bottom: none;
+            }
+
+            .instructions li::before {
+                content: "🦆 ";
+                margin-right: 8px;
+            }
+
+            #loadingText {
+                text-align: center;
+                font-size: 1.2rem;
+                color: #007bff;
+                margin: 20px 0;
+            }
+        </style>
+
         <div class="duck-race-container">
             <div class="game-header">
                 <h1>🎮 Đua Vịt Nhận Ưu Đãi 🎮</h1>
@@ -227,16 +242,34 @@
             const canvas = document.getElementById('raceCanvas');
             const ctx = canvas.getContext('2d');
 
+            // Game Constants
             const DUCKS = 6;
             const DUCK_SIZE = 60;
-            const duckPositions = [];
-            const duckSpeeds = [];
-            const duckImages = [];
+            const TRACK_LENGTH = 10000; // Longer track for more drama
+            const FINISH_LINE = TRACK_LENGTH - 500;
+            const FPS = 60;
 
+            // Game State
+            let ducks = [];
             let selectedDuck = null;
             let isRacing = false;
             let winnerDuck = null;
+            let targetWinner = null; // The predetermined winner
             let imagesLoaded = 0;
+            let cameraX = 0;
+            let raceTime = 0;
+
+            const duckImages = [];
+
+            // Sounds
+            const sounds = {
+                select: new Audio('/sounds/quacking-duck.mp3'),
+                race: new Audio('/sounds/start-racing-game.mp3'),
+                win: new Audio('/sounds/victory-game.mp3'),
+                lose: new Audio('/sounds/lost-game.mp3')
+            };
+
+            Object.values(sounds).forEach(s => s.load());
 
             function loadImages() {
                 for (let i = 1; i <= DUCKS; i++) {
@@ -258,18 +291,132 @@
                 document.getElementById('duckSelection').style.display = 'flex';
                 document.getElementById('controlButtons').style.display = 'block';
                 initDucks();
-                resetGame();
+                draw(); // Initial draw
+            }
+
+            class Duck {
+                constructor(id) {
+                    this.id = id;
+                    this.x = 50;
+                    this.y = 50 + (id - 1) * 80;
+                    this.baseSpeed = 6; // Standardized base speed for tighter races
+                    this.speed = 0;
+                    this.state = 'NORMAL'; // NORMAL, BOOST, TIRED, SUPER_BOOST
+                    this.stateTimer = 0;
+                    this.rank = id;
+                }
+
+                update(leaderX) {
+                    // 1. State Machine (More frequent changes for drama)
+                    this.stateTimer--;
+                    if (this.stateTimer <= 0) {
+                        this.changeState();
+                    }
+
+                    // 2. Target Speed Calculation
+                    let targetSpeed = this.baseSpeed;
+
+                    switch (this.state) {
+                        case 'BOOST':
+                            targetSpeed *= 1.3;
+                            break;
+                        case 'TIRED':
+                            targetSpeed *= 0.7;
+                            break;
+                        case 'SUPER_BOOST':
+                            targetSpeed *= 1.6;
+                            break;
+                        case 'NORMAL':
+                        default:
+                            break;
+                    }
+
+                    // 3. Rubber Banding (The "Mario Kart" Effect)
+                    // If far behind leader, speed up. If leading by a lot, slow down.
+                    const distToLeader = leaderX - this.x;
+
+                    if (distToLeader > 300) {
+                        // Catch up logic
+                        targetSpeed += (distToLeader / 1000) * 2;
+                    } else if (distToLeader === 0 && this.x > 500) {
+                        // Leader penalty (wind resistance)
+                        targetSpeed *= 0.95;
+                    }
+
+                    // 4. "The Chosen One" Logic (Rigging)
+                    if (this.id === targetWinner) {
+                        // Slight permanent advantage
+                        targetSpeed *= 1.02;
+
+                        // Final stretch comeback mechanic
+                        if (this.x > FINISH_LINE - 2000 && distToLeader > 50) {
+                            this.state = 'SUPER_BOOST';
+                            this.stateTimer = 20; // Keep refreshing super boost
+                            targetSpeed *= 1.2; // Extra kick
+                        }
+                    }
+
+                    // 5. Apply Physics
+                    // Smooth acceleration
+                    this.speed += (targetSpeed - this.speed) * 0.05;
+                    this.x += this.speed;
+
+                    // Keep within bounds
+                    if (this.x < 0) this.x = 0;
+                }
+
+                changeState() {
+                    const rand = Math.random();
+                    // Shorter durations for more "thăng trầm" (ups and downs)
+                    // 30-90 frames = 0.5s - 1.5s
+
+                    if (this.id === targetWinner) {
+                        // Winner gets better RNG
+                        if (rand < 0.4) {
+                            this.state = 'BOOST';
+                            this.stateTimer = Math.random() * 60 + 30;
+                        } else if (rand < 0.55) {
+                            this.state = 'TIRED'; // Less chance to be tired
+                            this.stateTimer = Math.random() * 40 + 20; // Shorter tired time
+                        } else {
+                            this.state = 'NORMAL';
+                            this.stateTimer = Math.random() * 80 + 40;
+                        }
+                    } else {
+                        // Normal RNG
+                        if (rand < 0.25) {
+                            this.state = 'BOOST';
+                            this.stateTimer = Math.random() * 60 + 30;
+                        } else if (rand < 0.55) {
+                            this.state = 'TIRED';
+                            this.stateTimer = Math.random() * 60 + 30;
+                        } else {
+                            this.state = 'NORMAL';
+                            this.stateTimer = Math.random() * 80 + 40;
+                        }
+                    }
+                }
             }
 
             function initDucks() {
-                for (let i = 0; i < DUCKS; i++) {
-                    duckPositions[i] = 50;
-                    duckSpeeds[i] = 0;
+                ducks = [];
+                for (let i = 1; i <= DUCKS; i++) {
+                    ducks.push(new Duck(i));
                 }
+                cameraX = 0;
+                raceTime = 0;
+
+                // Determine winner immediately upon initialization
+                targetWinner = Math.floor(Math.random() * DUCKS) + 1;
+                console.log("%c🏁 KẾT QUẢ DỰ ĐOÁN TRƯỚC (Init): Vịt số " + targetWinner + " sẽ thắng! 🏁", "color: #00ff00; font-size: 16px; font-weight: bold;");
             }
 
             function selectDuck(duckNum) {
                 if (isRacing) return;
+
+                sounds.select.currentTime = 0;
+                sounds.select.play().catch(e => { });
+
                 selectedDuck = duckNum;
 
                 for (let i = 1; i <= DUCKS; i++) {
@@ -289,16 +436,18 @@
                     alert('Vui lòng chọn vịt!');
                     return;
                 }
-
                 if (isRacing) return;
+
+                sounds.race.currentTime = 0;
+                sounds.race.loop = true;
+                sounds.race.play().catch(e => { });
 
                 isRacing = true;
                 winnerDuck = null;
                 document.getElementById('startBtn').disabled = true;
 
-                for (let i = 0; i < DUCKS; i++) {
-                    duckSpeeds[i] = Math.random() * 3 + 2;
-                }
+                // Randomize initial states
+                ducks.forEach(d => d.changeState());
 
                 animate();
             }
@@ -306,93 +455,204 @@
             function animate() {
                 if (!isRacing) return;
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                updatePhysics();
+                draw();
 
-                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                gradient.addColorStop(0, '#87CEEB');
-                gradient.addColorStop(1, '#E0F6FF');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                for (let i = 0; i < DUCKS; i++) {
-                    const y = 50 + i * 80;
-                    ctx.strokeStyle = '#ddd';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(0, y, canvas.width, 70);
-
-                    ctx.fillStyle = '#999';
-                    ctx.font = 'bold 18px Arial';
-                    ctx.fillText('Lane ' + (i + 1), 10, y + 40);
-                }
-
-                ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 5;
-                ctx.setLineDash([15, 15]);
-                ctx.beginPath();
-                ctx.moveTo(canvas.width - 100, 0);
-                ctx.lineTo(canvas.width - 100, canvas.height);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                ctx.fillStyle = '#FF0000';
-                ctx.font = 'bold 24px Arial';
-                ctx.fillText('FINISH', canvas.width - 95, 30);
-
-                let raceFinished = false;
-
-                for (let i = 0; i < DUCKS; i++) {
-                    const y = 50 + i * 80 + 35;
-
-                    duckPositions[i] += duckSpeeds[i];
-
-                    if (duckPositions[i] >= canvas.width - 150 && !winnerDuck) {
-                        winnerDuck = i + 1;
-                        isRacing = false;
-                        raceFinished = true;
-                    }
-
-                    ctx.drawImage(
-                        duckImages[i],
-                        duckPositions[i] - DUCK_SIZE / 2,
-                        y - DUCK_SIZE / 2,
-                        DUCK_SIZE,
-                        DUCK_SIZE
-                    );
-
-                    if (i + 1 === selectedDuck) {
-                        ctx.strokeStyle = '#FFD700';
-                        ctx.lineWidth = 4;
-                        ctx.beginPath();
-                        ctx.arc(duckPositions[i], y, DUCK_SIZE / 2 + 5, 0, Math.PI * 2);
-                        ctx.stroke();
-                    }
-
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.beginPath();
-                    ctx.arc(duckPositions[i], y + 25, 12, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.fillStyle = '#FFF';
-                    ctx.font = 'bold 14px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(i + 1, duckPositions[i], y + 25);
-                }
-
-                if (raceFinished) {
+                if (winnerDuck) {
                     showResult();
                 } else {
                     requestAnimationFrame(animate);
                 }
             }
 
+            function updatePhysics() {
+                raceTime++;
+
+                // Find leader for rubber banding
+                let leaderX = 0;
+                ducks.forEach(d => {
+                    if (d.x > leaderX) leaderX = d.x;
+                });
+
+                // Update all ducks
+                ducks.forEach(duck => duck.update(leaderX));
+
+                // Check for winner
+                ducks.forEach(duck => {
+                    if (duck.x >= FINISH_LINE && !winnerDuck) {
+                        winnerDuck = duck.id;
+                        isRacing = false;
+                    }
+                });
+
+                // Update Camera
+                // Target camera position: Leader is at 70% of screen width
+                let targetCamX = leaderX - canvas.width * 0.6;
+
+                // Clamp camera
+                if (targetCamX < 0) targetCamX = 0;
+                if (targetCamX > TRACK_LENGTH - canvas.width) targetCamX = TRACK_LENGTH - canvas.width;
+
+                // Smooth camera movement
+                cameraX += (targetCamX - cameraX) * 0.1;
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. Draw Background (Water)
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(1, '#E0F6FF');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.save();
+                ctx.translate(-cameraX, 0);
+
+                // 2. Draw Distance Markers (Every 1000px)
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.font = 'bold 40px Arial';
+                ctx.textAlign = 'center';
+                for (let d = 1000; d < TRACK_LENGTH; d += 1000) {
+                    // Draw a vertical line
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(d, 0);
+                    ctx.lineTo(d, canvas.height);
+                    ctx.stroke();
+
+                    // Draw text
+                    ctx.fillText(d / 10 + 'm', d, canvas.height - 20);
+                }
+
+                // 3. Draw Lanes
+                for (let i = 0; i < DUCKS; i++) {
+                    const y = 50 + i * 80;
+                    ctx.strokeStyle = '#ddd';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(0, y, TRACK_LENGTH + 200, 70); // Draw full track length
+
+                    // Lane Number (Sticky to left side of screen or track?)
+                    // Let's draw lane number at start of track
+                    ctx.fillStyle = '#999';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Lane ' + (i + 1), 10, y + 40);
+                }
+
+                // 4. Draw Finish Line
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 10;
+                ctx.setLineDash([20, 20]);
+                ctx.beginPath();
+                ctx.moveTo(FINISH_LINE, 0);
+                ctx.lineTo(FINISH_LINE, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#FF0000';
+                ctx.font = 'bold 30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('FINISH', FINISH_LINE, 30);
+
+                // 5. Draw Ducks
+                ducks.forEach(duck => {
+                    const y = duck.y + 35; // Center of lane
+
+                    // Draw Duck Image
+                    ctx.drawImage(
+                        duckImages[duck.id - 1],
+                        duck.x - DUCK_SIZE / 2,
+                        y - DUCK_SIZE / 2,
+                        DUCK_SIZE,
+                        DUCK_SIZE
+                    );
+
+                    // Draw Selection Highlight
+                    if (duck.id === selectedDuck) {
+                        ctx.strokeStyle = '#FFD700';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(duck.x, y, DUCK_SIZE / 2 + 5, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        // Indicator arrow above
+                        ctx.fillStyle = '#FFD700';
+                        ctx.beginPath();
+                        ctx.moveTo(duck.x, y - DUCK_SIZE / 2 - 10);
+                        ctx.lineTo(duck.x - 10, y - DUCK_SIZE / 2 - 20);
+                        ctx.lineTo(duck.x + 10, y - DUCK_SIZE / 2 - 20);
+                        ctx.fill();
+                    }
+
+                    // Draw ID Badge
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(duck.x, y + 25, 12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#FFF';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(duck.id, duck.x, y + 25);
+
+                    // Draw State Effect (Text or Particle)
+                    if (duck.state === 'BOOST' || duck.state === 'SUPER_BOOST') {
+                        ctx.fillStyle = '#28a745';
+                        ctx.font = 'bold 12px Arial';
+                        ctx.fillText('>>>', duck.x, y - 40);
+                    } else if (duck.state === 'TIRED') {
+                        ctx.fillStyle = '#dc3545';
+                        ctx.font = 'bold 12px Arial';
+                        ctx.fillText('...', duck.x, y - 40);
+                    }
+                });
+
+                ctx.restore();
+
+                // 6. Draw HUD (Fixed on screen)
+                // Progress Bar
+                const barWidth = 600;
+                const barHeight = 10;
+                const barX = (canvas.width - barWidth) / 2;
+                const barY = 20;
+
+                // Track line
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+
+                // Finish flag on HUD
+                ctx.fillStyle = 'red';
+                ctx.fillRect(barX + barWidth - 5, barY - 5, 5, 20);
+
+                // Duck dots on HUD
+                ducks.forEach(duck => {
+                    const progress = Math.min(duck.x / FINISH_LINE, 1);
+                    const dotX = barX + progress * barWidth;
+
+                    ctx.fillStyle = (duck.id === selectedDuck) ? '#FFD700' : 'white';
+                    ctx.beginPath();
+                    ctx.arc(dotX, barY + barHeight / 2, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
             function showResult() {
+                sounds.race.pause();
+                sounds.race.currentTime = 0;
+
                 fetch('/minigame/duck-race/play', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ selectedDuck: selectedDuck })
+                    body: JSON.stringify({
+                        selectedDuck: selectedDuck,
+                        winningDuck: winnerDuck
+                    })
                 })
                     .then(res => res.json())
                     .then(data => {
@@ -403,6 +663,7 @@
 
                         let html = '';
                         if (data.won) {
+                            sounds.win.play().catch(e => { });
                             html = '<div class="alert alert-success">' +
                                 '<h3>🎉 Chúc mừng! Bạn đã thắng! 🎉</h3>' +
                                 '<p class="mb-0">Vịt số ' + winnerDuck + ' về đích đầu tiên!</p>' +
@@ -418,9 +679,9 @@
                                 '<i class="fa fa-copy"></i> Sao chép mã' +
                                 '</button>' +
                                 '</div>' +
-                                '</div>' +
-                                '<p class="text-muted mt-3">Kiểm tra voucher của bạn trong trang Hồ sơ</p>';
+                                '</div>';
                         } else {
+                            sounds.lose.play().catch(e => { });
                             html = '<div class="alert alert-danger">' +
                                 '<h3>😢 Rất tiếc!</h3>' +
                                 '<p class="mb-0">Vịt số ' + winnerDuck + ' về đích đầu tiên.</p>' +
@@ -439,9 +700,16 @@
             }
 
             function resetGame() {
+                Object.values(sounds).forEach(s => {
+                    s.pause();
+                    s.currentTime = 0;
+                });
+
                 selectedDuck = null;
                 isRacing = false;
                 winnerDuck = null;
+                targetWinner = null;
+
                 initDucks();
 
                 for (let i = 1; i <= DUCKS; i++) {
@@ -449,57 +717,7 @@
                 }
 
                 document.getElementById('startBtn').disabled = true;
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                gradient.addColorStop(0, '#87CEEB');
-                gradient.addColorStop(1, '#E0F6FF');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                for (let i = 0; i < DUCKS; i++) {
-                    const y = 50 + i * 80;
-                    ctx.strokeStyle = '#ddd';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(0, y, canvas.width, 70);
-
-                    ctx.fillStyle = '#999';
-                    ctx.font = 'bold 18px Arial';
-                    ctx.fillText('Lane ' + (i + 1), 10, y + 40);
-
-                    ctx.drawImage(
-                        duckImages[i],
-                        50 - DUCK_SIZE / 2,
-                        y + 35 - DUCK_SIZE / 2,
-                        DUCK_SIZE,
-                        DUCK_SIZE
-                    );
-
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.beginPath();
-                    ctx.arc(50, y + 60, 12, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.fillStyle = '#FFF';
-                    ctx.font = 'bold 14px';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(i + 1, 50, y + 60);
-                }
-
-                ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 5;
-                ctx.setLineDash([15, 15]);
-                ctx.beginPath();
-                ctx.moveTo(canvas.width - 100, 0);
-                ctx.lineTo(canvas.width - 100, canvas.height);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                ctx.fillStyle = '#FF0000';
-                ctx.font = 'bold 24px Arial';
-                ctx.fillText('FINISH', canvas.width - 95, 30);
+                draw();
             }
 
             function copyCode(code) {
