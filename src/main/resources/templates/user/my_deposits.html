@@ -47,7 +47,18 @@
 								</td>
 								<td><small th:text="${deposit.room.fullAddress}">Địa chỉ</small></td>
 								<td class="text-end">
-									<strong class="text-success" th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</strong> VNĐ
+									<div th:if="${deposit.voucher != null}">
+										<small class="text-muted text-decoration-line-through">
+											<span th:text="${#numbers.formatDecimal(deposit.originalAmount, 0, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+										</small><br>
+										<span class="badge bg-success mb-1">
+											<i class="fas fa-ticket-alt"></i> -[[${#numbers.formatDecimal(deposit.discountAmount, 0, 'COMMA', 0, 'POINT')}]] VNĐ
+										</span><br>
+										<strong class="text-danger" th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</strong> VNĐ
+									</div>
+									<div th:if="${deposit.voucher == null}">
+										<strong class="text-success" th:text="${#numbers.formatDecimal(deposit.amount, 0, 'COMMA', 0, 'POINT')}">0</strong> VNĐ
+									</div>
 								</td>
 								<td th:text="${#temporals.format(deposit.depositDate, 'dd/MM/yyyy')}">--/--/----</td>
 								<td>
@@ -100,4 +111,3 @@
 </section>
 </body>
 </html>
-

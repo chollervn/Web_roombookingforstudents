@@ -22,4 +22,8 @@ public interface DepositRepository extends JpaRepository<Deposit, Integer> {
 	@org.springframework.transaction.annotation.Transactional
 	@org.springframework.data.jpa.repository.Modifying
 	void deleteByRoomId(Integer roomId);
+
+	Long countByUserIdAndStatusInAndIsNotificationSeenFalse(Integer userId, List<String> statuses);
+
+	List<Deposit> findByUserIdAndStatusInAndIsNotificationSeenFalse(Integer userId, List<String> statuses);
 }

@@ -25,8 +25,8 @@ public class VoucherServiceImpl implements VoucherService {
     private Random random = new Random();
 
     @Override
-    public Voucher createVoucher(Long userId, Integer discountPercent) {
-        UserDtls user = userRepository.findById(userId.intValue()).orElse(null);
+    public Voucher createVoucher(Integer userId, Integer discountPercent) {
+        UserDtls user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return null;
         }
@@ -43,13 +43,13 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public List<Voucher> getUserValidVouchers(Long userId) {
+    public List<Voucher> getUserValidVouchers(Integer userId) {
         return voucherRepository.findByUserIdAndIsUsedFalseAndExpiryDateAfterOrderByCreatedDateDesc(
                 userId, LocalDateTime.now());
     }
 
     @Override
-    public List<Voucher> getAllUserVouchers(Long userId) {
+    public List<Voucher> getAllUserVouchers(Integer userId) {
         return voucherRepository.findByUserIdOrderByCreatedDateDesc(userId);
     }
 
@@ -59,7 +59,7 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public Boolean applyVoucher(String code, Long userId) {
+    public Boolean applyVoucher(String code, Integer userId) {
         Voucher voucher = voucherRepository.findByCode(code).orElse(null);
 
         if (voucher == null) {
@@ -67,7 +67,7 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         // Check if voucher belongs to user
-        if (!voucher.getUser().getId().equals(userId.intValue())) {
+        if (!voucher.getUser().getId().equals(userId)) {
             return false;
         }
 

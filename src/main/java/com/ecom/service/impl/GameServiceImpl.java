@@ -51,7 +51,7 @@ public class GameServiceImpl implements GameService {
         // If won, create voucher with random discount 5-20%
         if (won) {
             int discount = 5 + random.nextInt(16); // 5 to 20
-            Voucher voucher = voucherService.createVoucher(userId, discount);
+            Voucher voucher = voucherService.createVoucher(userId.intValue(), discount);
             record.setVoucher(voucher);
         }
 

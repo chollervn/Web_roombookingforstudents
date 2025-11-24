@@ -42,5 +42,13 @@ public class Deposit {
 	private String adminNote; // Ghi chú từ admin/chủ trọ
 
 	private LocalDate approvedDate; // Ngày chủ trọ xác nhận
-}
 
+	@ManyToOne
+	private Voucher voucher; // Voucher được sử dụng (nếu có)
+
+	private Double discountAmount; // Số tiền được giảm giá
+
+	private Double originalAmount; // Số tiền gốc trước khi giảm giá
+
+	private Boolean isNotificationSeen = false; // Đã xem thông báo chưa
+}

@@ -74,6 +74,9 @@ public class UserController {
 	@Autowired
 	private com.ecom.service.TenantDashboardService tenantDashboardService;
 
+	@Autowired
+	private com.ecom.service.VoucherService voucherService;
+
 	@GetMapping("/")
 	public String home() {
 		return "user/home";
@@ -88,23 +91,9 @@ public class UserController {
 			Integer countCart = cartService.getCountCart(userDtls.getId());
 			m.addAttribute("countCart", countCart);
 
-			// Kiểm tra xem user đã xem thông báo chưa (kiểm tra session)
-			Boolean hasViewed = (Boolean) session.getAttribute("depositNotificationsViewed_" + userDtls.getId());
-
-			if (hasViewed == null || !hasViewed) {
-				// Chỉ đếm thông báo nếu chưa xem
-				List<Deposit> userDeposits = depositService.getDepositsByUser(userDtls.getId());
-				LocalDate today = LocalDate.now();
-				long unreadDepositNotifications = userDeposits.stream()
-						.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
-								&& d.getApprovedDate() != null
-								&& d.getApprovedDate().equals(today))
-						.count();
-				m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
-			} else {
-				// Đã xem rồi, không hiển thị badge
-				m.addAttribute("unreadDepositNotifications", 0L);
-			}
+			// Lấy số lượng thông báo chưa đọc từ DB
+			Long unreadDepositNotifications = depositService.countUnreadNotifications(userDtls.getId());
+			m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
 		}
 
 		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
@@ -139,8 +128,8 @@ public class UserController {
 
 		UserDtls user = getLoggedInUserDetails(p);
 
-		// Đánh dấu user đã xem thông báo đặt cọc - lưu vào session
-		session.setAttribute("depositNotificationsViewed_" + user.getId(), true);
+		// Đánh dấu tất cả thông báo là đã xem trong DB
+		depositService.markAllAsSeen(user.getId());
 
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
@@ -350,12 +339,18 @@ public class UserController {
 	// New: Deposit page for a room (simple flow)
 	@GetMapping("/deposit")
 	public String depositPage(@RequestParam Integer rid, Model m, Principal p) {
+		UserDtls user = getLoggedInUserDetails(p);
 		Room room = roomService.getRoomById(rid);
 		m.addAttribute("room", room);
 		// default deposit amount: if null use 20% of monthly rent
 		double suggested = (room.getDeposit() != null) ? room.getDeposit()
 				: ((room.getMonthlyRent() != null) ? room.getMonthlyRent() * 0.2 : 0.0);
 		m.addAttribute("suggestedDeposit", suggested);
+
+		// Lấy danh sách voucher hợp lệ của user
+		List<com.ecom.model.Voucher> validVouchers = voucherService.getUserValidVouchers(user.getId());
+		m.addAttribute("vouchers", validVouchers);
+
 		return "/user/deposit";
 	}
 
@@ -364,6 +359,7 @@ public class UserController {
 			@RequestParam(required = false) Double amount,
 			@RequestParam(required = false) String paymentMethod,
 			@RequestParam(required = false) String note,
+			@RequestParam(required = false) String voucherCode,
 			Principal p,
 			HttpSession session) {
 		try {
@@ -399,20 +395,59 @@ public class UserController {
 				return "redirect:/user/deposit?rid=" + rid;
 			}
 
+			// Xử lý voucher nếu có
+			Double finalAmount = amount;
+			Double discountAmount = 0.0;
+			com.ecom.model.Voucher appliedVoucher = null;
+
+			if (voucherCode != null && !voucherCode.trim().isEmpty()) {
+				com.ecom.model.Voucher voucher = voucherService.getVoucherByCode(voucherCode.trim());
+
+				if (voucher == null) {
+					session.setAttribute("errorMsg", "Mã voucher không tồn tại!");
+					return "redirect:/user/deposit?rid=" + rid;
+				}
+
+				if (!voucher.getUser().getId().equals(user.getId())) {
+					session.setAttribute("errorMsg", "Mã voucher này không thuộc về bạn!");
+					return "redirect:/user/deposit?rid=" + rid;
+				}
+
+				if (!voucher.isValid()) {
+					session.setAttribute("errorMsg", "Mã voucher đã hết hạn hoặc đã được sử dụng!");
+					return "redirect:/user/deposit?rid=" + rid;
+				}
+
+				// Áp dụng giảm giá
+				discountAmount = amount * voucher.getDiscountPercent() / 100.0;
+				finalAmount = amount - discountAmount;
+				appliedVoucher = voucher;
+
+				// Đánh dấu voucher đã sử dụng
+				voucherService.applyVoucher(voucherCode.trim(), user.getId());
+			}
+
 			// Create deposit record
 			Deposit deposit = new Deposit();
 			deposit.setUser(user);
 			deposit.setRoom(room);
-			deposit.setAmount(amount);
+			deposit.setOriginalAmount(amount); // Số tiền gốc
+			deposit.setDiscountAmount(discountAmount); // Số tiền giảm
+			deposit.setAmount(finalAmount); // Số tiền cuối cùng sau giảm giá
 			deposit.setDepositDate(LocalDate.now());
 			deposit.setStatus("PENDING"); // Trạng thái chờ chủ trọ xác nhận
 			deposit.setPaymentMethod(paymentMethod != null ? paymentMethod : "CASH");
 			deposit.setNote(note);
+			deposit.setVoucher(appliedVoucher); // Lưu voucher đã sử dụng
 
 			Deposit savedDeposit = depositService.saveDeposit(deposit);
 
 			if (savedDeposit != null) {
-				session.setAttribute("succMsg", "Yêu cầu đặt cọc đã được gửi! Vui lòng chờ chủ trọ xác nhận.");
+				String message = "Yêu cầu đặt cọc đã được gửi! Vui lòng chờ chủ trọ xác nhận.";
+				if (discountAmount > 0) {
+					message += " Bạn đã tiết kiệm được " + String.format("%,.0f", discountAmount) + " VNĐ với voucher!";
+				}
+				session.setAttribute("succMsg", message);
 				return "redirect:/user/cart";
 			} else {
 				session.setAttribute("errorMsg", "Có lỗi xảy ra khi gửi yêu cầu đặt cọc!");

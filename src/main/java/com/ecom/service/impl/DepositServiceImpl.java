@@ -190,4 +190,21 @@ public class DepositServiceImpl implements DepositService {
 		}
 		return false;
 	}
+
+	@Override
+	public Long countUnreadNotifications(Integer userId) {
+		return depositRepository.countByUserIdAndStatusInAndIsNotificationSeenFalse(
+				userId, List.of("APPROVED", "REJECTED"));
+	}
+
+	@Override
+	public void markAllAsSeen(Integer userId) {
+		List<Deposit> unreadDeposits = depositRepository.findByUserIdAndStatusInAndIsNotificationSeenFalse(
+				userId, List.of("APPROVED", "REJECTED"));
+
+		for (Deposit deposit : unreadDeposits) {
+			deposit.setIsNotificationSeen(true);
+		}
+		depositRepository.saveAll(unreadDeposits);
+	}
 }

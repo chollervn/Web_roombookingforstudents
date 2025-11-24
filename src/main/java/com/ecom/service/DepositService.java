@@ -21,4 +21,8 @@ public interface DepositService {
 	public List<Deposit> getAllDeposits();
 
 	public Boolean deleteDeposit(Integer id);
+
+	public Long countUnreadNotifications(Integer userId);
+
+	public void markAllAsSeen(Integer userId);
 }
