@@ -57,13 +57,13 @@
 						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-home"></i> Tên phòng trọ *</label>
 							<input type="text" name="roomName" th:value="${room.roomName}" class="form-control"
-								required>
+								th:readonly="${not #lists.isEmpty(activeBookings)}" required>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-list"></i> Loại phòng *</label>
 							<input type="text" name="roomType" th:value="${room.roomType}" class="form-control"
-								required>
+								th:readonly="${not #lists.isEmpty(activeBookings)}" required>
 						</div>
 
 						<div class="mb-3">
@@ -183,26 +183,161 @@
 										th:checked="${room.isAvailable}" id="isAvailable">
 									<label class="form-check-label" for="isAvailable">
 										<i class="fas fa-check-circle"></i> Phòng còn trống
-									</label>
+										<a href="/admin/rooms" class="btn btn-secondary">
+											<i class="fas fa-arrow-left"></i> Quay lại
+										</a>
+										<button type="submit" class="btn btn-primary">
+											<i class="fas fa-save"></i> Cập nhật phòng trọ
+										</button>
 								</div>
 							</div>
 						</div>
-					</div>
-
-					<!-- Buttons -->
-					<div class="col-md-12 mt-4">
-						<hr>
-						<div class="d-flex justify-content-between">
-							<a href="/admin/rooms" class="btn btn-secondary">
-								<i class="fas fa-arrow-left"></i> Quay lại
-							</a>
-							<button type="submit" class="btn btn-primary">
-								<i class="fas fa-save"></i> Cập nhật phòng trọ
-							</button>
-						</div>
-					</div>
-				</div>
 			</form>
+
+			<!-- Tenant Management (Moved outside main form) -->
+			<div class="col-md-12 mt-4" th:if="${not #lists.isEmpty(activeBookings)}">
+				<hr>
+				<h5 class="mb-3"><i class="fas fa-users-cog"></i> Quản lý Người thuê & Hợp đồng</h5>
+				<div class="alert alert-warning">
+					<i class="fas fa-exclamation-triangle me-2"></i>
+					<strong>Lưu ý:</strong> Phòng đang có người thuê. Các thông tin cấu trúc (Tên phòng, Loại
+					phòng, Diện tích, Địa chỉ, Mô tả) không thể chỉnh sửa.
+				</div>
+				<div class="table-responsive">
+					<table class="table table-bordered table-hover">
+						<thead class="table-light">
+							<tr>
+								<th>Người thuê</th>
+								<th>Số điện thoại</th>
+								<th>Thời hạn hợp đồng</th>
+								<th>Giá thuê</th>
+								<th>Trạng thái</th>
+								<th>Hành động</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="booking : ${activeBookings}">
+								<td>
+									<div class="d-flex align-items-center">
+										<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+											style="width: 32px; height: 32px;">
+											[[${#strings.substring(booking.user.name, 0, 1)}]]
+										</div>
+										<div>
+											<div class="fw-bold">[[${booking.user.name}]]</div>
+											<small class="text-muted">[[${booking.user.email}]]</small>
+										</div>
+									</div>
+								</td>
+								<td>[[${booking.user.mobileNumber}]]</td>
+								<td>
+									<div><small class="text-muted">Từ:</small>
+										[[${#temporals.format(booking.startDate, 'dd/MM/yyyy')}]]</div>
+									<div><small class="text-muted">Đến:</small>
+										<strong>[[${#temporals.format(booking.endDate, 'dd/MM/yyyy')}]]</strong>
+									</div>
+								</td>
+								<td>[[${#numbers.formatDecimal(booking.monthlyRent, 0, 'COMMA', 0, 'POINT')}]] đ
+								</td>
+								<td><span class="badge bg-success">Đang thuê</span></td>
+								<td>
+									<div class="btn-group">
+										<button type="button" class="btn btn-sm btn-outline-primary"
+											data-bs-toggle="modal"
+											th:data-bs-target="'#editBookingModal' + ${booking.id}">
+											<i class="fas fa-calendar-alt"></i> Gia hạn/Sửa
+										</button>
+										<button type="button" class="btn btn-sm btn-outline-danger"
+											data-bs-toggle="modal"
+											th:data-bs-target="'#terminateModal' + ${booking.id}">
+											<i class="fas fa-user-times"></i> Xóa
+										</button>
+									</div>
+									<!-- Edit Booking Modal -->
+									<div class="modal fade" th:id="'editBookingModal' + ${booking.id}" tabindex="-1">
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<form th:action="@{/admin/update-booking-dates}" method="post">
+													<div class="modal-header bg-primary text-white">
+														<h5 class="modal-title">Cập nhật thời hạn hợp đồng</h5>
+														<button type="button" class="btn-close btn-close-white"
+															data-bs-dismiss="modal"></button>
+													</div>
+													<div class="modal-body">
+														<input type="hidden" name="bookingId" th:value="${booking.id}">
+														<div class="mb-3">
+															<label class="form-label">Người thuê</label>
+															<input type="text" class="form-control"
+																th:value="${booking.user.name}" readonly>
+														</div>
+														<div class="row">
+															<div class="col-6">
+																<div class="mb-3">
+																	<label class="form-label">Ngày bắt
+																		đầu</label>
+																	<input type="date" name="startDate"
+																		class="form-control"
+																		th:value="${booking.startDate}" required>
+																</div>
+															</div>
+															<div class="col-6">
+																<div class="mb-3">
+																	<label class="form-label">Ngày kết
+																		thúc</label>
+																	<input type="date" name="endDate"
+																		class="form-control"
+																		th:value="${booking.endDate}" required>
+																</div>
+															</div>
+														</div>
+													</div>
+													<div class="modal-footer">
+														<button type="button" class="btn btn-secondary"
+															data-bs-dismiss="modal">Hủy</button>
+														<button type="submit" class="btn btn-primary">Lưu thay
+															đổi</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+									<!-- Terminate Modal -->
+									<div class="modal fade" th:id="'terminateModal' + ${booking.id}" tabindex="-1">
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<form th:action="@{/admin/cancel-rent}" method="post">
+													<div class="modal-header bg-danger text-white">
+														<h5 class="modal-title">Xác nhận xóa người thuê</h5>
+														<button type="button" class="btn-close btn-close-white"
+															data-bs-dismiss="modal"></button>
+													</div>
+													<div class="modal-body">
+														<input type="hidden" name="bookingId" th:value="${booking.id}">
+														<p>Bạn có chắc chắn muốn chấm dứt hợp đồng với
+															<strong>[[${booking.user.name}]]</strong>?
+														</p>
+														<div class="alert alert-warning">
+															<i class="fas fa-exclamation-triangle"></i> Hành
+															động này sẽ kết thúc hợp đồng và chuyển phòng về
+															trạng thái "Còn trống".
+														</div>
+													</div>
+													<div class="modal-footer">
+														<button type="button" class="btn btn-secondary"
+															data-bs-dismiss="modal">Hủy</button>
+														<button type="submit" class="btn btn-danger">Xác nhận
+															xóa</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 
 		<!-- Leaflet CSS & JS -->

@@ -9,6 +9,9 @@ import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -478,8 +481,17 @@ public class HostRoomController {
 
 	@GetMapping("/editRoom/{id}")
 	public String editRoom(@PathVariable int id, Model m) {
-		m.addAttribute("room", roomService.getRoomById(id));
+		Room room = roomService.getRoomById(id);
+		m.addAttribute("room", room);
 		m.addAttribute("roomTypes", roomTypeService.getAllRoomType());
+
+		// Get active bookings for this room
+		List<com.ecom.model.RoomBooking> roomBookings = roomBookingService.getBookingsByRoom(id);
+		List<com.ecom.model.RoomBooking> activeBookings = roomBookings.stream()
+				.filter(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()))
+				.toList();
+		m.addAttribute("activeBookings", activeBookings);
+
 		return "admin/edit_room";
 	}
 
@@ -769,7 +781,7 @@ public class HostRoomController {
 	}
 
 	@PostMapping("/cancel-rent")
-	public String terminateRental(@RequestParam Integer bookingId, HttpSession session) {
+	public String terminateRental(@RequestParam Integer bookingId, HttpSession session, HttpServletRequest request) {
 		com.ecom.model.RoomBooking booking = roomBookingService.updateBookingStatus(bookingId, "CANCELLED");
 
 		if (booking != null && booking.getRoom() != null) {
@@ -780,7 +792,51 @@ public class HostRoomController {
 			roomService.saveRoom(room);
 		}
 		session.setAttribute("succMsg", "Đã kết thúc hợp đồng thuê thành công!");
-		return "redirect:/admin/rooms";
+
+		// Redirect back to the referring page (edit room or rooms list)
+		String referer = request.getHeader("Referer");
+		return "redirect:" + (referer != null ? referer : "/admin/rooms");
+	}
+
+	@PostMapping("/update-booking-dates")
+	public String updateBookingDates(@RequestParam Integer bookingId,
+			@RequestParam String startDate,
+			@RequestParam String endDate,
+			HttpSession session) {
+
+		System.out
+				.println("Update Booking Dates Request: ID=" + bookingId + ", Start=" + startDate + ", End=" + endDate);
+
+		com.ecom.model.RoomBooking booking = roomBookingService.getBookingById(bookingId);
+		if (booking != null) {
+			try {
+				java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+				java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+
+				booking.setStartDate(start);
+				booking.setEndDate(end);
+
+				// Recalculate duration
+				long months = java.time.temporal.ChronoUnit.MONTHS.between(start, end);
+				if (java.time.temporal.ChronoUnit.DAYS.between(start.plusMonths(months), end) > 0) {
+					months++;
+				}
+				booking.setDurationMonths((int) months);
+
+				roomBookingService.saveBooking(booking);
+				System.out.println("Booking updated successfully");
+				session.setAttribute("succMsg", "Cập nhật thời hạn hợp đồng thành công!");
+			} catch (Exception e) {
+				System.out.println("Error updating booking: " + e.getMessage());
+				e.printStackTrace();
+				session.setAttribute("errorMsg", "Lỗi định dạng ngày tháng!");
+			}
+		} else {
+			System.out.println("Booking not found for ID: " + bookingId);
+			session.setAttribute("errorMsg", "Không tìm thấy hợp đồng!");
+		}
+
+		return "redirect:/admin/editRoom/" + (booking != null ? booking.getRoom().getId() : "");
 	}
 
 	// ==================== PAYMENT MANAGEMENT ====================

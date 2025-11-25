@@ -94,15 +94,24 @@ public class RoomServiceImpl implements RoomService {
 
 		String imageName = image.isEmpty() ? dbRoom.getImage() : image.getOriginalFilename();
 
-		dbRoom.setRoomName(room.getRoomName());
-		dbRoom.setDescription(room.getDescription());
-		dbRoom.setRoomType(room.getRoomType());
+		// Check for active bookings
+		List<com.ecom.model.RoomBooking> bookings = roomBookingRepository.findByRoomId(room.getId());
+		boolean hasActiveBookings = bookings.stream().anyMatch(b -> "ACTIVE".equalsIgnoreCase(b.getStatus()));
+
+		if (!hasActiveBookings) {
+			// Only allow updating structural details if room is empty
+			dbRoom.setRoomName(room.getRoomName());
+			dbRoom.setDescription(room.getDescription());
+			dbRoom.setRoomType(room.getRoomType());
+			dbRoom.setAddress(room.getAddress());
+			dbRoom.setFullAddress(room.getFullAddress());
+			dbRoom.setDistrict(room.getDistrict());
+			dbRoom.setCity(room.getCity());
+			dbRoom.setArea(room.getArea());
+		}
+
+		// Always allow updating these fields
 		dbRoom.setMonthlyRent(room.getMonthlyRent());
-		dbRoom.setAddress(room.getAddress());
-		dbRoom.setFullAddress(room.getFullAddress());
-		dbRoom.setDistrict(room.getDistrict());
-		dbRoom.setCity(room.getCity());
-		dbRoom.setArea(room.getArea());
 		dbRoom.setMaxOccupants(room.getMaxOccupants());
 		dbRoom.setImage(imageName);
 		dbRoom.setHasWifi(room.getHasWifi());

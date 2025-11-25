@@ -44,6 +44,7 @@
 				[[${session.succMsg}]]
 				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 			</div>
+			<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 		</th:block>
 
 		<th:block th:if="${session.errorMsg}">
@@ -51,6 +52,7 @@
 				[[${session.errorMsg}]]
 				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 			</div>
+			<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 		</th:block>
 
 		<div class="search-box">
@@ -61,8 +63,7 @@
 							placeholder="Tìm kiếm phòng trọ theo tên hoặc loại phòng...">
 					</div>
 					<div class="col-md-2">
-						<button class="btn btn-primary w-100"><i class="fas fa-search"></i> Tìm
-							kiếm</button>
+						<button class="btn btn-primary w-100"><i class="fas fa-search"></i> Tìm kiếm</button>
 					</div>
 				</div>
 			</form>
@@ -89,22 +90,18 @@
 									style="object-fit: cover; border-radius: 8px; margin-right: 15px;">
 								<div>
 									<h6 class="mb-1">[[${room.roomName}]]</h6>
-									<small class="text-muted">[[${room.roomType}]] -
-										[[${room.area}]] m²</small><br>
+									<small class="text-muted">[[${room.roomType}]] - [[${room.area}]] m²</small><br>
 									<small class="text-muted"><i class="fas fa-map-marker-alt"></i>
 										[[${room.address}]]</small>
 								</div>
 							</div>
 						</td>
-						<td>[[${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0,
-							'POINT')}]] VNĐ</td>
+						<td>[[${#numbers.formatDecimal(room.monthlyRent, 0, 'COMMA', 0,'POINT')}]] VNĐ</td>
 						<td>
 							<div class="d-flex flex-column gap-1">
-								<span th:if="${room.isAvailable}" class="badge bg-primary">Còn
-									trống</span>
+								<span th:if="${room.isAvailable}" class="badge bg-primary">Còn trống</span>
 								<span th:unless="${room.isAvailable}" class="badge bg-warning text-dark">Đã cho
 									thuê</span>
-
 								<span th:if="${room.rentalStatusDisplay == 'Active'}" class="badge bg-success">Đang hoạt
 									động</span>
 								<span th:if="${room.rentalStatusDisplay == 'Expiring'}"
@@ -127,8 +124,7 @@
 									<div class="modal-dialog modal-lg">
 										<div class="modal-content">
 											<div class="modal-header">
-												<h5 class="modal-title">Danh sách người thuê -
-													[[${room.roomName}]]</h5>
+												<h5 class="modal-title">Danh sách người thuê - [[${room.roomName}]]</h5>
 												<button type="button" class="btn-close" data-bs-dismiss="modal"
 													aria-label="Close"></button>
 											</div>
@@ -139,7 +135,6 @@
 															<th>Tên</th>
 															<th>Liên hệ</th>
 															<th>Thời hạn thuê</th>
-															<th>Hành động</th>
 														</tr>
 													</thead>
 													<tbody>
@@ -162,9 +157,33 @@
 															</td>
 															<td>
 																<small>
-																	[[${#temporals.format(booking.startDate,
+																	[[${#temporals.format(booking.startDate,'dd/MM/yyyy')}]]
+																	-
+																	[[${#temporals.format(booking.endDate,'dd/MM/yyyy')}]]
+																</small>
+															</td>
+														</tr>
+													</tbody>
+												</table>
 											</div>
-											<p>Chưa có phòng trọ nào</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div th:unless="${room.occupancyCount > 0}">
+								<span class="text-muted">Chưa có người thuê</span>
+							</div>
+						</td>
+						<td>
+							<div class="d-flex gap-2">
+								<a th:href="@{'/admin/editRoom/' + ${room.id}}" class="btn btn-sm btn-primary">
+									<i class="fas fa-edit"></i> Sửa
+								</a>
+								<a th:href="@{'/admin/deleteRoom/' + ${room.id}}" class="btn btn-sm btn-danger"
+									onclick="return confirm('Bạn có chắc chắn muốn xóa phòng này không?')">
+									<i class="fas fa-trash"></i> Xóa
+								</a>
+							</div>
 						</td>
 					</tr>
 				</tbody>
