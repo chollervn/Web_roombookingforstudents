@@ -366,6 +366,8 @@ public class HostRoomController {
 		// Set owner ID to current logged-in user
 		UserDtls loggedInUser = getLoggedInUser(p);
 		room.setOwnerId(loggedInUser.getId());
+		room.setContactName(loggedInUser.getName());
+		room.setContactPhone(loggedInUser.getMobileNumber());
 
 		Room saveRoom = roomService.saveRoom(room);
 

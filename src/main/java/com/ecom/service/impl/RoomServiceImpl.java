@@ -113,8 +113,12 @@ public class RoomServiceImpl implements RoomService {
 		dbRoom.setDeposit(room.getDeposit());
 		dbRoom.setElectricityCost(room.getElectricityCost());
 		dbRoom.setWaterCost(room.getWaterCost());
-		dbRoom.setContactPhone(room.getContactPhone());
-		dbRoom.setContactName(room.getContactName());
+		if (room.getContactPhone() != null) {
+			dbRoom.setContactPhone(room.getContactPhone());
+		}
+		if (room.getContactName() != null) {
+			dbRoom.setContactName(room.getContactName());
+		}
 		dbRoom.setIsAvailable(room.getIsAvailable());
 		dbRoom.setIsActive(room.getIsActive());
 
