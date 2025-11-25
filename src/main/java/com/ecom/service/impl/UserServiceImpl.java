@@ -59,6 +59,11 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public UserDtls getUserById(Integer id) {
+		return userRepository.findById(id).orElse(null);
+	}
+
+	@Override
 	public List<UserDtls> getUsers(String role) {
 		return userRepository.findByRole(role);
 	}
@@ -151,6 +156,8 @@ public class UserServiceImpl implements UserService {
 			dbUser.setState(user.getState());
 			dbUser.setPincode(user.getPincode());
 			dbUser.setSchool(user.getSchool());
+			dbUser.setBankId(user.getBankId());
+			dbUser.setAccountNo(user.getAccountNo());
 			dbUser = userRepository.save(dbUser);
 		}
 

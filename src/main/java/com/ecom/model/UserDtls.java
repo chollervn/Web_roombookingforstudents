@@ -1,5 +1,6 @@
 package com.ecom.model;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -7,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,4 +60,16 @@ public class UserDtls {
 
 	private String accountType; // 'renter' hoặc 'owner'
 
+	private String bankId; // Mã ngân hàng (MB, VCB, TCB, etc.)
+
+	private String accountNo; // Số tài khoản ngân hàng
+
+	private LocalDateTime createdDate; // Ngày đăng ký tài khoản
+
+	@PrePersist
+	public void prePersist() {
+		if (this.createdDate == null) {
+			this.createdDate = LocalDateTime.now();
+		}
+	}
 }

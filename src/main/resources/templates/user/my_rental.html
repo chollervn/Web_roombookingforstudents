@@ -450,16 +450,27 @@
                                                                                 class="badge bg-danger">Quá hạn</span>
                                                                         </p>
                                                                         <div class="mt-3">
-                                                                            <a href="#"
-                                                                                class="btn btn-primary btn-lg w-100 mb-2">
-                                                                                <i class="fas fa-credit-card"></i> Thanh
-                                                                                toán ngay
-                                                                            </a>
+                                                                            <button type="button"
+                                                                                class="btn btn-primary btn-lg w-100 mb-2"
+                                                                                onclick="showPaymentQR()"
+                                                                                th:if="${dashboard.landlordContact != null && dashboard.landlordContact.bankId != null}"
+                                                                                th:attr="data-bank-id=${dashboard.landlordContact.bankId},
+                                                                                         data-account-no=${dashboard.landlordContact.accountNo},
+                                                                                         data-account-name=${dashboard.landlordContact.name},
+                                                                                         data-amount=${dashboard.nextPayment.totalAmount},
+                                                                                         data-month=${dashboard.nextPayment.month},
+                                                                                         data-year=${dashboard.nextPayment.year}">
+                                                                                <i class="fas fa-qrcode"></i> Thanh toán bằng VietQR
+                                                                            </button>
+                                                                            <button type="button"
+                                                                                class="btn btn-secondary btn-lg w-100 mb-2"
+                                                                                disabled
+                                                                                th:if="${dashboard.landlordContact == null || dashboard.landlordContact.bankId == null}">
+                                                                                <i class="fas fa-exclamation-circle"></i> Chưa có thông tin ngân hàng
+                                                                            </button>
                                                                             <p class="text-muted small mb-0">
                                                                                 <i class="fas fa-info-circle"></i>
-                                                                                Liên hệ chủ trọ để thanh toán hoặc sử
-                                                                                dụng các phương thức
-                                                                                thanh toán online
+                                                                                Quét mã QR bằng ứng dụng ngân hàng để thanh toán
                                                                             </p>
                                                                         </div>
                                                                     </div>
@@ -643,6 +654,130 @@
                                     </div>
                                 </div>
                             </div>
+
+        <!-- VietQR Payment Modal -->
+        <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="paymentModalLabel">
+                            <i class="fas fa-qrcode"></i> Thanh toán bằng VietQR
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="alert alert-info">
+                            <strong>Kỳ thanh toán:</strong> <span id="displayPeriod">-</span>
+                        </div>
+
+                        <!-- QR Code Image -->
+                        <div class="mb-3" id="qrContainer">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <img id="qrImage"
+                                 alt="VietQR Code"
+                                 class="img-fluid border rounded shadow"
+                                 style="max-width: 400px; display: none;">
+                        </div>
+
+                        <!-- Payment Details -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6 text-start">
+                                        <p class="mb-2"><strong>Ngân hàng:</strong></p>
+                                        <p class="mb-2"><strong>Số tài khoản:</strong></p>
+                                        <p class="mb-2"><strong>Chủ tài khoản:</strong></p>
+                                        <p class="mb-2"><strong>Số tiền:</strong></p>
+                                        <p class="mb-0"><strong>Nội dung:</strong></p>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <p class="mb-2" id="displayBankId">-</p>
+                                        <p class="mb-2" id="displayAccountNo">-</p>
+                                        <p class="mb-2" id="displayAccountName">-</p>
+                                        <p class="mb-2 text-danger fw-bold" id="displayAmount">-</p>
+                                        <p class="mb-0 text-primary" id="displayContent">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Lưu ý:</strong> Sau khi chuyển khoản, vui lòng liên hệ chủ trọ để xác nhận thanh toán.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Đóng
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="window.print()">
+                            <i class="fas fa-print"></i> In mã QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JavaScript for VietQR Payment -->
+        <script th:inline="javascript">
+            function showPaymentQR() {
+                // Get button that was clicked
+                const button = event.currentTarget;
+
+                // 1. Lấy thông tin từ data attributes
+                const bankId = button.getAttribute('data-bank-id');
+                const accountNo = button.getAttribute('data-account-no');
+                const accountName = button.getAttribute('data-account-name');
+                const amount = button.getAttribute('data-amount');
+                const month = button.getAttribute('data-month');
+                const year = button.getAttribute('data-year');
+
+                // 2. Tạo nội dung chuyển khoản
+                const content = `Tien thue phong thang ${month}/${year}`;
+
+                // 3. Tạo URL QR theo chuẩn VietQR
+                // encodeURIComponent giúp xử lý các ký tự đặc biệt hoặc khoảng trắng
+                const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(accountName)}`;
+
+                // 4. Hiển thị QR image
+                const qrImage = document.getElementById('qrImage');
+                const qrContainer = document.getElementById('qrContainer');
+
+                // Show loading spinner
+                qrImage.style.display = 'none';
+
+                // Set image source
+                qrImage.src = qrUrl;
+
+                // When image loads, hide spinner and show image
+                qrImage.onload = function() {
+                    qrImage.style.display = 'block';
+                    const spinner = qrContainer.querySelector('.spinner-border');
+                    if (spinner) {
+                        spinner.style.display = 'none';
+                    }
+                };
+
+                // 5. Cập nhật thông tin thanh toán
+                document.getElementById('displayPeriod').textContent = `Tháng ${month}/${year}`;
+                document.getElementById('displayBankId').textContent = bankId;
+                document.getElementById('displayAccountNo').textContent = accountNo;
+                document.getElementById('displayAccountName').textContent = accountName;
+
+                // Format amount with thousand separators
+                const formattedAmount = new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+                document.getElementById('displayAmount').textContent = formattedAmount;
+
+                document.getElementById('displayContent').textContent = content;
+
+                // 6. Show modal
+                const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+                modal.show();
+            }
+        </script>
+
     </section>
 </body>
 

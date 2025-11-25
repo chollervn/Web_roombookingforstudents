@@ -29,12 +29,11 @@
 							onerror="this.src='/uploads/profile_img/default.jpg'">
 					</div>
 					<div class="col-md-8 offset-md-2 mt-4">
+						<form action="/user/update-profile" method="post"
+							enctype="multipart/form-data">
+							<input type="hidden" name="id" th:value="${user.id}">
 						<table class="table table-borderless">
-
 							<tbody>
-								<form action="/user/update-profile" method="post"
-									enctype="multipart/form-data">
-									<input type="hidden" name="id" th:value="${user.id}">
 								<tr>
 									<th scope="row">Họ và tên</th>
 									<td>:</td>
@@ -67,6 +66,37 @@
 								</tr>
 
 								<tr>
+									<th scope="row">Ngân hàng</th>
+									<td>:</td>
+									<td>
+										<select class="form-select form-control" name="bankId">
+											<option value="">-- Chọn ngân hàng --</option>
+											<option value="MB" th:selected="${user.bankId != null && user.bankId == 'MB'}">MB Bank</option>
+											<option value="VCB" th:selected="${user.bankId != null && user.bankId == 'VCB'}">Vietcombank</option>
+											<option value="TCB" th:selected="${user.bankId != null && user.bankId == 'TCB'}">Techcombank</option>
+											<option value="ICB" th:selected="${user.bankId != null && user.bankId == 'ICB'}">VietinBank</option>
+											<option value="BIDV" th:selected="${user.bankId != null && user.bankId == 'BIDV'}">BIDV</option>
+											<option value="TPB" th:selected="${user.bankId != null && user.bankId == 'TPB'}">TPBank</option>
+											<option value="ACB" th:selected="${user.bankId != null && user.bankId == 'ACB'}">ACB</option>
+											<option value="VPB" th:selected="${user.bankId != null && user.bankId == 'VPB'}">VPBank</option>
+											<option value="SHB" th:selected="${user.bankId != null && user.bankId == 'SHB'}">SHB</option>
+											<option value="MSB" th:selected="${user.bankId != null && user.bankId == 'MSB'}">MSB</option>
+										</select>
+									</td>
+								</tr>
+
+								<tr>
+									<th scope="row">Số tài khoản</th>
+									<td>:</td>
+									<td>
+										<input type="text" name="accountNo" class="form-control"
+											th:value="${user.accountNo != null ? user.accountNo : ''}"
+											placeholder="Nhập số tài khoản ngân hàng (tùy chọn)">
+										<small class="form-text text-muted">Nhập số tài khoản ngân hàng (9-16 chữ số)</small>
+									</td>
+								</tr>
+
+								<tr>
 									<th scope="row">Ảnh đại diện</th>
 									<td>:</td>
 									<td><input type="file" name="img" class="form-control" accept="image/*"></td>
@@ -78,9 +108,9 @@
 										<button type="submit" class="btn btn-sm bg-primary text-light">Cập nhật</button>
 									</td>
 								</tr>
-								</form>
 							</tbody>
 						</table>
+						</form>
 
 					</div>
 
@@ -90,10 +120,9 @@
 					<div class="row">
 						<p class="text-center fs-3">Đổi mật khẩu</p>
 						<div class="col-md-6 offset-md-3">
+							<form action="/user/change-password" method="post">
 							<table class="table table-borderless">
-
 								<tbody>
-									<form action="/user/change-password" method="post">
 										<tr>
 											<th scope="row">Mật khẩu hiện tại</th>
 
@@ -118,9 +147,9 @@
 											</td>
 
 										</tr>
-									</form>
 								</tbody>
 							</table>
+							</form>
 						</div>
 					</div>
 				</div>

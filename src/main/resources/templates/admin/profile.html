@@ -84,6 +84,31 @@
 						</div>
 
 						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-university"></i> Ngân hàng thụ hưởng</label>
+							<select class="form-select form-control" name="bankId">
+								<option value="">-- Chọn ngân hàng --</option>
+								<option value="MB" th:selected="${user.bankId != null && user.bankId == 'MB'}">MB Bank</option>
+								<option value="VCB" th:selected="${user.bankId != null && user.bankId == 'VCB'}">Vietcombank</option>
+								<option value="TCB" th:selected="${user.bankId != null && user.bankId == 'TCB'}">Techcombank</option>
+								<option value="ICB" th:selected="${user.bankId != null && user.bankId == 'ICB'}">VietinBank</option>
+								<option value="BIDV" th:selected="${user.bankId != null && user.bankId == 'BIDV'}">BIDV</option>
+								<option value="TPB" th:selected="${user.bankId != null && user.bankId == 'TPB'}">TPBank</option>
+								<option value="ACB" th:selected="${user.bankId != null && user.bankId == 'ACB'}">ACB</option>
+								<option value="VPB" th:selected="${user.bankId != null && user.bankId == 'VPB'}">VPBank</option>
+								<option value="SHB" th:selected="${user.bankId != null && user.bankId == 'SHB'}">SHB</option>
+								<option value="MSB" th:selected="${user.bankId != null && user.bankId == 'MSB'}">MSB</option>
+							</select>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label"><i class="fas fa-credit-card"></i> Số tài khoản</label>
+							<input type="text" name="accountNo" class="form-control"
+								th:value="${user.accountNo != null ? user.accountNo : ''}"
+								placeholder="Nhập số tài khoản ngân hàng (tùy chọn)">
+							<small class="form-text text-muted">Nhập số tài khoản ngân hàng (9-16 chữ số)</small>
+						</div>
+
+						<div class="mb-3">
 							<label class="form-label"><i class="fas fa-image"></i> Ảnh đại diện</label>
 							<input type="file" name="img" class="form-control" accept="image/*">
 						</div>

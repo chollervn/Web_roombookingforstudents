@@ -273,6 +273,8 @@ public class TenantDashboardServiceImpl implements TenantDashboardService {
                 .email(owner.getEmail())
                 .mobileNumber(owner.getMobileNumber())
                 .profileImage(owner.getProfileImage())
+                .bankId(owner.getBankId())
+                .accountNo(owner.getAccountNo())
                 .build();
     }
 }
