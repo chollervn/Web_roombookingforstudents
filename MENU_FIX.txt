@@ -1,5 +1,0 @@
-<!-- Paste this code into base.html at line 165 (after "Hồ sơ" admin/owner section, before "Đơn thuê của tôi") -->
-
-<!-- NEW: Trọ của tôi link for tenant users -->
-<li th:if="${user.role=='ROLE_USER'}"><a
-	class="dropdown-item" href="/user/my-rental"><i class="fa-solid fa-home"></i> Trọ của tôi</a></li>

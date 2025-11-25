@@ -102,7 +102,6 @@
                                 <th>Đã trả</th>
                                 <th>Ngày đến hạn</th>
                                 <th>Trạng thái</th>
-                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -138,25 +137,6 @@
                                     <span th:if="${payment.status == 'PARTIAL'}" class="badge bg-info">
                                         <i class="fas fa-info-circle"></i> Trả một phần
                                     </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a th:href="@{'/admin/payment/' + ${payment.id} + '/details'}"
-                                            class="btn btn-primary btn-sm" title="Chi tiết">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a th:if="${payment.status != 'PAID'}"
-                                            th:href="@{'/admin/payment/' + ${payment.id} + '/record'}"
-                                            class="btn btn-success btn-sm" title="Ghi nhận thanh toán">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <form th:action="@{'/admin/payment/' + ${payment.id} + '/send-reminder'}"
-                                            method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-warning btn-sm" title="Gửi nhắc nhở">
-                                                <i class="fas fa-bell"></i>
-                                            </button>
-                                        </form>
-                                    </div>
                                 </td>
                             </tr>
                         </tbody>

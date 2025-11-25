@@ -750,22 +750,48 @@ public class HostRoomController {
 			return "redirect:/admin/deposits";
 		}
 
-		com.ecom.model.Deposit updatedDeposit = depositService.updateDepositStatus(id, status, adminNote);
+		if ("REJECTED".equals(status)) {
+			// Khi từ chối: Lấy thông tin deposit trước khi xóa để reset phòng
+			com.ecom.model.Deposit deposit = depositService.getDepositById(id);
 
-		if (!ObjectUtils.isEmpty(updatedDeposit)) {
-			// Reset session "đã xem" của user để badge xuất hiện lại
-			if (updatedDeposit.getUser() != null) {
-				session.removeAttribute("depositNotificationsViewed_" + updatedDeposit.getUser().getId());
+			if (deposit != null) {
+				// Reset phòng về trạng thái AVAILABLE
+				Room room = deposit.getRoom();
+				if (room != null) {
+					room.setRoomStatus(RoomStatus.AVAILABLE);
+					room.setIsAvailable(true);
+					roomService.saveRoom(room);
+				}
+
+				// Reset session "đã xem" của user để badge xuất hiện lại
+				if (deposit.getUser() != null) {
+					session.removeAttribute("depositNotificationsViewed_" + deposit.getUser().getId());
+				}
+
+				// Xóa deposit khỏi database
+				Boolean deleted = depositService.deleteDeposit(id);
+				if (deleted) {
+					session.setAttribute("succMsg", "Đã từ chối yêu cầu đặt cọc và xóa khỏi danh sách!");
+				} else {
+					session.setAttribute("errorMsg", "Đã từ chối nhưng không thể xóa khỏi danh sách!");
+				}
+			} else {
+				session.setAttribute("errorMsg", "Không tìm thấy yêu cầu đặt cọc!");
 			}
+		} else if ("APPROVED".equals(status)) {
+			com.ecom.model.Deposit updatedDeposit = depositService.updateDepositStatus(id, status, adminNote);
 
-			if ("APPROVED".equals(status)) {
+			if (!ObjectUtils.isEmpty(updatedDeposit)) {
+				// Reset session "đã xem" của user để badge xuất hiện lại
+				if (updatedDeposit.getUser() != null) {
+					session.removeAttribute("depositNotificationsViewed_" + updatedDeposit.getUser().getId());
+				}
 				session.setAttribute("succMsg", "Đã chấp nhận yêu cầu đặt cọc! Phòng trọ đã được đánh dấu là đã thuê.");
-			} else if ("REJECTED".equals(status)) {
-				session.setAttribute("succMsg", "Đã từ chối yêu cầu đặt cọc!");
+			} else {
+				session.setAttribute("errorMsg", "Không thể cập nhật trạng thái đặt cọc!");
 			}
-		} else {
-			session.setAttribute("errorMsg", "Không thể cập nhật trạng thái đặt cọc!");
 		}
+
 		return "redirect:/admin/deposits";
 	}
 
