@@ -13,12 +13,12 @@
 					<!-- Success/Error Messages -->
 					<th:block th:if="${session.succMsg}">
 						<p class="text-success alert alert-success text-center" role="alert">[[${session.succMsg}]]</p>
-						<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+						<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 					</th:block>
 
 					<th:block th:if="${session.errorMsg}">
 						<p class="text-danger text-center alert alert-danger">[[${session.errorMsg}]]</p>
-						<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+						<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 					</th:block>
 
 					<!-- Room Image -->

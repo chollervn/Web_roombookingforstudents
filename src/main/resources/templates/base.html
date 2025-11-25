@@ -133,6 +133,64 @@
 								</a></li>
 						</th:block>
 
+						<th:block th:if="${user.role=='ROLE_USER'}">
+							<li class="nav-item dropdown">
+								<a class="nav-link active dropdown-toggle" href="#" role="button"
+									data-bs-toggle="dropdown" aria-expanded="false">
+									<i class="fa-solid fa-bell"></i>
+									<span th:if="${unreadNotifications != null and unreadNotifications > 0}"
+										class="badge bg-danger rounded-pill ms-1" style="font-size: 0.7rem;">
+										[[${unreadNotifications}]]
+									</span>
+								</a>
+								<ul class="dropdown-menu dropdown-menu-end"
+									style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+									<li>
+										<h6 class="dropdown-header">Thông báo</h6>
+									</li>
+									<li>
+										<hr class="dropdown-divider">
+									</li>
+
+									<th:block th:if="${recentNotifications != null and !recentNotifications.isEmpty()}">
+										<li th:each="n : ${recentNotifications}">
+											<a class="dropdown-item" href="/user/notifications"
+												style="white-space: normal;">
+												<div class="d-flex justify-content-between align-items-start">
+													<div>
+														<small class="fw-bold"
+															th:text="${n.type == 'IN_APP' ? 'Hệ thống' : (n.type == 'EMAIL' ? 'Email' : 'SMS')}"></small>
+														<span th:if="${n.status != 'READ'}" class="badge bg-danger ms-1"
+															style="font-size: 0.6em;">NEW</span>
+													</div>
+													<small class="text-muted" style="font-size: 0.7em;"
+														th:text="${#temporals.format(n.sentDate, 'dd/MM HH:mm')}"></small>
+												</div>
+												<p class="mb-0 small text-truncate" style="max-width: 250px;">
+													[[${n.message}]]</p>
+											</a>
+										</li>
+										<li>
+											<hr class="dropdown-divider">
+										</li>
+									</th:block>
+
+									<th:block th:if="${recentNotifications == null or recentNotifications.isEmpty()}">
+										<li>
+											<p class="dropdown-item text-center small text-muted">Không có thông báo mới
+											</p>
+										</li>
+										<li>
+											<hr class="dropdown-divider">
+										</li>
+									</th:block>
+
+									<li><a class="dropdown-item text-center small" href="/user/notifications">Xem tất cả
+											thông báo</a></li>
+								</ul>
+							</li>
+						</th:block>
+
 						<th:block th:if="${user.role=='ROLE_ADMIN' or user.role=='ROLE_OWNER'}">
 							<li class="nav-item"><a class="nav-link active" aria-current="page" href="/admin/deposits">
 									<i class="fa-solid fa-money-bill-wave"></i> Quản lý đặt cọc
@@ -161,7 +219,7 @@
 								<li th:if="${user.role=='ROLE_USER'}"><a class="dropdown-item"
 										href="/user/user-orders"><i class="fa-solid fa-list"></i> Đơn thuê của tôi</a>
 								</li>
-								<li><a class="dropdown-item" href="/logout"><i
+								<li><a class="dropdown-item" href="/logout"><i +
 											class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
 								<li>
 									<hr class="dropdown-divider">

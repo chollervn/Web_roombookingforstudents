@@ -21,7 +21,7 @@
                     [[${session.succMsg}]]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-                <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+                <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
             </th:block>
 
             <th:block th:if="${session.errorMsg}">
@@ -29,7 +29,7 @@
                     [[${session.errorMsg}]]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-                <th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+                <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
             </th:block>
 
             <!-- Booking Info -->

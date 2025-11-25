@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/admin_base::adminLayout(~{::section})}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết hóa đơn</title>
+</head>
+
+<body>
+    <section th:with="currentPage='payments'">
+        <div class="page-header">
+            <h2><i class="fas fa-file-invoice"></i> Chi tiết hóa đơn</h2>
+            <div class="mt-2">
+                <a th:href="@{/admin/payments}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+
+        <th:block th:if="${session.succMsg}">
+            <div class="alert alert-success alert-dismissible fade show">
+                [[${session.succMsg}]]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+        </th:block>
+
+        <th:block th:if="${session.errorMsg}">
+            <div class="alert alert-danger alert-dismissible fade show">
+                [[${session.errorMsg}]]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+        </th:block>
+
+        <div class="row">
+            <!-- Invoice Info -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Hóa đơn tháng [[${payment.month}]]/[[${payment.year}]]</h5>
+                        <span th:if="${payment.status == 'PAID'}" class="badge bg-success">Đã thanh toán</span>
+                        <span th:if="${payment.status == 'PENDING'}" class="badge bg-warning text-dark">Chờ thanh
+                            toán</span>
+                        <span th:if="${payment.status == 'OVERDUE'}" class="badge bg-danger">Quá hạn</span>
+                        <span th:if="${payment.status == 'PARTIAL'}" class="badge bg-info">Trả một phần</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Thông tin phòng</h6>
+                                <p class="mb-1"><strong>Phòng:</strong> [[${payment.roomBooking.room.roomName}]]</p>
+                                <p class="mb-1"><strong>Địa chỉ:</strong> [[${payment.roomBooking.room.address}]]</p>
+                                <p class="mb-1"><strong>Giá thuê:</strong>
+                                    [[${#numbers.formatDecimal(payment.roomBooking.monthlyRent, 0, 'COMMA', 0,
+                                    'POINT')}]] VNĐ</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Thông tin người thuê</h6>
+                                <p class="mb-1"><strong>Họ tên:</strong> [[${payment.roomBooking.user.name}]]</p>
+                                <p class="mb-1"><strong>Email:</strong> [[${payment.roomBooking.user.email}]]</p>
+                                <p class="mb-1"><strong>SĐT:</strong> [[${payment.roomBooking.user.mobileNumber}]]</p>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h6 class="mb-3">Chi tiết thanh toán</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Khoản mục</th>
+                                        <th class="text-center">Số lượng</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Tiền thuê phòng</td>
+                                        <td class="text-center">1 tháng</td>
+                                        <td class="text-end">[[${#numbers.formatDecimal(payment.roomBooking.monthlyRent,
+                                            0, 'COMMA', 0, 'POINT')}]]</td>
+                                        <td class="text-end">[[${#numbers.formatDecimal(payment.roomBooking.monthlyRent,
+                                            0, 'COMMA', 0, 'POINT')}]]</td>
+                                    </tr>
+                                    <tr th:if="${payment.electricityUsed != null and payment.electricityUsed > 0}">
+                                        <td>Tiền điện</td>
+                                        <td class="text-center">[[${payment.electricityUsed}]] số</td>
+                                        <td class="text-end">
+                                            [[${#numbers.formatDecimal(payment.roomBooking.room.electricityCost, 0,
+                                            'COMMA', 0, 'POINT')}]]</td>
+                                        <td class="text-end">[[${#numbers.formatDecimal(payment.electricityUsed *
+                                            payment.roomBooking.room.electricityCost, 0, 'COMMA', 0, 'POINT')}]]</td>
+                                    </tr>
+                                    <tr th:if="${payment.waterUsed != null and payment.waterUsed > 0}">
+                                        <td>Tiền nước</td>
+                                        <td class="text-center">[[${payment.waterUsed}]] khối</td>
+                                        <td class="text-end">
+                                            [[${#numbers.formatDecimal(payment.roomBooking.room.waterCost, 0, 'COMMA',
+                                            0, 'POINT')}]]</td>
+                                        <td class="text-end">[[${#numbers.formatDecimal(payment.waterUsed *
+                                            payment.roomBooking.room.waterCost, 0, 'COMMA', 0, 'POINT')}]]</td>
+                                    </tr>
+                                    <tr th:if="${payment.additionalFees != null and payment.additionalFees > 0}">
+                                        <td>Phí khác</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-end">-</td>
+                                        <td class="text-end">[[${#numbers.formatDecimal(payment.additionalFees, 0,
+                                            'COMMA', 0, 'POINT')}]]</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
+                                        <td class="text-end text-primary fs-5">
+                                            <strong>[[${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0,
+                                                'POINT')}]] VNĐ</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Đã thanh toán:</strong></td>
+                                        <td class="text-end text-success">
+                                            <strong>[[${#numbers.formatDecimal(payment.paidAmount != null ?
+                                                payment.paidAmount : 0, 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Còn lại:</strong></td>
+                                        <td class="text-end text-danger">
+                                            <strong>[[${#numbers.formatDecimal(payment.amount - (payment.paidAmount !=
+                                                null ? payment.paidAmount : 0), 0, 'COMMA', 0, 'POINT')}]] VNĐ</strong>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Hành động</h6>
+                    </div>
+                    <div class="card-body d-grid gap-2">
+                        <a th:if="${payment.status != 'PAID'}"
+                            th:href="@{'/admin/payment/' + ${payment.id} + '/record'}" class="btn btn-success">
+                            <i class="fas fa-check-circle"></i> Ghi nhận thanh toán
+                        </a>
+
+                        <form th:action="@{'/admin/payment/' + ${payment.id} + '/send-reminder'}" method="post"
+                            class="d-grid">
+                            <button type="submit" class="btn btn-warning text-dark">
+                                <i class="fas fa-bell"></i> Gửi nhắc nhở
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-primary" onclick="window.print()">
+                            <i class="fas fa-print"></i> In hóa đơn
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Lịch sử</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <small class="text-muted">Ngày tạo:</small><br>
+                                [[${#temporals.format(payment.createdAt, 'dd/MM/yyyy HH:mm')}]]
+                            </li>
+                            <li class="mb-2">
+                                <small class="text-muted">Hạn thanh toán:</small><br>
+                                [[${#temporals.format(payment.dueDate, 'dd/MM/yyyy')}]]
+                            </li>
+                            <li th:if="${payment.paidDate != null}">
+                                <small class="text-muted">Ngày thanh toán:</small><br>
+                                <span class="text-success">[[${#temporals.format(payment.paidDate,
+                                    'dd/MM/yyyy')}]]</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

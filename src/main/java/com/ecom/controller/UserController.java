@@ -77,30 +77,9 @@ public class UserController {
 	@Autowired
 	private com.ecom.service.VoucherService voucherService;
 
-	@GetMapping("/")
-	public String home() {
-		return "user/home";
-	}
+	@Autowired
+	private com.ecom.service.PaymentNotificationService paymentNotificationService;
 
-	@ModelAttribute
-	public void getUserDetails(Principal p, Model m, HttpSession session) {
-		if (p != null) {
-			String email = p.getName();
-			UserDtls userDtls = userService.getUserByEmail(email);
-			m.addAttribute("user", userDtls);
-			Integer countCart = cartService.getCountCart(userDtls.getId());
-			m.addAttribute("countCart", countCart);
-
-			// Lấy số lượng thông báo chưa đọc từ DB
-			Long unreadDepositNotifications = depositService.countUnreadNotifications(userDtls.getId());
-			m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
-		}
-
-		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
-		m.addAttribute("roomTypes", allActiveRoomType);
-	}
-
-	@GetMapping("/addCart")
 	public String addToCart(@RequestParam Integer rid, Principal p, HttpSession session) {
 		if (p == null) {
 			session.setAttribute("errorMsg", "Vui lòng đăng nhập để thêm vào giỏ hàng");
@@ -560,6 +539,26 @@ public class UserController {
 		}
 
 		return "/user/my_rental";
+	}
+
+	/**
+	 * Notification Management
+	 */
+	@GetMapping("/notifications")
+	public String viewNotifications(Model m, Principal p) {
+		UserDtls loggedInUser = getLoggedInUserDetails(p);
+
+		List<com.ecom.model.PaymentNotification> notifications = paymentNotificationService
+				.getNotificationsByUserId(loggedInUser.getId());
+		m.addAttribute("notifications", notifications);
+
+		return "/user/notifications";
+	}
+
+	@GetMapping("/notification/delete")
+	public String deleteNotification(@RequestParam Integer id, Principal p) {
+		paymentNotificationService.deleteNotification(id);
+		return "redirect:/user/notifications";
 	}
 
 }

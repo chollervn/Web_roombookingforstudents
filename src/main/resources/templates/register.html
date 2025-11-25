@@ -21,7 +21,7 @@
 							</th:block>
 							<th:block th:if="${session.succMsg}">
 								<p class="text-success fw-bold">[[${session.succMsg}]]</p>
-								<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 							</th:block>
 
 							<th:block th:if="${errorMsg}">
@@ -29,7 +29,7 @@
 							</th:block>
 							<th:block th:if="${session.errorMsg}">
 								<p class="text-danger fw-bold">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commnServiceImpl.removeSessionMessage()}"></th:block>
+								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
 							</th:block>
 						</div>
 						<div class="card-body">

@@ -81,52 +81,14 @@ public class HomeController {
 	@Autowired
 	private com.ecom.service.GameService gameService;
 
-	@ModelAttribute
-	public void getUserDetails(Principal p, Model m, HttpSession session) {
-		if (p != null) {
-			String email = p.getName();
-			UserDtls userDtls = userService.getUserByEmail(email);
-			m.addAttribute("user", userDtls);
-			Integer countCart = cartService.getCountCart(userDtls.getId());
-			m.addAttribute("countCart", countCart);
-
-			// Đếm số thông báo cho USER: deposit được approved/rejected hôm nay
-			if ("ROLE_USER".equals(userDtls.getRole())) {
-				// Kiểm tra xem user đã xem thông báo chưa (kiểm tra session)
-				Boolean hasViewed = (Boolean) session.getAttribute("depositNotificationsViewed_" + userDtls.getId());
-
-				if (hasViewed == null || !hasViewed) {
-					// Chỉ đếm thông báo nếu chưa xem
-					List<Deposit> userDeposits = depositService.getDepositsByUser(userDtls.getId());
-					java.time.LocalDate today = java.time.LocalDate.now();
-					long unreadDepositNotifications = userDeposits.stream()
-							.filter(d -> ("APPROVED".equals(d.getStatus()) || "REJECTED".equals(d.getStatus()))
-									&& d.getApprovedDate() != null
-									&& d.getApprovedDate().equals(today))
-							.count();
-					m.addAttribute("unreadDepositNotifications", unreadDepositNotifications);
-				} else {
-					// Đã xem rồi, không hiển thị badge
-					m.addAttribute("unreadDepositNotifications", 0L);
-				}
-			}
-
-			// Đếm số đơn đặt cọc chờ xử lý cho ADMIN/OWNER
-			if ("ROLE_ADMIN".equals(userDtls.getRole()) || "ROLE_OWNER".equals(userDtls.getRole())) {
-				List<Deposit> deposits = depositService.getDepositsByOwner(userDtls.getId());
-				long pendingDepositCount = deposits.stream()
-						.filter(d -> "PENDING".equals(d.getStatus()))
-						.count();
-				m.addAttribute("pendingDepositCount", pendingDepositCount);
-			}
-		}
-
-		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType();
-		m.addAttribute("roomTypes", allActiveRoomType);
-	}
-
 	@GetMapping("/")
-	public String index(Model m) {
+	public String index(Model m, Principal p) {
+		System.out.println("HomeController: index page accessed.");
+		if (p != null) {
+			System.out.println("HomeController: Principal is " + p.getName());
+		} else {
+			System.out.println("HomeController: Principal is NULL");
+		}
 
 		List<RoomType> allActiveRoomType = roomTypeService.getAllActiveRoomType().stream()
 				.sorted((c1, c2) -> c2.getId().compareTo(c1.getId())).limit(6).toList();
