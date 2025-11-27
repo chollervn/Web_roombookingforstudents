@@ -187,7 +187,17 @@ public class UserController {
 			return "redirect:/user/cart";
 		}
 
-		// Cho phép xóa
+		// Xóa TẤT CẢ deposit REJECTED của user cho phòng này (để reset hoàn toàn)
+		if (deposits != null) {
+			for (Deposit d : deposits) {
+				if (d.getRoom() != null && d.getRoom().getId().equals(cart.getRoom().getId())
+						&& "REJECTED".equals(d.getStatus())) {
+					depositService.deleteDeposit(d.getId());
+				}
+			}
+		}
+
+		// Xóa cart
 		cartService.deleteCart(cid);
 		session.setAttribute("succMsg", "Đã xóa trọ khỏi danh sách");
 		return "redirect:/user/cart";

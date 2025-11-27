@@ -732,7 +732,12 @@ public class HostRoomController {
 		UserDtls loggedInUser = commonUtil.getLoggedInUserDetails(p);
 
 		// Get all deposits for rooms belonging to this owner
-		List<com.ecom.model.Deposit> deposits = depositService.getDepositsByOwner(loggedInUser.getId());
+		List<com.ecom.model.Deposit> allDeposits = depositService.getDepositsByOwner(loggedInUser.getId());
+
+		// Chỉ hiển thị deposit PENDING và APPROVED (loại bỏ REJECTED khỏi danh sách)
+		List<com.ecom.model.Deposit> deposits = allDeposits.stream()
+				.filter(d -> "PENDING".equals(d.getStatus()) || "APPROVED".equals(d.getStatus()))
+				.toList();
 
 		m.addAttribute("deposits", deposits);
 		return "/admin/deposits";
@@ -751,7 +756,7 @@ public class HostRoomController {
 		}
 
 		if ("REJECTED".equals(status)) {
-			// Khi từ chối: Lấy thông tin deposit trước khi xóa để reset phòng
+			// Khi từ chối: CẬP NHẬT STATUS thành REJECTED (KHÔNG XÓA deposit)
 			com.ecom.model.Deposit deposit = depositService.getDepositById(id);
 
 			if (deposit != null) {
@@ -763,17 +768,17 @@ public class HostRoomController {
 					roomService.saveRoom(room);
 				}
 
-				// Reset session "đã xem" của user để badge xuất hiện lại
-				if (deposit.getUser() != null) {
-					session.removeAttribute("depositNotificationsViewed_" + deposit.getUser().getId());
-				}
+				// Cập nhật status deposit thành REJECTED (giữ lại deposit record)
+				com.ecom.model.Deposit updatedDeposit = depositService.updateDepositStatus(id, status, adminNote);
 
-				// Xóa deposit khỏi database
-				Boolean deleted = depositService.deleteDeposit(id);
-				if (deleted) {
-					session.setAttribute("succMsg", "Đã từ chối yêu cầu đặt cọc và xóa khỏi danh sách!");
+				if (!ObjectUtils.isEmpty(updatedDeposit)) {
+					// Reset session "đã xem" của user để badge xuất hiện lại
+					if (updatedDeposit.getUser() != null) {
+						session.removeAttribute("depositNotificationsViewed_" + updatedDeposit.getUser().getId());
+					}
+					session.setAttribute("succMsg", "Đã từ chối yêu cầu đặt cọc!");
 				} else {
-					session.setAttribute("errorMsg", "Đã từ chối nhưng không thể xóa khỏi danh sách!");
+					session.setAttribute("errorMsg", "Không thể cập nhật trạng thái đặt cọc!");
 				}
 			} else {
 				session.setAttribute("errorMsg", "Không tìm thấy yêu cầu đặt cọc!");

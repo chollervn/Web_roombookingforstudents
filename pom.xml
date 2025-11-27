@@ -12,8 +12,8 @@
 	<groupId>com.ecom</groupId>
 	<artifactId>NhaTroSV</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Shopping_Cart</name>
-	<description>Online Shopping Cart Spring boot mvc Project</description>
+	<name>NhaTroSV</name>
+	<description>Online Nha Tro SV Spring boot mvc Project</description>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
@@ -74,12 +74,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 			<!--<version>3.3.1</version>-->
-		</dependency>
-
-		<!-- WebSocket for real-time chat -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
 	</dependencies>

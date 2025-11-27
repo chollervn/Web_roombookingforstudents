@@ -440,30 +440,6 @@
                                                                                 th:if="${dashboard.nextPayment.status == 'OVERDUE'}"
                                                                                 class="badge bg-danger">Quá hạn</span>
                                                                         </p>
-                                                                        <div class="mt-3">
-                                                                            <button type="button"
-                                                                                class="btn btn-primary btn-lg w-100 mb-2"
-                                                                                onclick="showPaymentQR()"
-                                                                                th:if="${dashboard.landlordContact != null && dashboard.landlordContact.bankId != null}"
-                                                                                th:attr="data-bank-id=${dashboard.landlordContact.bankId},
-                                                                                         data-account-no=${dashboard.landlordContact.accountNo},
-                                                                                         data-account-name=${dashboard.landlordContact.name},
-                                                                                         data-amount=${dashboard.nextPayment.totalAmount},
-                                                                                         data-month=${dashboard.nextPayment.month},
-                                                                                         data-year=${dashboard.nextPayment.year}">
-                                                                                <i class="fas fa-qrcode"></i> Thanh toán bằng VietQR
-                                                                            </button>
-                                                                            <button type="button"
-                                                                                class="btn btn-secondary btn-lg w-100 mb-2"
-                                                                                disabled
-                                                                                th:if="${dashboard.landlordContact == null || dashboard.landlordContact.bankId == null}">
-                                                                                <i class="fas fa-exclamation-circle"></i> Chưa có thông tin ngân hàng
-                                                                            </button>
-                                                                            <p class="text-muted small mb-0">
-                                                                                <i class="fas fa-info-circle"></i>
-                                                                                Quét mã QR bằng ứng dụng ngân hàng để thanh toán
-                                                                            </p>
-                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -617,26 +593,12 @@
                                                                     th:text="${dashboard.landlordContact.mobileNumber}">0900000000</span>
                                                             </p>
                                                         </div>
-                                                        <div class="col-md-8"
+                                                        <div class="col-md-12"
                                                             th:if="${dashboard.landlordContact == null}">
                                                             <p class="text-muted">
                                                                 <i class="fas fa-info-circle"></i> Không có thông tin
                                                                 liên hệ của chủ trọ
                                                             </p>
-                                                        </div>
-                                                        <div class="col-md-4 text-center">
-                                                            <a th:href="@{'/user/chat/' + ${dashboard.conversationId}}"
-                                                                th:if="${dashboard.conversationId != null}"
-                                                                class="btn btn-primary btn-lg w-100">
-                                                                <i class="fas fa-comments"></i> Chat với chủ trọ
-                                                                <span th:if="${dashboard.unreadMessages > 0}"
-                                                                    class="badge bg-danger ms-2"
-                                                                    th:text="${dashboard.unreadMessages}">0</span>
-                                                            </a>
-                                                            <button th:if="${dashboard.conversationId == null}"
-                                                                class="btn btn-secondary btn-lg w-100" disabled>
-                                                                <i class="fas fa-comments"></i> Chat chưa khả dụng
-                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>

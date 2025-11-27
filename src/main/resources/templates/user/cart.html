@@ -82,9 +82,6 @@
 										<th:block th:with="deposit=${depositMap[cart.room.id]}">
 											<!-- Nếu chưa đặt cọc hoặc bị từ chối => cho phép đặt cọc và xóa -->
 											<div th:if="${deposit == null || deposit.status == 'REJECTED'}">
-												<a th:href="@{'/user/chat?rid='+${cart.room.id}}" class="btn btn-primary btn-sm mb-1">
-													<i class="fas fa-comments"></i> Chat
-												</a>
 												<a th:href="@{'/user/deposit?rid='+${cart.room.id}}" class="btn btn-warning btn-sm mb-1">
 													<i class="fas fa-money-bill-wave"></i> Đặt cọc
 												</a>
@@ -95,11 +92,8 @@
 												</a>
 											</div>
 
-											<!-- Nếu đã đặt cọc (pending hoặc approved) => chỉ cho chat, không cho xóa -->
+											<!-- Nếu đã đặt cọc (pending hoặc approved) => không cho xóa -->
 											<div th:if="${deposit != null && (deposit.status == 'PENDING' || deposit.status == 'APPROVED')}">
-												<a th:href="@{'/user/chat?rid='+${cart.room.id}}" class="btn btn-primary btn-sm mb-1">
-													<i class="fas fa-comments"></i> Chat với Chủ trọ
-												</a>
 												<span th:if="${deposit.status == 'PENDING'}" class="text-muted small d-block">
 													Đang chờ xác nhận
 												</span>

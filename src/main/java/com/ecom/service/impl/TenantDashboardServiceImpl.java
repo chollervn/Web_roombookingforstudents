@@ -11,12 +11,12 @@ import com.ecom.dto.PaymentDTO;
 import com.ecom.dto.RentalStatusDTO;
 import com.ecom.dto.RoomDTO;
 import com.ecom.dto.TenantDashboardDTO;
-import com.ecom.model.Conversation;
+
 import com.ecom.model.MonthlyPayment;
 import com.ecom.model.Room;
 import com.ecom.model.RoomBooking;
 import com.ecom.model.UserDtls;
-import com.ecom.repository.ConversationRepository;
+
 import com.ecom.repository.UserRepository;
 import com.ecom.service.MonthlyPaymentService;
 import com.ecom.service.RoomBookingService;
@@ -36,8 +36,6 @@ public class TenantDashboardServiceImpl implements TenantDashboardService {
     @Autowired
     private MonthlyPaymentService paymentService;
 
-    @Autowired
-    private ConversationRepository conversationRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -108,10 +106,8 @@ public class TenantDashboardServiceImpl implements TenantDashboardService {
             landlordContact = getLandlordContact(activeBooking.getRoom().getOwnerId());
         }
 
-        // Get conversation info
-        Conversation conversation = conversationRepository.findByRoomBookingId(activeBooking.getId());
-        Integer conversationId = conversation != null ? conversation.getId() : null;
-        Integer unreadMessages = conversation != null ? conversation.getUnreadTenantCount() : 0;
+
+
 
         // Build and return dashboard DTO
         return TenantDashboardDTO.builder()
@@ -123,8 +119,6 @@ public class TenantDashboardServiceImpl implements TenantDashboardService {
                 .totalPaid(totalPaid)
                 .totalPending(totalPending)
                 .landlordContact(landlordContact)
-                .conversationId(conversationId)
-                .unreadMessages(unreadMessages)
                 .build();
     }
 

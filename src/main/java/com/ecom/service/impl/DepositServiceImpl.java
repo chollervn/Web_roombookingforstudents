@@ -160,9 +160,9 @@ public class DepositServiceImpl implements DepositService {
 				}
 			}
 
-			// Tighter Interaction: Clear cart item for this room and user to reflect the
-			// finalized state
-			if (("APPROVED".equals(status) || "REJECTED".equals(status)) && room != null && deposit.getUser() != null) {
+			// Chỉ xóa cart khi APPROVED (deposit thành công)
+			// KHÔNG xóa khi REJECTED để user vẫn thấy đơn bị từ chối trong cart
+			if ("APPROVED".equals(status) && room != null && deposit.getUser() != null) {
 				com.ecom.model.Cart cart = cartRepository.findByRoomIdAndUserId(room.getId(),
 						deposit.getUser().getId());
 				if (cart != null) {
