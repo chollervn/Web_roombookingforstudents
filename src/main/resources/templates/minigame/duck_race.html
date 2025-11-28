@@ -245,8 +245,8 @@
             // Game Constants
             const DUCKS = 6;
             const DUCK_SIZE = 60;
-            const TRACK_LENGTH = 10000; // Longer track for more drama
-            const FINISH_LINE = TRACK_LENGTH - 500;
+            const TRACK_LENGTH = 5000; // Giảm độ dài đường đua để kết thúc trong 7 giây (thay vì 10000)
+            const FINISH_LINE = TRACK_LENGTH - 200; // 2300px
             const FPS = 60;
 
             // Game State
@@ -299,7 +299,7 @@
                     this.id = id;
                     this.x = 50;
                     this.y = 50 + (id - 1) * 80;
-                    this.baseSpeed = 6; // Standardized base speed for tighter races
+                    this.baseSpeed = 10; // Giữ tốc độ gốc, giảm độ dài đường đua thay vì tăng tốc
                     this.speed = 0;
                     this.state = 'NORMAL'; // NORMAL, BOOST, TIRED, SUPER_BOOST
                     this.stateTimer = 0;

@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ecom.model.MonthlyPayment;
 
@@ -48,4 +50,14 @@ public interface MonthlyPaymentRepository extends JpaRepository<MonthlyPayment, 
 	// Tổng doanh thu theo tháng/năm
 	@Query("SELECT COALESCE(SUM(mp.paidAmount), 0) FROM MonthlyPayment mp WHERE mp.roomBooking.room.ownerId = :ownerId AND mp.month = :month AND mp.year = :year AND mp.status IN ('PAID', 'PARTIAL')")
 	Double getRevenueByOwnerAndMonthYear(@Param("ownerId") Integer ownerId, @Param("month") Integer month, @Param("year") Integer year);
+
+	// Delete methods for cascade deletion
+	@Modifying
+	@Transactional
+	void deleteByRoomBooking_Id(Integer bookingId);
+
+	@Modifying
+	@Transactional
+	@Query("DELETE FROM MonthlyPayment mp WHERE mp.roomBooking.room.id = :roomId")
+	void deleteByRoomId(@Param("roomId") Integer roomId);
 }

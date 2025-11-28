@@ -62,19 +62,31 @@ public class RoomServiceImpl implements RoomService {
 	@Autowired
 	private com.ecom.repository.ExpenseRepository expenseRepository;
 
+	@Autowired
+	private com.ecom.repository.MonthlyPaymentRepository monthlyPaymentRepository;
+
 	@Override
 	public Boolean deleteRoom(Integer id) {
 		Room room = roomRepository.findById(id).orElse(null);
 
 		if (!ObjectUtils.isEmpty(room)) {
 			// Delete associated data first to avoid foreign key constraints
+			// Order matters: delete in reverse order of foreign key dependencies
+
+			// 1. Delete monthly_payment first (references room_booking)
+			monthlyPaymentRepository.deleteByRoomId(id);
+
+			// 2. Delete other dependencies
 			cartRepository.deleteByRoomId(id);
 			depositRepository.deleteByRoomId(id);
 			roomOrderRepository.deleteByRoomId(id);
-			roomBookingRepository.deleteByRoomId(id);
 			reviewRepository.deleteByRoomId(id);
 			expenseRepository.deleteByRoomId(id);
 
+			// 3. Delete room_booking (now safe because monthly_payment is gone)
+			roomBookingRepository.deleteByRoomId(id);
+
+			// 4. Finally delete the room itself
 			roomRepository.delete(room);
 			return true;
 		}
@@ -128,8 +140,9 @@ public class RoomServiceImpl implements RoomService {
 		if (room.getContactName() != null) {
 			dbRoom.setContactName(room.getContactName());
 		}
-		dbRoom.setIsAvailable(room.getIsAvailable());
-		dbRoom.setIsActive(room.getIsActive());
+		// Fix: Handle null isAvailable value (checkbox not checked = null, should be false)
+		dbRoom.setIsAvailable(room.getIsAvailable() != null ? room.getIsAvailable() : false);
+		dbRoom.setIsActive(room.getIsActive() != null ? room.getIsActive() : true);
 
 		Room updateRoom = roomRepository.save(dbRoom);
 

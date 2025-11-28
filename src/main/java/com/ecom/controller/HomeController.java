@@ -197,7 +197,13 @@ public class HomeController {
 		String contactName = roomById.getContactName();
 		String contactPhone = roomById.getContactPhone();
 
-		if (!roomById.getIsAvailable()) {
+		// Fix: Check null before using isAvailable
+		Boolean isAvailable = roomById.getIsAvailable();
+		if (isAvailable == null) {
+			isAvailable = true; // Default to available if null
+		}
+
+		if (!isAvailable) {
 			// Trạng thái 1: Phòng đã được thuê (ưu tiên cao nhất)
 			roomStatus = "RENTED";
 			statusMessage = "Phòng đã được thuê";
