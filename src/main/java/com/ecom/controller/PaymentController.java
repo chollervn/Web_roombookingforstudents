@@ -7,11 +7,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.ecom.model.MonthlyPayment;
 import com.ecom.model.UserDtls;
 import com.ecom.service.MonthlyPaymentService;
+import com.ecom.service.PaymentNotificationService;
 import com.ecom.util.CommonUtil;
 
 import jakarta.servlet.http.HttpSession;
@@ -25,6 +27,9 @@ public class PaymentController {
 
     @Autowired
     private CommonUtil commonUtil;
+
+    @Autowired
+    private PaymentNotificationService paymentNotificationService;
 
     @GetMapping("/{id}/details")
     public String viewPaymentDetails(@PathVariable Integer id, Model m, Principal p, HttpSession session) {
@@ -46,5 +51,29 @@ public class PaymentController {
 
         m.addAttribute("payment", payment);
         return "/admin/payment_details";
+    }
+
+    @PostMapping("/{id}/remind")
+    public String remindPayment(@PathVariable Integer id, HttpSession session, Principal p) {
+        // Gửi nhắc nhở thanh toán
+        try {
+            paymentNotificationService.sendPaymentReminder(id, "REMINDER");
+            session.setAttribute("succMsg", "Đã gửi nhắc nhở thanh toán!");
+        } catch (Exception e) {
+            session.setAttribute("errorMsg", "Gửi nhắc nhở thất bại!");
+        }
+        return "redirect:/admin/payments";
+    }
+
+    @PostMapping("/{id}/confirm")
+    public String confirmPayment(@PathVariable Integer id, HttpSession session, Principal p) {
+        // Xác nhận thanh toán
+        try {
+            monthlyPaymentService.updatePaymentStatus(id, "PAID");
+            session.setAttribute("succMsg", "Đã xác nhận thanh toán!");
+        } catch (Exception e) {
+            session.setAttribute("errorMsg", "Xác nhận thanh toán thất bại!");
+        }
+        return "redirect:/admin/payments";
     }
 }

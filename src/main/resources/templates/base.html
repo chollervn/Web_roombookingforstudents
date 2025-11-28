@@ -125,11 +125,6 @@
 						<th:block th:if="${user.role=='ROLE_USER'}">
 							<li class="nav-item"><a class="nav-link active" aria-current="page" href="/user/cart">
 									<i class="fa-solid fa-calendar-check"></i> Đã xem [ [[${countCart}]] ]
-									<span
-										th:if="${unreadDepositNotifications != null and unreadDepositNotifications > 0}"
-										class="badge bg-danger rounded-pill ms-1" style="font-size: 0.7rem;">
-										[[${unreadDepositNotifications}]]
-									</span>
 								</a></li>
 						</th:block>
 

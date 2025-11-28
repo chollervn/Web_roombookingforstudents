@@ -34,12 +34,6 @@ public class UserDtls {
 
 	private String address;
 
-	private String city;
-
-	private String state;
-
-	private String pincode;
-
 	private String password;
 
 	private String profileImage;
@@ -64,12 +58,5 @@ public class UserDtls {
 
 	private String accountNo; // Số tài khoản ngân hàng
 
-	private LocalDateTime createdDate; // Ngày đăng ký tài khoản
 
-	@PrePersist
-	public void prePersist() {
-		if (this.createdDate == null) {
-			this.createdDate = LocalDateTime.now();
-		}
-	}
 }

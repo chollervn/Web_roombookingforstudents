@@ -102,6 +102,7 @@
                                 <th>Đã trả</th>
                                 <th>Ngày đến hạn</th>
                                 <th>Trạng thái</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -137,6 +138,24 @@
                                     <span th:if="${payment.status == 'PARTIAL'}" class="badge bg-info">
                                         <i class="fas fa-info-circle"></i> Trả một phần
                                     </span>
+                                </td>
+                                <td>
+                                    <!-- Nút xem thông tin -->
+                                    <a th:href="@{'/admin/payment/' + ${payment.id} + '/details'}" class="btn btn-info btn-sm me-1">
+                                        <i class="fas fa-eye"></i> Xem
+                                    </a>
+                                    <!-- Nút nhắc nhở thanh toán -->
+                                    <form th:action="@{'/admin/payment/' + ${payment.id} + '/remind'}" method="post" style="display:inline-block">
+                                        <button type="submit" class="btn btn-warning btn-sm me-1" onclick="return confirm('Gửi nhắc nhở thanh toán?');">
+                                            <i class="fas fa-bell"></i> Nhắc nhở
+                                        </button>
+                                    </form>
+                                    <!-- Nút xác nhận thanh toán -->
+                                    <form th:action="@{'/admin/payment/' + ${payment.id} + '/confirm'}" method="post" style="display:inline-block">
+                                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Xác nhận thanh toán hóa đơn này?');">
+                                            <i class="fas fa-check-circle"></i> Xác nhận
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         </tbody>

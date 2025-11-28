@@ -152,9 +152,6 @@ public class UserServiceImpl implements UserService {
 			dbUser.setName(user.getName());
 			dbUser.setMobileNumber(user.getMobileNumber());
 			dbUser.setAddress(user.getAddress());
-			dbUser.setCity(user.getCity());
-			dbUser.setState(user.getState());
-			dbUser.setPincode(user.getPincode());
 			dbUser.setSchool(user.getSchool());
 			dbUser.setBankId(user.getBankId());
 			dbUser.setAccountNo(user.getAccountNo());
