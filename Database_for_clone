@@ -705,6 +705,7 @@ ALTER TABLE ONLY public.deposit
     ADD CONSTRAINT fkco89c884l7kvqx6xyc1llgc8p FOREIGN KEY (room_id) REFERENCES public.room(id);
 
 
+
 --
 -- TOC entry 4816 (class 2606 OID 19360)
 -- Name: room_booking fkiwt0ws97ta91ukd4xonewjbxl; Type: FK CONSTRAINT; Schema: public; Owner: postgres
