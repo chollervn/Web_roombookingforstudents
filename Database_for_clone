@@ -1,0 +1,714 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 4974 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 220 (class 1259 OID 19194)
+-- Name: cart; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cart (
+    id integer NOT NULL,
+    quantity integer,
+    room_id integer,
+    user_id integer
+);
+
+
+ALTER TABLE public.cart OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 19193)
+-- Name: cart_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cart_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.cart_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4975 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: cart_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cart_id_seq OWNED BY public.cart.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 19201)
+-- Name: deposit; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.deposit (
+    id integer NOT NULL,
+    admin_note character varying(255),
+    amount double precision,
+    approved_date date,
+    deposit_date date,
+    note character varying(255),
+    payment_method character varying(255),
+    status character varying(255),
+    room_id integer,
+    user_id integer
+);
+
+
+ALTER TABLE public.deposit OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 19200)
+-- Name: deposit_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.deposit_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.deposit_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4976 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: deposit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.deposit_id_seq OWNED BY public.deposit.id;
+
+
+--
+-- TOC entry 224 (class 1259 OID 19210)
+-- Name: order_address; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.order_address (
+    id integer NOT NULL,
+    address character varying(255),
+    email character varying(255),
+    first_name character varying(255),
+    mobile_no character varying(255)
+);
+
+
+ALTER TABLE public.order_address OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 19209)
+-- Name: order_address_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.order_address_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.order_address_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4977 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: order_address_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.order_address_id_seq OWNED BY public.order_address.id;
+
+
+--
+-- TOC entry 234 (class 1259 OID 19406)
+-- Name: review; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.review (
+    id integer NOT NULL,
+    comment character varying(2000),
+    created_date timestamp(6) without time zone,
+    rating integer,
+    room_id integer,
+    user_id integer,
+    user_name character varying(255)
+);
+
+
+ALTER TABLE public.review OWNER TO postgres;
+
+--
+-- TOC entry 233 (class 1259 OID 19405)
+-- Name: review_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.review_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.review_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4978 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: review_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.review_id_seq OWNED BY public.review.id;
+
+
+--
+-- TOC entry 226 (class 1259 OID 19219)
+-- Name: room; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.room (
+    id integer NOT NULL,
+    address character varying(255),
+    allow_pets boolean,
+    area double precision,
+    city character varying(255),
+    contact_name character varying(255),
+    contact_phone character varying(255),
+    deposit double precision,
+    description character varying(5000),
+    district character varying(255),
+    electricity_cost double precision,
+    full_address character varying(1000),
+    has_air_conditioner boolean,
+    has_elevator boolean,
+    has_parking boolean,
+    has_wifi boolean,
+    image character varying(255),
+    is_active boolean,
+    is_available boolean,
+    max_occupants integer,
+    monthly_rent double precision,
+    owner_id integer,
+    room_name character varying(500),
+    room_type character varying(255),
+    water_cost double precision,
+    status character varying(255)
+);
+
+
+ALTER TABLE public.room OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 18654)
+-- Name: room_booking; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.room_booking (
+    id integer NOT NULL,
+    deposit_amount double precision,
+    monthly_rent double precision,
+    payment_type character varying(255),
+    status character varying(255),
+    duration_months integer,
+    end_date date,
+    note character varying(255),
+    payment_method character varying(255),
+    start_date date,
+    room_id integer,
+    user_id integer
+);
+
+
+ALTER TABLE public.room_booking OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 18653)
+-- Name: room_booking_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.room_booking_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.room_booking_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4979 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: room_booking_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.room_booking_id_seq OWNED BY public.room_booking.id;
+
+
+--
+-- TOC entry 225 (class 1259 OID 19218)
+-- Name: room_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.room_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.room_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4980 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: room_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.room_id_seq OWNED BY public.room.id;
+
+
+--
+-- TOC entry 228 (class 1259 OID 19228)
+-- Name: room_order; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.room_order (
+    id integer NOT NULL,
+    order_date date,
+    payment_type character varying(255),
+    price double precision,
+    quantity integer,
+    status character varying(255),
+    room_id integer,
+    user_id integer,
+    order_id character varying(255),
+    order_address_id integer
+);
+
+
+ALTER TABLE public.room_order OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 19227)
+-- Name: room_order_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.room_order_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.room_order_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4981 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: room_order_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.room_order_id_seq OWNED BY public.room_order.id;
+
+
+--
+-- TOC entry 230 (class 1259 OID 19237)
+-- Name: room_type; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.room_type (
+    id integer NOT NULL,
+    image_name character varying(255),
+    is_active boolean,
+    name character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.room_type OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 19236)
+-- Name: room_type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.room_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.room_type_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4982 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: room_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.room_type_id_seq OWNED BY public.room_type.id;
+
+
+--
+-- TOC entry 232 (class 1259 OID 19246)
+-- Name: user_dtls; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_dtls (
+    id integer NOT NULL,
+    account_non_locked boolean,
+    account_type character varying(255),
+    address character varying(255),
+    email character varying(255) NOT NULL,
+    failed_attempt integer,
+    is_enable boolean,
+    lock_time timestamp(6) without time zone,
+    mobile_number character varying(255),
+    name character varying(255),
+    password character varying(255),
+    profile_image character varying(255),
+    reset_token character varying(255),
+    role character varying(255),
+    school character varying(255),
+    city character varying(255),
+    pincode character varying(255),
+    state character varying(255)
+);
+
+
+ALTER TABLE public.user_dtls OWNER TO postgres;
+
+--
+-- TOC entry 231 (class 1259 OID 19245)
+-- Name: user_dtls_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.user_dtls_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.user_dtls_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4983 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: user_dtls_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.user_dtls_id_seq OWNED BY public.user_dtls.id;
+
+
+--
+-- TOC entry 4783 (class 2604 OID 19197)
+-- Name: cart id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart ALTER COLUMN id SET DEFAULT nextval('public.cart_id_seq'::regclass);
+
+
+--
+-- TOC entry 4784 (class 2604 OID 19204)
+-- Name: deposit id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.deposit ALTER COLUMN id SET DEFAULT nextval('public.deposit_id_seq'::regclass);
+
+
+--
+-- TOC entry 4785 (class 2604 OID 19213)
+-- Name: order_address id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_address ALTER COLUMN id SET DEFAULT nextval('public.order_address_id_seq'::regclass);
+
+
+--
+-- TOC entry 4790 (class 2604 OID 19409)
+-- Name: review id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.review ALTER COLUMN id SET DEFAULT nextval('public.review_id_seq'::regclass);
+
+
+--
+-- TOC entry 4786 (class 2604 OID 19222)
+-- Name: room id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room ALTER COLUMN id SET DEFAULT nextval('public.room_id_seq'::regclass);
+
+
+--
+-- TOC entry 4782 (class 2604 OID 18657)
+-- Name: room_booking id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_booking ALTER COLUMN id SET DEFAULT nextval('public.room_booking_id_seq'::regclass);
+
+
+--
+-- TOC entry 4787 (class 2604 OID 19231)
+-- Name: room_order id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_order ALTER COLUMN id SET DEFAULT nextval('public.room_order_id_seq'::regclass);
+
+
+--
+-- TOC entry 4788 (class 2604 OID 19240)
+-- Name: room_type id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_type ALTER COLUMN id SET DEFAULT nextval('public.room_type_id_seq'::regclass);
+
+
+--
+-- TOC entry 4789 (class 2604 OID 19249)
+-- Name: user_dtls id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_dtls ALTER COLUMN id SET DEFAULT nextval('public.user_dtls_id_seq'::regclass);
+
+
+--
+-- TOC entry 4794 (class 2606 OID 19199)
+-- Name: cart cart_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart
+    ADD CONSTRAINT cart_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4796 (class 2606 OID 19208)
+-- Name: deposit deposit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.deposit
+    ADD CONSTRAINT deposit_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4798 (class 2606 OID 19217)
+-- Name: order_address order_address_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_address
+    ADD CONSTRAINT order_address_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4814 (class 2606 OID 19413)
+-- Name: review review_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.review
+    ADD CONSTRAINT review_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4792 (class 2606 OID 18661)
+-- Name: room_booking room_booking_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_booking
+    ADD CONSTRAINT room_booking_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4802 (class 2606 OID 19235)
+-- Name: room_order room_order_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_order
+    ADD CONSTRAINT room_order_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4800 (class 2606 OID 19226)
+-- Name: room room_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room
+    ADD CONSTRAINT room_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4806 (class 2606 OID 19244)
+-- Name: room_type room_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_type
+    ADD CONSTRAINT room_type_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4810 (class 2606 OID 19259)
+-- Name: user_dtls uk_12b9fnbmel46e4ba9dr6myhcw; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_dtls
+    ADD CONSTRAINT uk_12b9fnbmel46e4ba9dr6myhcw UNIQUE (email);
+
+
+--
+-- TOC entry 4804 (class 2606 OID 19359)
+-- Name: room_order uk_78ghl2503y1u6an88ev2lnxkf; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_order
+    ADD CONSTRAINT uk_78ghl2503y1u6an88ev2lnxkf UNIQUE (order_address_id);
+
+
+--
+-- TOC entry 4808 (class 2606 OID 19257)
+-- Name: room_type uk_q0y2xl90orh60g19v627mraij; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_type
+    ADD CONSTRAINT uk_q0y2xl90orh60g19v627mraij UNIQUE (name);
+
+
+--
+-- TOC entry 4812 (class 2606 OID 19253)
+-- Name: user_dtls user_dtls_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_dtls
+    ADD CONSTRAINT user_dtls_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4821 (class 2606 OID 19290)
+-- Name: room_order fk16eupvm1lbio9vc7w4x7215nr; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_order
+    ADD CONSTRAINT fk16eupvm1lbio9vc7w4x7215nr FOREIGN KEY (user_id) REFERENCES public.user_dtls(id);
+
+
+--
+-- TOC entry 4817 (class 2606 OID 19260)
+-- Name: cart fk6h0aspc5ahcox8kkq43axbxob; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart
+    ADD CONSTRAINT fk6h0aspc5ahcox8kkq43axbxob FOREIGN KEY (room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 4822 (class 2606 OID 19285)
+-- Name: room_order fk6meyoc1frfbj3hryc8rjfya84; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_order
+    ADD CONSTRAINT fk6meyoc1frfbj3hryc8rjfya84 FOREIGN KEY (room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 4819 (class 2606 OID 19275)
+-- Name: deposit fk8si930dupna9nwedfahqtjp9f; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.deposit
+    ADD CONSTRAINT fk8si930dupna9nwedfahqtjp9f FOREIGN KEY (user_id) REFERENCES public.user_dtls(id);
+
+
+--
+-- TOC entry 4818 (class 2606 OID 19265)
+-- Name: cart fk9x4wn098i53ikun1ynxet2ynj; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart
+    ADD CONSTRAINT fk9x4wn098i53ikun1ynxet2ynj FOREIGN KEY (user_id) REFERENCES public.user_dtls(id);
+
+
+--
+-- TOC entry 4815 (class 2606 OID 19365)
+-- Name: room_booking fkacuqk8knh075h1s2gewdhmo1y; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_booking
+    ADD CONSTRAINT fkacuqk8knh075h1s2gewdhmo1y FOREIGN KEY (user_id) REFERENCES public.user_dtls(id);
+
+
+--
+-- TOC entry 4823 (class 2606 OID 19370)
+-- Name: room_order fkcearufxianf5oa60ouc8jcj8t; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_order
+    ADD CONSTRAINT fkcearufxianf5oa60ouc8jcj8t FOREIGN KEY (order_address_id) REFERENCES public.order_address(id);
+
+
+--
+-- TOC entry 4820 (class 2606 OID 19270)
+-- Name: deposit fkco89c884l7kvqx6xyc1llgc8p; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.deposit
+    ADD CONSTRAINT fkco89c884l7kvqx6xyc1llgc8p FOREIGN KEY (room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 4816 (class 2606 OID 19360)
+-- Name: room_booking fkiwt0ws97ta91ukd4xonewjbxl; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room_booking
+    ADD CONSTRAINT fkiwt0ws97ta91ukd4xonewjbxl FOREIGN KEY (room_id) REFERENCES public.room(id);
